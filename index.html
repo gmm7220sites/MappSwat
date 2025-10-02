@@ -78,6 +78,7 @@
         html.dark .bg-slate-100 { background-color: #334155; }
         html.dark .border-slate-300 { border-color: #475569; }
         html.dark input, html.dark select { background-color: #334155; color: #f1f5f9; }
+        html.dark input:read-only { background-color: #475569; }
         html.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.4); }
         html.dark .border { border-color: #475569; }
         html.dark .border-b { border-color: #334155; }
@@ -481,7 +482,45 @@
             });
 
             onSnapshot(query(personalCol), snapshot => {
-                state.personal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                const uniquePersonal = [];
+                const duplicatesToDelete = new Set();
+                const seenNames = new Set();
+                const seenNumbers = new Set();
+
+                allPersonal.forEach(p => {
+                    const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
+                    const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
+                    
+                    let isDuplicate = false;
+
+                    if (seenNames.has(fullName)) {
+                        isDuplicate = true;
+                    }
+
+                    if (employeeNumber && seenNumbers.has(employeeNumber)) {
+                        isDuplicate = true;
+                    }
+
+                    if (isDuplicate) {
+                        duplicatesToDelete.add(p.id);
+                    } else {
+                        uniquePersonal.push(p);
+                        if (fullName) seenNames.add(fullName);
+                        if(employeeNumber) seenNumbers.add(employeeNumber);
+                    }
+                });
+
+                if (duplicatesToDelete.size > 0) {
+                    showStatusMessage(`Se encontraron y eliminaron ${duplicatesToDelete.size} duplicados automáticamente.`, 'success');
+                    duplicatesToDelete.forEach(id => {
+                        deleteDoc(doc(db, personalCol.path, id));
+                    });
+                }
+                
+                state.personal = uniquePersonal;
+
                 renderizarTablaPersonal();
                 if (state.currentView === 'mapeo') renderizarMapeo();
                 if (state.currentView === 'programacion') renderizarProgramacionPersonal();
@@ -533,7 +572,7 @@
         function renderizarTablaPersonal() {
             const tabla = document.getElementById('tabla-personal');
             tabla.innerHTML = '';
-            state.personal.sort((a,b) => (a.numero_empleado || '').localeCompare(b.numero_empleado || '')).forEach(p => {
+            state.personal.sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(p => {
                 const row = tabla.insertRow();
                 row.dataset.id = p.id;
                 row.innerHTML = `
@@ -827,14 +866,34 @@
             document.getElementById('personal-modal-title').textContent = 'Agregar Personal';
             formPersonal.reset();
             formPersonal['personal-id'].value = '';
+            const employeeNumbers = state.personal.map(p => parseInt(String(p.numero_empleado).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
+            const maxNumber = employeeNumbers.length > 0 ? Math.max(...employeeNumbers) : 0;
+            formPersonal.numero_empleado.value = maxNumber + 1;
+            formPersonal.numero_empleado.readOnly = true;
             personalModal.style.display = 'block';
         });
 
         formPersonal.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = formPersonal['personal-id'].value;
+            const newNombre = formPersonal.nombre.value.trim().toLowerCase();
+            const newApellido = formPersonal.apellido.value.trim().toLowerCase();
+            const newNumEmpleado = formPersonal.numero_empleado.value.trim();
+
+            const isDuplicate = state.personal.some(p => {
+                if(id && p.id === id) return false; // Don't check against self when editing
+                const fullNameMatch = p.nombre.trim().toLowerCase() === newNombre && p.apellido.trim().toLowerCase() === newApellido;
+                const employeeNumberMatch = p.numero_empleado && p.numero_empleado.trim() === newNumEmpleado;
+                return fullNameMatch || employeeNumberMatch;
+            });
+
+            if(isDuplicate) {
+                showStatusMessage('Ya existe un empleado con el mismo nombre y apellido o número de empleado.', 'error');
+                return;
+            }
+            
             const nuevaPersona = {
-                numero_empleado: formPersonal.numero_empleado.value,
+                numero_empleado: newNumEmpleado,
                 fecha_ingreso: formPersonal.fecha_ingreso.value,
                 nombre: formPersonal.nombre.value,
                 apellido: formPersonal.apellido.value,
@@ -918,7 +977,6 @@
             }
 
             if (target.matches('.btn-confirmar-persona')) {
-                // VERIFICADO: Botón Confirmar por Persona
                 const personId = target.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 const week = state.selectedWeek;
@@ -1034,7 +1092,6 @@
                     showStatusMessage('Local eliminado');
                 }
             } else if (target.matches('.btn-copy-schedule')) {
-                // VERIFICADO: Botón Copiar de Programación por Persona
                 const personId = target.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 if (!persona) return;
@@ -1159,7 +1216,6 @@
                     showStatusMessage('Selecciona una semana primero.', 'error');
                 }
             } else if (target.matches('#btn-limpiar-mapeo')) {
-                // Se agrega la alerta de confirmación antes de limpiar.
                 if (confirm('¿Limpiar todas las asignaciones de la semana actual? Esta acción no se puede deshacer.')) {
                     saveUndoState();
                     await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
@@ -1345,6 +1401,7 @@
                     formPersonal[key].value = persona[key];
                 }
             }
+            formPersonal.numero_empleado.readOnly = false;
             personalModal.style.display = 'block';
         }
 
