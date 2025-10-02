@@ -190,7 +190,6 @@
                                         <th class="p-3">Nº Empleado</th>
                                         <th class="p-3">Nombre Completo</th>
                                         <th class="p-3">Teléfono</th>
-                                        <th class="p-3 text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-personal"></tbody>
@@ -580,7 +579,7 @@
                     <td class="p-3">${p.nombre} ${p.apellido}</td>
                     <td class="p-3">${p.telefono}</td>
                     <td class="p-3 text-right">
-                        <button data-id="${p.id}" class="btn-ver-detalles text-blue-500 hover:underline">Ver detalles</button>
+                        <!-- Botón eliminado para favorecer el clic en la fila -->
                     </td>
                 `;
             });
@@ -946,25 +945,22 @@
             }
         });
         
-        document.body.addEventListener('click', async (e) => {
-            let target = e.target;
-            
-            // Handle clicks on table rows to view details
-            if(target.closest('#tabla-personal tbody tr')) {
-                const row = target.closest('tr');
-                if(row.dataset.id) {
-                     populateViewPersonalModal(row.dataset.id);
-                }
-                return;
+        document.getElementById('tabla-personal').addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if (row && row.dataset.id) {
+                populateViewPersonalModal(row.dataset.id);
             }
-            
-            target = e.target.closest('button');
-            if (!target) return;
+        });
 
-            if (target.matches('.vestimenta-btn')) {
+        document.body.addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+
+            // --- Lógica de Botones ---
+            if (button.matches('.vestimenta-btn')) {
                 saveUndoState();
                 const week = state.selectedWeek;
-                const slotId = target.dataset.slotId;
+                const slotId = button.dataset.slotId;
                 const docRef = doc(db, asignacionesCol.path, week);
 
                 const currentVestimenta = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
@@ -976,8 +972,8 @@
                 return;
             }
 
-            if (target.matches('.btn-confirmar-persona')) {
-                const personId = target.dataset.personId;
+            if (button.matches('.btn-confirmar-persona')) {
+                const personId = button.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 const week = state.selectedWeek;
                 if (!persona || !week) return;
@@ -1000,8 +996,8 @@
                         showStatusMessage(`${persona.nombre} ${persona.apellido} no tiene asignaciones para confirmar.`, 'error');
                     }
                 }
-            } else if (target.matches('.btn-cambiar-vestimenta-local')) {
-                const localNombre = target.dataset.localNombre;
+            } else if (button.matches('.btn-cambiar-vestimenta-local')) {
+                const localNombre = button.dataset.localNombre;
                 const week = state.selectedWeek;
                 if (!week || !localNombre) return;
 
@@ -1042,30 +1038,30 @@
                 } else {
                     showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
                 }
-            } else if (target.matches('#btn-editar-personal-view')) {
-                const id = target.dataset.id;
+            } else if (button.matches('#btn-editar-personal-view')) {
+                const id = button.dataset.id;
                 populateEditPersonalModal(id);
-            } else if (target.matches('#btn-eliminar-personal-view')) {
-                const id = target.dataset.id;
+            } else if (button.matches('#btn-eliminar-personal-view')) {
+                const id = button.dataset.id;
                 if (confirm('¿Seguro que quieres eliminar a esta persona?')) {
                     await deleteDoc(doc(db, personalCol.path, id));
                     viewPersonalModal.style.display = 'none';
                     showStatusMessage('Personal eliminado');
                 }
-            } else if (target.matches('.btn-editar-local')) {
-                formEditLocal['edit-local-id'].value = target.dataset.id;
-                formEditLocal['edit-local-name'].value = target.dataset.nombre;
-                formEditLocal['edit-local-color'].value = target.dataset.color;
+            } else if (button.matches('.btn-editar-local')) {
+                formEditLocal['edit-local-id'].value = button.dataset.id;
+                formEditLocal['edit-local-name'].value = button.dataset.nombre;
+                formEditLocal['edit-local-color'].value = button.dataset.color;
                 editLocalModal.style.display = 'block';
-            } else if (target.matches('.btn-configurar-horarios')) {
-                const localNombre = target.dataset.nombre;
+            } else if (button.matches('.btn-configurar-horarios')) {
+                const localNombre = button.dataset.nombre;
                 document.getElementById('schedule-config-local-name').textContent = localNombre.toUpperCase();
                 document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = localNombre;
                 const container = document.getElementById('schedule-config-container');
                 renderizarMapeoConfig(localNombre, container);
                 scheduleConfigModal.style.display = 'block';
-            } else if (target.matches('#btn-limpiar-horarios-local')) {
-                const localNombre = target.dataset.localNombre;
+            } else if (button.matches('#btn-limpiar-horarios-local')) {
+                const localNombre = button.dataset.localNombre;
                 if (!localNombre) return;
 
                 if (confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se puede deshacer.`)) {
@@ -1085,14 +1081,14 @@
                     await setDoc(docRef, config);
                     showStatusMessage(`Horarios limpiados para ${localNombre.toUpperCase()}`);
                 }
-            } else if (target.matches('.btn-eliminar-local')) {
-                const id = target.dataset.id;
+            } else if (button.matches('.btn-eliminar-local')) {
+                const id = button.dataset.id;
                 if (confirm('¿Seguro que quieres eliminar este local?')) {
                     await deleteDoc(doc(db, localesCol.path, id));
                     showStatusMessage('Local eliminado');
                 }
-            } else if (target.matches('.btn-copy-schedule')) {
-                const personId = target.dataset.personId;
+            } else if (button.matches('.btn-copy-schedule')) {
+                const personId = button.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 if (!persona) return;
                 const week = state.selectedWeek;
@@ -1124,8 +1120,8 @@
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
                 showStatusMessage('Programación copiada');
-            } else if (target.matches('.btn-copy-local-schedule')) {
-                const localNombre = target.dataset.localNombre;
+            } else if (button.matches('.btn-copy-local-schedule')) {
+                const localNombre = button.dataset.localNombre;
                 const week = state.selectedWeek;
                 const asignacionesSemana = state.asignaciones[week] || {};
                 const localAssignments = Object.entries(asignacionesSemana)
@@ -1174,8 +1170,8 @@
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
                 showStatusMessage('Programación del local copiada');
-            } else if (target.matches('.btn-cargar-historial')) {
-                const week = target.dataset.week;
+            } else if (button.matches('.btn-cargar-historial')) {
+                const week = button.dataset.week;
                 if (confirm(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración de horarios actual.`)) {
                     const dataHistorial = state.historial[week];
                     if (dataHistorial) {
@@ -1195,15 +1191,15 @@
                         showStatusMessage(`Programación cargada.`);
                     }
                 }
-            } else if (target.matches('.btn-eliminar-historial')) {
-                const week = target.dataset.week;
+            } else if (button.matches('.btn-eliminar-historial')) {
+                const week = button.dataset.week;
                 if (confirm(`¿Eliminar el historial de la semana ${week}?`)) {
                     await deleteDoc(doc(db, historialCol.path, week));
                     showStatusMessage('Historial eliminado');
                 }
-            } else if (target.matches('.btn-descargar-historial')) {
-                descargarExcel(target.dataset.week, state.historial[target.dataset.week]);
-            } else if (target.matches('#btn-guardar-programacion')) {
+            } else if (button.matches('.btn-descargar-historial')) {
+                descargarExcel(button.dataset.week, state.historial[button.dataset.week]);
+            } else if (button.matches('#btn-guardar-programacion')) {
                 const week = state.selectedWeek;
                 if (week) {
                     const dataToSave = {
@@ -1215,17 +1211,17 @@
                 } else {
                     showStatusMessage('Selecciona una semana primero.', 'error');
                 }
-            } else if (target.matches('#btn-limpiar-mapeo')) {
+            } else if (button.matches('#btn-limpiar-mapeo')) {
                 if (confirm('¿Limpiar todas las asignaciones de la semana actual? Esta acción no se puede deshacer.')) {
                     saveUndoState();
                     await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
                     showStatusMessage('Mapeo limpiado');
                 }
-            } else if (target.matches('#btn-descargar-excel')) {
+            } else if (button.matches('#btn-descargar-excel')) {
                 descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
-            } else if (target.matches('#btn-importar-personal')) {
+            } else if (button.matches('#btn-importar-personal')) {
                 importPersonalInput.click();
-            } else if (target.matches('#btn-exportar-personal')) {
+            } else if (button.matches('#btn-exportar-personal')) {
                 exportarPersonalExcel();
             }
         });
