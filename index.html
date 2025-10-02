@@ -38,10 +38,18 @@
         .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .toggle-slider { background-color: #16a34a; }
         input:checked + .toggle-slider:before { transform: translateX(20px); }
-        .conflict-highlight { background-color: #fee2e2 !important; border-color: #ef4444 !important; }
+        
+        /* Colores de Conflicto */
+        .conflict-highlight { background-color: #fee2e2 !important; border-color: #ef4444 !important; } /* Rojo */
         html.dark .conflict-highlight { background-color: #450a0a !important; border-color: #b91c1c !important; }
-        .schedule-conflict-highlight { background-color: #fef08a !important; border-color: #f59e0b !important; }
+        
+        .schedule-conflict-highlight { background-color: #fef08a !important; border-color: #f59e0b !important; } /* Amarillo */
         html.dark .schedule-conflict-highlight { background-color: #422006 !important; border-color: #92400e !important; }
+
+        .role-conflict-highlight { background-color: #dbeafe !important; border-color: #3b82f6 !important; } /* Celeste */
+        html.dark .role-conflict-highlight { background-color: #1e3a8a !important; border-color: #60a5fa !important; }
+
+
         .vestimenta-btn { cursor: pointer; font-size: 1.5rem; padding: 4px; border-radius: 8px; background-color: #e2e8f0; transition: background-color 0.2s ease; }
         .vestimenta-btn:hover { background-color: #cbd5e1; }
         html.dark .vestimenta-btn { background-color: #334155; }
@@ -84,6 +92,13 @@
             font-size: 1.2rem;
             margin-left: 8px;
         }
+
+        #tabla-personal tbody tr { cursor: pointer; }
+        #tabla-personal tbody tr:hover { background-color: #f1f5f9; }
+        html.dark #tabla-personal tbody tr:hover { background-color: #334155; }
+        
+        .detail-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
+        .detail-label { font-semibold; text-align: right; }
 
     </style>
 </head>
@@ -166,17 +181,20 @@
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
                             </div>
                         </div>
-                        <form id="form-personal" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <input type="text" id="nombre" placeholder="Nombre" class="p-2 border border-slate-300 rounded-md" required>
-                            <input type="text" id="apellido" placeholder="Apellido" class="p-2 border border-slate-300 rounded-md" required>
-                            <input type="tel" id="telefono" placeholder="Teléfono" class="p-2 border border-slate-300 rounded-md" required>
-                            <select id="disponibilidad" class="p-2 border border-slate-300 rounded-md" required><option value="disponible">Disponible</option><option value="no-disponible">No Disponible</option></select>
-                            <select id="local1" class="p-2 border border-slate-300 rounded-md"><option value="">Local Preferido 1</option></select>
-                            <select id="local2" class="p-2 border border-slate-300 rounded-md"><option value="">Local Preferido 2</option></select>
-                            <select id="local3" class="p-2 border border-slate-300 rounded-md"><option value="">Local Preferido 3</option></select>
-                            <button type="submit" class="md:col-span-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Agregar Personal</button>
-                        </form>
-                        <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-slate-100"><tr><th class="p-3">Nombre</th><th class="p-3">Teléfono</th><th class="p-3">Disponibilidad</th><th class="p-3">Locales</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody id="tabla-personal"></tbody></table></div>
+                        <button id="btn-abrir-modal-personal" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600 mb-6">Agregar Personal</button>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-100">
+                                    <tr>
+                                        <th class="p-3">Nº Empleado</th>
+                                        <th class="p-3">Nombre Completo</th>
+                                        <th class="p-3">Teléfono</th>
+                                        <th class="p-3 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-personal"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -185,7 +203,7 @@
                     <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
                         <label for="semana-mapeo" class="font-semibold">Semana:</label>
                         <input type="week" id="semana-mapeo" class="p-2 border rounded-md">
-                        <input type="text" id="filtro-local-busqueda" placeholder="Buscar local..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="filtro-local-busqueda" placeholder="Buscar local o personal..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="flex justify-end gap-2 mb-6">
                         <button id="btn-guardar-programacion" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Guardar</button>
@@ -200,7 +218,7 @@
                     <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
                         <label for="semana-programacion" class="font-semibold">Semana:</label>
                         <input type="week" id="semana-programacion" class="p-2 border rounded-md">
-                        <input type="text" id="busqueda-programacion" placeholder="Buscar personal..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="busqueda-programacion" placeholder="Buscar personal o local..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div id="programacion-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
@@ -210,7 +228,49 @@
     </div>
 
     <!-- MODALES -->
-    <div id="edit-modal" class="modal"><div class="modal-content"><h3 class="text-2xl font-bold mb-4">Editar Personal</h3><form id="form-edit-personal" class="grid grid-cols-1 md:grid-cols-2 gap-4"><input type="hidden" id="edit-id"><input type="text" id="edit-nombre" placeholder="Nombre" class="p-2 border rounded-md" required><input type="text" id="edit-apellido" placeholder="Apellido" class="p-2 border rounded-md" required><input type="tel" id="edit-telefono" placeholder="Teléfono" class="p-2 border rounded-md" required><select id="edit-disponibilidad" class="p-2 border rounded-md" required><option value="disponible">Disponible</option><option value="no-disponible">No Disponible</option></select><select id="edit-local1" class="p-2 border rounded-md"><option value="">Local 1</option></select><select id="edit-local2" class="p-2 border rounded-md"><option value="">Local 2</option></select><select id="edit-local3" class="p-2 border rounded-md"><option value="">Local 3</option></select><button type="submit" class="md:col-span-2 bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button><button type="button" id="close-modal" class="md:col-span-2 bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button></form></div></div>
+    <div id="personal-modal" class="modal">
+        <div class="modal-content !max-w-3xl">
+            <h3 id="personal-modal-title" class="text-2xl font-bold mb-4">Agregar Personal</h3>
+            <form id="form-personal" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <input type="hidden" id="personal-id">
+                <div><label for="numero_empleado" class="block text-sm font-medium">Nº de Empleado</label><input type="text" id="numero_empleado" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="fecha_ingreso" class="block text-sm font-medium">Fecha de Ingreso</label><input type="date" id="fecha_ingreso" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="nombre" class="block text-sm font-medium">Nombre</label><input type="text" id="nombre" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="apellido" class="block text-sm font-medium">Apellidos</label><input type="text" id="apellido" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="fecha_nacimiento" class="block text-sm font-medium">Fecha de Nacimiento</label><input type="date" id="fecha_nacimiento" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
+                <div><label for="seguridad_social" class="block text-sm font-medium">Nº Seguridad Social</label><input type="text" id="seguridad_social" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
+                <div class="md:col-span-2"><label for="direccion" class="block text-sm font-medium">Dirección</label><input type="text" id="direccion" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
+                <div><label for="email" class="block text-sm font-medium">E-mail</label><input type="email" id="email" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
+                <div><label for="telefono" class="block text-sm font-medium">Teléfono</label><input type="tel" id="telefono" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="contacto_emergencia" class="block text-sm font-medium">Persona de Contacto</label><input type="text" id="contacto_emergencia" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
+                <div><label for="disponibilidad" class="block text-sm font-medium">Disponibilidad</label><select id="disponibilidad" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required><option value="disponible">Disponible</option><option value="no-disponible">No Disponible</option></select></div>
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div><label for="local1" class="block text-sm font-medium">Local Preferido 1</label><select id="local1" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"><option value="">Ninguno</option></select></div>
+                    <div><label for="local2" class="block text-sm font-medium">Local Preferido 2</label><select id="local2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"><option value="">Ninguno</option></select></div>
+                    <div><label for="local3" class="block text-sm font-medium">Local Preferido 3</label><select id="local3" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"><option value="">Ninguno</option></select></div>
+                </div>
+                <div class="md:col-span-2 flex justify-end gap-4 mt-4">
+                    <button type="button" id="close-personal-modal" class="bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button>
+                    <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="view-personal-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start">
+                <h3 id="view-personal-name" class="text-2xl font-bold mb-4"></h3>
+                <button type="button" id="close-view-personal-modal" class="text-3xl font-bold text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <div id="view-personal-details" class="detail-grid text-sm"></div>
+            <div class="mt-6 pt-4 border-t flex justify-end gap-4">
+                <button type="button" id="btn-eliminar-personal-view" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Eliminar</button>
+                <button type="button" id="btn-editar-personal-view" class="bg-yellow-500 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-600">Editar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="edit-local-modal" class="modal"><div class="modal-content"><h3 class="text-2xl font-bold mb-4">Editar Local</h3><form id="form-edit-local" class="flex flex-col gap-4"><input type="hidden" id="edit-local-id"><input type="text" id="edit-local-name" placeholder="Nombre del Local" class="p-2 border rounded-md" required><div class="flex items-center gap-4"><label for="edit-local-color">Color:</label><input type="color" id="edit-local-color" class="h-10 w-10"></div><div class="flex gap-4"><button type="submit" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button><button type="button" id="close-local-modal" class="flex-1 bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button></div></form></div></div>
     <div id="schedule-config-modal" class="modal">
         <div class="modal-content !max-w-3xl">
@@ -230,7 +290,7 @@
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, deleteField } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
         // --- INICIO: Configuración de Firebase ---
         const firebaseConfig = {
@@ -252,6 +312,65 @@
         // Referencias a Colecciones de Firestore
         let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol;
 
+        // --- INICIO: Lógica para Deshacer (Ctrl+Z) ---
+        let actionHistory = [];
+        const MAX_HISTORY = 30;
+
+        function saveUndoState() {
+            const stateSnapshot = {
+                asignaciones: JSON.parse(JSON.stringify(state.asignaciones)),
+                mapeoConfig: JSON.parse(JSON.stringify(state.mapeoConfig))
+            };
+            actionHistory.push(stateSnapshot);
+            if (actionHistory.length > MAX_HISTORY) {
+                actionHistory.shift();
+            }
+        }
+
+        async function undoLastAction() {
+            if (actionHistory.length === 0) {
+                showStatusMessage('No hay acciones que deshacer.', 'error');
+                return;
+            }
+
+            if (confirm('¿Está seguro de que desea deshacer la última acción?')) {
+                loader.style.display = 'flex';
+                const lastState = actionHistory.pop();
+
+                try {
+                    // Restaurar asignaciones
+                    const allWeeks = new Set([...Object.keys(state.asignaciones), ...Object.keys(lastState.asignaciones)]);
+                    for (const week of allWeeks) {
+                        const oldWeekData = lastState.asignaciones[week] || {};
+                        await setDoc(doc(db, asignacionesCol.path, week), oldWeekData);
+                    }
+
+                    // Restaurar mapeoConfig
+                    const allLocales = new Set([...Object.keys(state.mapeoConfig), ...Object.keys(lastState.mapeoConfig)]);
+                     for (const local of allLocales) {
+                        const oldConfigData = lastState.mapeoConfig[local] || {};
+                        await setDoc(doc(db, mapeoConfigCol.path, local), oldConfigData);
+                    }
+                    showStatusMessage('Última acción deshecha.');
+                } catch (error) {
+                    console.error("Error al deshacer:", error);
+                    showStatusMessage('No se pudo deshacer la acción.', 'error');
+                    actionHistory.push(lastState); // Re-agregar al historial si falla
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undoLastAction();
+            }
+        });
+        // --- FIN: Lógica para Deshacer (Ctrl+Z) ---
+
+
         // Estado local de la aplicación
         let state = {
             personal: [],
@@ -263,8 +382,9 @@
             currentView: 'gestion',
             searchTermMapeo: '',
             searchTermProgramacion: '',
-            dailyConflicts: new Set(),
-            scheduleConflicts: new Set(),
+            redConflicts: new Set(),
+            yellowConflicts: new Set(),
+            celesteConflicts: new Set(),
             pendingNotifications: new Set(),
             isAuthReady: false
         };
@@ -289,13 +409,14 @@
         const navButtons = document.querySelectorAll('nav > button');
         const formPersonal = document.getElementById('form-personal');
         const formLocales = document.getElementById('form-locales');
-        const formEditPersonal = document.getElementById('form-edit-personal');
+        
         const formEditLocal = document.getElementById('form-edit-local');
         const semanaInputMapeo = document.getElementById('semana-mapeo');
         const semanaInputProgramacion = document.getElementById('semana-programacion');
         const busquedaProgramacionInput = document.getElementById('busqueda-programacion');
         const filtroLocalBusquedaInput = document.getElementById('filtro-local-busqueda');
-        const editModal = document.getElementById('edit-modal');
+        const personalModal = document.getElementById('personal-modal');
+        const viewPersonalModal = document.getElementById('view-personal-modal');
         const editLocalModal = document.getElementById('edit-local-modal');
         const scheduleConfigModal = document.getElementById('schedule-config-modal');
         const importPersonalInput = document.getElementById('import-personal-input');
@@ -355,7 +476,7 @@
             onSnapshot(query(localesCol), snapshot => {
                 state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderizarTablaLocales();
-                renderizarSelectsLocales();
+                renderizarSelectsLocales(document.getElementById('personal-modal'));
                 if (state.currentView === 'mapeo') renderizarMapeo();
             });
 
@@ -412,24 +533,22 @@
         function renderizarTablaPersonal() {
             const tabla = document.getElementById('tabla-personal');
             tabla.innerHTML = '';
-            state.personal.sort((a,b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`)).forEach(p => {
+            state.personal.sort((a,b) => (a.numero_empleado || '').localeCompare(b.numero_empleado || '')).forEach(p => {
                 const row = tabla.insertRow();
-                const disponibleClass = p.disponibilidad === 'disponible' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                row.dataset.id = p.id;
                 row.innerHTML = `
+                    <td class="p-3">${p.numero_empleado || 'N/A'}</td>
                     <td class="p-3">${p.nombre} ${p.apellido}</td>
                     <td class="p-3">${p.telefono}</td>
-                    <td class="p-3"><span class="px-2 py-1 text-sm font-medium rounded-full ${disponibleClass}">${p.disponibilidad}</span></td>
-                    <td class="p-3 text-sm text-slate-600">${[p.local1, p.local2, p.local3].filter(l => l).join(', ') || 'N/A'}</td>
-                    <td class="p-3 text-right space-x-2">
-                        <button data-id="${p.id}" class="btn-editar-personal bg-yellow-400 text-white font-bold py-1 px-3 rounded-md hover:bg-yellow-500">Editar</button>
-                        <button data-id="${p.id}" class="btn-eliminar-personal bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
+                    <td class="p-3 text-right">
+                        <button data-id="${p.id}" class="btn-ver-detalles text-blue-500 hover:underline">Ver detalles</button>
                     </td>
                 `;
             });
         }
 
-        function renderizarSelectsLocales() {
-            const selects = document.querySelectorAll('select[id*="local"]');
+        function renderizarSelectsLocales(container) {
+            const selects = container.querySelectorAll('select[id*="local"]');
             selects.forEach(select => {
                 const currentValue = select.value;
                 const firstOption = select.options[0].outerHTML;
@@ -495,9 +614,27 @@
             if (!week) return;
 
             const dates = getWeekDates(week);
-            const localesFiltrados = state.locales.filter(local => 
-                local.nombre.toLowerCase().includes(state.searchTermMapeo)
-            );
+            const localesFiltrados = state.locales.filter(local => {
+                const searchTerm = state.searchTermMapeo;
+                if (!searchTerm) return true;
+                if (local.nombre.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+                const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
+                const assignedPersonnelIds = Object.entries(asignacionesSemana)
+                    .filter(([slotId, personaId]) => slotId.startsWith(local.nombre + '-') && personaId)
+                    .map(([_, personaId]) => personaId);
+                
+                if (assignedPersonnelIds.length > 0) {
+                    const uniqueIds = [...new Set(assignedPersonnelIds)];
+                    return uniqueIds.some(personaId => {
+                        const persona = state.personal.find(p => p.id === personaId);
+                        return persona && `${persona.nombre} ${persona.apellido}`.toLowerCase().includes(searchTerm);
+                    });
+                }
+                return false;
+            });
+
 
             localesFiltrados.forEach(local => {
                 const localConfig = state.mapeoConfig[local.nombre] || {};
@@ -553,9 +690,15 @@
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
             const div = document.createElement('div');
             div.className = 'flex items-center gap-2 mb-2 p-2 rounded-md bg-slate-50 border-l-4 border-transparent';
-
-            if (state.dailyConflicts.has(asignacionActual)) div.classList.add('conflict-highlight');
-            if (state.scheduleConflicts.has(`${week}-${slotId}`)) div.classList.add('schedule-conflict-highlight');
+            
+            const weekSlotId = `${week}-${slotId}`;
+            if (state.redConflicts.has(weekSlotId)) {
+                div.classList.add('conflict-highlight');
+            } else if (state.celesteConflicts.has(weekSlotId)) {
+                div.classList.add('role-conflict-highlight');
+            } else if (state.yellowConflicts.has(weekSlotId)) {
+                div.classList.add('schedule-conflict-highlight');
+            }
 
             const select = document.createElement('select');
             select.dataset.slotId = slotId;
@@ -594,9 +737,24 @@
             const week = state.selectedWeek;
             if (!week) return;
             
-            const personalFiltrado = state.personal.filter(p => 
-                `${p.nombre} ${p.apellido}`.toLowerCase().includes(state.searchTermProgramacion)
-            );
+            const personalFiltrado = state.personal.filter(p => {
+                const searchTerm = state.searchTermProgramacion;
+                if (!searchTerm) return true;
+                if (`${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+
+                const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
+                const assignedLocals = Object.entries(asignacionesSemana)
+                    .filter(([slotId, personaId]) => personaId === p.id && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                    .map(([slotId, _]) => slotId.split('-')[0]);
+
+                if(assignedLocals.length > 0) {
+                    const uniqueLocals = [...new Set(assignedLocals)];
+                    return uniqueLocals.some(localNombre => localNombre.toLowerCase().includes(searchTerm));
+                }
+                return false;
+            });
 
             personalFiltrado.forEach(persona => {
                 const asignacionesSemana = state.asignaciones[week] || {};
@@ -613,7 +771,6 @@
                             horario: config[horaKey],
                             vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0],
                             isConfirmed: asignacionesSemana[`${slotId}-confirmed`] || false,
-                            isDailyConflict: state.dailyConflicts.has(persona.id)
                         };
                     })
                     .sort((a, b) => diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia));
@@ -623,8 +780,13 @@
                 
                 let assignmentsHTML = assignments.length > 0 ? `<ul class="mt-4 space-y-2">${assignments.map(a => {
                     let conflictClass = '';
-                    if (a.isDailyConflict) conflictClass = 'conflict-highlight';
-                    if (state.scheduleConflicts.has(a.weekSlotId)) conflictClass = 'schedule-conflict-highlight';
+                    if (state.redConflicts.has(a.weekSlotId)) {
+                        conflictClass = 'conflict-highlight';
+                    } else if (state.celesteConflicts.has(a.weekSlotId)) {
+                        conflictClass = 'role-conflict-highlight';
+                    } else if (state.yellowConflicts.has(a.weekSlotId)) {
+                        conflictClass = 'schedule-conflict-highlight';
+                    }
                     const notificationHTML = state.pendingNotifications.has(a.weekSlotId) ? '<span class="notification-bell" title="Confirmación pendiente - Menos de 24h">🔔</span>' : '';
 
                     return `<li class="p-3 rounded-lg border bg-slate-50 text-sm flex justify-between items-center ${conflictClass}">
@@ -661,16 +823,41 @@
         }
         
         // --- LÓGICA DE EVENTOS ---
+        document.getElementById('btn-abrir-modal-personal').addEventListener('click', () => {
+            document.getElementById('personal-modal-title').textContent = 'Agregar Personal';
+            formPersonal.reset();
+            formPersonal['personal-id'].value = '';
+            personalModal.style.display = 'block';
+        });
+
         formPersonal.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const id = formPersonal['personal-id'].value;
             const nuevaPersona = {
-                nombre: e.target.nombre.value, apellido: e.target.apellido.value,
-                telefono: e.target.telefono.value, disponibilidad: e.target.disponibilidad.value,
-                local1: e.target.local1.value, local2: e.target.local2.value, local3: e.target.local3.value,
+                numero_empleado: formPersonal.numero_empleado.value,
+                fecha_ingreso: formPersonal.fecha_ingreso.value,
+                nombre: formPersonal.nombre.value,
+                apellido: formPersonal.apellido.value,
+                fecha_nacimiento: formPersonal.fecha_nacimiento.value,
+                seguridad_social: formPersonal.seguridad_social.value,
+                direccion: formPersonal.direccion.value,
+                email: formPersonal.email.value,
+                telefono: formPersonal.telefono.value,
+                contacto_emergencia: formPersonal.contacto_emergencia.value,
+                disponibilidad: formPersonal.disponibilidad.value,
+                local1: formPersonal.local1.value,
+                local2: formPersonal.local2.value,
+                local3: formPersonal.local3.value,
             };
-            await addDoc(personalCol, nuevaPersona);
-            showStatusMessage('Personal agregado');
-            formPersonal.reset();
+
+            if (id) {
+                await setDoc(doc(db, personalCol.path, id), nuevaPersona);
+                showStatusMessage('Personal actualizado');
+            } else {
+                await addDoc(personalCol, nuevaPersona);
+                showStatusMessage('Personal agregado');
+            }
+            personalModal.style.display = 'none';
         });
 
         formLocales.addEventListener('submit', async (e) => {
@@ -687,19 +874,7 @@
             formLocales.reset();
         });
 
-        formEditPersonal.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = e.target['edit-id'].value;
-            const datosActualizados = {
-                nombre: e.target['edit-nombre'].value, apellido: e.target['edit-apellido'].value,
-                telefono: e.target['edit-telefono'].value, disponibilidad: e.target['edit-disponibilidad'].value,
-                local1: e.target['edit-local1'].value, local2: e.target['edit-local2'].value, local3: e.target['edit-local3'].value,
-            };
-            await setDoc(doc(db, personalCol.path, id), datosActualizados);
-            showStatusMessage('Personal actualizado');
-            editModal.style.display = 'none';
-        });
-
+        
         formEditLocal.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = e.target['edit-local-id'].value;
@@ -713,10 +888,22 @@
         });
         
         document.body.addEventListener('click', async (e) => {
-            const target = e.target.closest('button');
+            let target = e.target;
+            
+            // Handle clicks on table rows to view details
+            if(target.closest('#tabla-personal tbody tr')) {
+                const row = target.closest('tr');
+                if(row.dataset.id) {
+                     populateViewPersonalModal(row.dataset.id);
+                }
+                return;
+            }
+            
+            target = e.target.closest('button');
             if (!target) return;
 
             if (target.matches('.vestimenta-btn')) {
+                saveUndoState();
                 const week = state.selectedWeek;
                 const slotId = target.dataset.slotId;
                 const docRef = doc(db, asignacionesCol.path, week);
@@ -731,6 +918,7 @@
             }
 
             if (target.matches('.btn-confirmar-persona')) {
+                // VERIFICADO: Botón Confirmar por Persona
                 const personId = target.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 const week = state.selectedWeek;
@@ -746,6 +934,7 @@
                     });
 
                     if (Object.keys(updates).length > 0) {
+                        saveUndoState();
                         const docRef = doc(db, asignacionesCol.path, week);
                         await setDoc(docRef, updates, { merge: true });
                         showStatusMessage(`Asistencia confirmada para ${persona.nombre} ${persona.apellido}`);
@@ -787,6 +976,7 @@
 
                 if (hasAssignments) {
                     if (confirm(`¿Cambiar la vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`)) {
+                        saveUndoState();
                         const docRef = doc(db, asignacionesCol.path, week);
                         await setDoc(docRef, updates, { merge: true });
                         showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
@@ -794,24 +984,14 @@
                 } else {
                     showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
                 }
-            } else if (target.matches('.btn-editar-personal')) {
+            } else if (target.matches('#btn-editar-personal-view')) {
                 const id = target.dataset.id;
-                const persona = state.personal.find(p => p.id === id);
-                if (persona) {
-                    formEditPersonal['edit-id'].value = id;
-                    formEditPersonal['edit-nombre'].value = persona.nombre;
-                    formEditPersonal['edit-apellido'].value = persona.apellido;
-                    formEditPersonal['edit-telefono'].value = persona.telefono;
-                    formEditPersonal['edit-disponibilidad'].value = persona.disponibilidad;
-                    formEditPersonal['edit-local1'].value = persona.local1 || '';
-                    formEditPersonal['edit-local2'].value = persona.local2 || '';
-                    formEditPersonal['edit-local3'].value = persona.local3 || '';
-                    editModal.style.display = 'block';
-                }
-            } else if (target.matches('.btn-eliminar-personal')) {
+                populateEditPersonalModal(id);
+            } else if (target.matches('#btn-eliminar-personal-view')) {
                 const id = target.dataset.id;
                 if (confirm('¿Seguro que quieres eliminar a esta persona?')) {
                     await deleteDoc(doc(db, personalCol.path, id));
+                    viewPersonalModal.style.display = 'none';
                     showStatusMessage('Personal eliminado');
                 }
             } else if (target.matches('.btn-editar-local')) {
@@ -831,6 +1011,7 @@
                 if (!localNombre) return;
 
                 if (confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se puede deshacer.`)) {
+                    saveUndoState();
                     const docRef = doc(db, mapeoConfigCol.path, localNombre);
                     let config = { ...(state.mapeoConfig[localNombre] || {}) };
                     
@@ -853,6 +1034,7 @@
                     showStatusMessage('Local eliminado');
                 }
             } else if (target.matches('.btn-copy-schedule')) {
+                // VERIFICADO: Botón Copiar de Programación por Persona
                 const personId = target.dataset.personId;
                 const persona = state.personal.find(p => p.id === personId);
                 if (!persona) return;
@@ -937,9 +1119,10 @@
                 showStatusMessage('Programación del local copiada');
             } else if (target.matches('.btn-cargar-historial')) {
                 const week = target.dataset.week;
-                if (confirm(`¿Cargar la programación de la semana ${week}?`)) {
+                if (confirm(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración de horarios actual.`)) {
                     const dataHistorial = state.historial[week];
                     if (dataHistorial) {
+                        saveUndoState(); // Guardar estado actual antes de cargar el historial
                         if (dataHistorial.asignaciones) {
                             await setDoc(doc(db, asignacionesCol.path, week), dataHistorial.asignaciones);
                         }
@@ -976,7 +1159,9 @@
                     showStatusMessage('Selecciona una semana primero.', 'error');
                 }
             } else if (target.matches('#btn-limpiar-mapeo')) {
-                if (confirm('¿Limpiar las asignaciones de la semana?')) {
+                // Se agrega la alerta de confirmación antes de limpiar.
+                if (confirm('¿Limpiar todas las asignaciones de la semana actual? Esta acción no se puede deshacer.')) {
+                    saveUndoState();
                     await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
                     showStatusMessage('Mapeo limpiado');
                 }
@@ -993,12 +1178,45 @@
             const target = e.target;
             if (target.matches('.mapeo-config-input')) {
                 const { local, dia, type, part } = target.dataset;
+                
+                let proceedWithSave = true;
+
+                if (part === 'count') {
+                    const newCount = parseInt(target.value, 10);
+                    const oldCount = (state.mapeoConfig[local]?.[dia]?.[type]) || 0;
+
+                    if (newCount < oldCount) {
+                        if (!confirm(`Reducir el número de puestos a ${newCount} eliminará las asignaciones existentes. ¿Está seguro?`)) {
+                            target.value = oldCount;
+                            return; // Abortar cambio si el usuario cancela
+                        }
+                    }
+                }
+
+                saveUndoState(); // Guardar estado antes de cualquier cambio en la base de datos
+
                 const docRef = doc(db, mapeoConfigCol.path, local);
                 let config = { ...(state.mapeoConfig[local] || {}) };
                 if (!config[dia]) config[dia] = {};
-                
+
                 if (part === 'count') {
-                    config[dia][type] = parseInt(target.value, 10);
+                     const newCount = parseInt(target.value, 10);
+                    const oldCount = config[dia][type] || 0;
+                     config[dia][type] = newCount;
+                     if(newCount < oldCount) {
+                        const week = state.selectedWeek;
+                        const asignacionesDocRef = doc(db, asignacionesCol.path, week);
+                        const updates = {};
+                        for (let i = newCount + 1; i <= oldCount; i++) {
+                            const slotId = `${local}-${dia}-${type}-${i}`;
+                            updates[slotId] = deleteField();
+                            updates[`${slotId}-vestimenta`] = deleteField();
+                            updates[`${slotId}-confirmed`] = deleteField();
+                        }
+                        if (Object.keys(updates).length > 0) {
+                            await setDoc(asignacionesDocRef, updates, { merge: true });
+                        }
+                     }
                 } else {
                     const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
                     const hour = target.closest('div').querySelector(`[data-local="${local}"][data-dia="${dia}"][data-type="${type}"][data-part="hour"]`).value;
@@ -1006,8 +1224,11 @@
                     const ampm = target.closest('div').querySelector(`[data-local="${local}"][data-dia="${dia}"][data-type="${type}"][data-part="ampm"]`).value;
                     config[dia][horaKey] = `${hour}:${minute} ${ampm}`;
                 }
+
                 await setDoc(docRef, config);
+
             } else if (target.matches('.mapeo-select, .confirmation-checkbox')) {
+                saveUndoState();
                 const week = state.selectedWeek;
                 const slotId = target.dataset.slotId;
                 const docRef = doc(db, asignacionesCol.path, week);
@@ -1038,9 +1259,16 @@
                     let importados = 0;
                     for (const persona of jsonData) {
                         const nuevaPersona = {
+                            numero_empleado: persona.numero_empleado || '',
+                            fecha_ingreso: persona.fecha_ingreso || '',
                             nombre: persona.nombre || '',
                             apellido: persona.apellido || '',
+                            fecha_nacimiento: persona.fecha_nacimiento || '',
+                            seguridad_social: persona.seguridad_social || '',
+                            direccion: persona.direccion || '',
+                            email: persona.email || '',
                             telefono: persona.telefono || '',
+                            contacto_emergencia: persona.contacto_emergencia || '',
                             disponibilidad: persona.disponibilidad || 'disponible',
                             local1: persona.local1 || '',
                             local2: persona.local2 || '',
@@ -1062,7 +1290,8 @@
             reader.readAsArrayBuffer(file);
         });
 
-        document.getElementById('close-modal').onclick = () => editModal.style.display = 'none';
+        document.getElementById('close-personal-modal').onclick = () => personalModal.style.display = 'none';
+        document.getElementById('close-view-personal-modal').onclick = () => viewPersonalModal.style.display = 'none';
         document.getElementById('close-local-modal').onclick = () => editLocalModal.style.display = 'none';
         document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
         navButtons.forEach(btn => btn.addEventListener('click', () => cambiarVista(btn.id.split('-')[1])));
@@ -1082,6 +1311,43 @@
         });
         
         // --- Funciones de Utilidad ---
+        function populateViewPersonalModal(id) {
+            const persona = state.personal.find(p => p.id === id);
+            if (!persona) return;
+            document.getElementById('view-personal-name').textContent = `${persona.nombre} ${persona.apellido}`;
+            const detailsContainer = document.getElementById('view-personal-details');
+            detailsContainer.innerHTML = `
+                <span class="detail-label">Nº Empleado:</span><span>${persona.numero_empleado || 'N/A'}</span>
+                <span class="detail-label">F. Ingreso:</span><span>${persona.fecha_ingreso || 'N/A'}</span>
+                <span class="detail-label">F. Nacimiento:</span><span>${persona.fecha_nacimiento || 'N/A'}</span>
+                <span class="detail-label">Seg. Social:</span><span>${persona.seguridad_social || 'N/A'}</span>
+                <span class="detail-label">Dirección:</span><span>${persona.direccion || 'N/A'}</span>
+                <span class="detail-label">E-mail:</span><span>${persona.email || 'N/A'}</span>
+                <span class="detail-label">Teléfono:</span><span>${persona.telefono || 'N/A'}</span>
+                <span class="detail-label">Contacto Emergencia:</span><span>${persona.contacto_emergencia || 'N/A'}</span>
+                <span class="detail-label">Disponibilidad:</span><span>${persona.disponibilidad || 'N/A'}</span>
+                <span class="detail-label">Locales Pref.:</span><span>${[persona.local1, persona.local2, persona.local3].filter(Boolean).join(', ') || 'N/A'}</span>
+            `;
+            document.getElementById('btn-editar-personal-view').dataset.id = id;
+            document.getElementById('btn-eliminar-personal-view').dataset.id = id;
+            viewPersonalModal.style.display = 'block';
+        }
+
+        function populateEditPersonalModal(id) {
+            const persona = state.personal.find(p => p.id === id);
+            if (!persona) return;
+            viewPersonalModal.style.display = 'none';
+            document.getElementById('personal-modal-title').textContent = 'Editar Personal';
+            formPersonal.reset();
+            formPersonal['personal-id'].value = id;
+            for(const key in persona) {
+                if(formPersonal[key]) {
+                    formPersonal[key].value = persona[key];
+                }
+            }
+            personalModal.style.display = 'block';
+        }
+
         function exportarPersonalExcel() {
             if (state.personal.length === 0) {
                 showStatusMessage('No hay personal para exportar.', 'error');
@@ -1249,48 +1515,93 @@
         function recalculateConflicts() {
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
-            
-            // Daily Conflicts
-            const personalAsignadoPorDia = {};
-            const dailyConflicts = new Set();
-            Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
-                if (!personaId || slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
-                const dia = slotId.split('-')[1];
-                if (!personalAsignadoPorDia[dia]) personalAsignadoPorDia[dia] = new Set();
-                if (personalAsignadoPorDia[dia].has(personaId)) dailyConflicts.add(personaId);
-                personalAsignadoPorDia[dia].add(personaId);
-            });
-            state.dailyConflicts = dailyConflicts;
 
-            // Schedule Conflicts
-            const scheduleByPerson = {};
-            const conflictingSlots = new Set();
+            const redConflicts = new Set();
+            const yellowConflicts = new Set();
+            const celesteConflicts = new Set();
+            
+            const assignmentsByPerson = {};
             Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
                 if (!personaId || slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
-                if (!scheduleByPerson[personaId]) scheduleByPerson[personaId] = [];
+
+                if (!assignmentsByPerson[personaId]) {
+                    assignmentsByPerson[personaId] = [];
+                }
+
                 const [local, dia, tipo] = slotId.split('-');
-                const diaIndex = diasSemana.indexOf(dia);
                 const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
                 const hora = state.mapeoConfig[local]?.[dia]?.[horaKey];
-                if (hora) {
-                    const startMinutes = diaIndex * 1440 + timeToMinutes(hora);
-                    scheduleByPerson[personaId].push({ slotId: `${week}-${slotId}`, startMinutes });
-                }
+                
+                assignmentsByPerson[personaId].push({
+                    weekSlotId: `${week}-${slotId}`,
+                    dia, local, tipo, hora,
+                    startMinutes: diasSemana.indexOf(dia) * 1440 + timeToMinutes(hora)
+                });
             });
 
-            Object.values(scheduleByPerson).forEach(assignments => {
-                if (assignments.length < 2) return;
-                assignments.sort((a, b) => a.startMinutes - b.startMinutes);
-                for (let i = 0; i < assignments.length - 1; i++) {
-                    const currentEndTime = assignments[i].startMinutes + 480; // Asume 8 horas
-                    const timeBetween = assignments[i+1].startMinutes - currentEndTime;
-                    if (timeBetween >= 0 && timeBetween < 480) { // Menos de 8h de descanso
-                        conflictingSlots.add(assignments[i].slotId);
-                        conflictingSlots.add(assignments[i+1].slotId);
+            for (const personaId in assignmentsByPerson) {
+                const personAssignments = assignmentsByPerson[personaId];
+
+                // Between-day schedule conflicts (less than 8h rest)
+                personAssignments.sort((a, b) => a.startMinutes - b.startMinutes);
+                for (let i = 0; i < personAssignments.length - 1; i++) {
+                    const currentEndTime = personAssignments[i].startMinutes + 480; // Assumes 8-hour shift
+                    const timeBetween = personAssignments[i+1].startMinutes - currentEndTime;
+                    if (timeBetween >= 0 && timeBetween < 480) {
+                        yellowConflicts.add(personAssignments[i].weekSlotId);
+                        yellowConflicts.add(personAssignments[i+1].weekSlotId);
                     }
                 }
-            });
-            state.scheduleConflicts = conflictingSlots;
+                
+                const assignmentsByDay = {};
+                personAssignments.forEach(a => {
+                    if (!assignmentsByDay[a.dia]) assignmentsByDay[a.dia] = [];
+                    assignmentsByDay[a.dia].push(a);
+                });
+
+                for (const dia in assignmentsByDay) {
+                    const dailyAssignments = assignmentsByDay[dia];
+                    if (dailyAssignments.length < 2) continue;
+
+                    // Mark all as potential yellow (double shift)
+                    dailyAssignments.forEach(a => yellowConflicts.add(a.weekSlotId));
+
+                    const localRoles = {};
+                    dailyAssignments.forEach(a => {
+                        if (!localRoles[a.local]) localRoles[a.local] = new Set();
+                        localRoles[a.local].add(a.tipo);
+                    });
+                    for(const local in localRoles) {
+                        const roles = localRoles[local];
+                        const hasPuesto = roles.has('puestos');
+                        const hasCacheo = roles.has('cacheos') || roles.has('cacheoIngreso') || roles.has('cacheoSalida');
+                        if(hasPuesto && hasCacheo) {
+                            dailyAssignments.forEach(a => {
+                                if (a.local === local) celesteConflicts.add(a.weekSlotId);
+                            });
+                        }
+                    }
+                    
+                    const timeLocalMap = {};
+                    dailyAssignments.forEach(a => {
+                        const key = `${a.local}-${a.hora}`;
+                        if (!timeLocalMap[key]) timeLocalMap[key] = [];
+                        timeLocalMap[key].push(a.weekSlotId);
+                    });
+                    for (const key in timeLocalMap) {
+                        if (timeLocalMap[key].length > 1) {
+                            timeLocalMap[key].forEach(id => redConflicts.add(id));
+                        }
+                    }
+                }
+            }
+            
+            redConflicts.forEach(id => { yellowConflicts.delete(id); celesteConflicts.delete(id); });
+            celesteConflicts.forEach(id => { yellowConflicts.delete(id); });
+
+            state.redConflicts = redConflicts;
+            state.yellowConflicts = yellowConflicts;
+            state.celesteConflicts = celesteConflicts;
         }
 
         function descargarExcel(week, scheduleData) {
