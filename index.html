@@ -332,25 +332,31 @@
     </div>
 
     <div id="edit-local-modal" class="modal"><div class="modal-content"><h3 class="text-2xl font-bold mb-4">Editar Local</h3><form id="form-edit-local" class="flex flex-col gap-4"><input type="hidden" id="edit-local-id"><input type="text" id="edit-local-name" placeholder="Nombre del Local" class="p-2 border rounded-md" required><div class="flex items-center gap-4"><label for="edit-local-color">Color:</label><input type="color" id="edit-local-color" class="h-10 w-10"></div><div class="flex gap-4"><button type="submit" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button><button type="button" id="close-local-modal" class="flex-1 bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button></div></form></div></div>
+    
+    <!-- INICIO: Modal de Horarios Modificado -->
     <div id="schedule-config-modal" class="modal">
         <div class="modal-content !max-w-3xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-bold">Configurar Horarios para <span id="schedule-config-local-name"></span></h3>
                 <button type="button" id="close-schedule-config-modal" class="text-3xl font-bold text-slate-500 hover:text-slate-800">&times;</button>
             </div>
-            <div id="schedule-config-container" class="space-y-4 max-h-[60vh] overflow-y-auto p-2 bg-slate-50 rounded-lg"></div>
-            <div class="mt-4 pt-4 border-t flex justify-end">
-                <button type="button" id="btn-limpiar-horarios-local" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Limpiar Todos los Puestos</button>
+            <div id="schedule-config-container" class="space-y-4 max-h-[60vh] overflow-y-auto p-2 bg-slate-50 dark:bg-slate-900 rounded-lg"></div>
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end items-center gap-4">
+                 <button type="button" id="btn-limpiar-horarios-local" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600 mr-auto">Limpiar Puestos</button>
+                 <button type="button" id="btn-cancelar-horarios" class="bg-slate-200 dark:bg-slate-600 py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500">Cancelar</button>
+                 <button type="button" id="btn-guardar-horarios" class="bg-green-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-green-700">Guardar Cambios</button>
             </div>
         </div>
     </div>
+    <!-- FIN: Modal de Horarios Modificado -->
+    
     <div id="message-modal" class="modal"><div class="modal-content"><p id="message-modal-text" class="mb-4"></p><button id="close-message-modal" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">OK</button></div></div>
 
     <script type="module">
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
         // --- INICIO: Configuración de Firebase ---
         const firebaseConfig = {
@@ -455,6 +461,11 @@
             celesteConflicts: new Set(),
             pendingNotifications: new Set(),
         };
+
+        // INICIO: Variables para el modal de horarios
+        let tempScheduleConfig = {};
+        let currentlyEditingLocal = null;
+        // FIN: Variables para el modal de horarios
 
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
@@ -666,7 +677,9 @@
             const local = state.locales.find(l => l.nombre === localNombre);
             if (!local) return;
             container.innerHTML = '';
-            const localConfig = state.mapeoConfig[local.nombre] || {};
+            // INICIO: Modificación para usar la configuración temporal
+            const localConfig = tempScheduleConfig || {};
+            // FIN: Modificación
             
             const createTimeSelectors = (dia, tipo, config) => {
                 const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
@@ -1110,23 +1123,69 @@
                     formEditLocal['edit-local-color'].value = button.dataset.color;
                     editLocalModal.style.display = 'block';
                 } else if (button.matches('.btn-configurar-horarios')) {
-                    document.getElementById('schedule-config-local-name').textContent = button.dataset.nombre.toUpperCase();
-                    document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = button.dataset.nombre;
-                    renderizarMapeoConfig(button.dataset.nombre, document.getElementById('schedule-config-container'));
+                    // INICIO: Lógica para abrir modal de horarios
+                    currentlyEditingLocal = button.dataset.nombre;
+                    tempScheduleConfig = JSON.parse(JSON.stringify(state.mapeoConfig[currentlyEditingLocal] || {}));
+                    document.getElementById('schedule-config-local-name').textContent = currentlyEditingLocal.toUpperCase();
+                    document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = currentlyEditingLocal;
+                    renderizarMapeoConfig(currentlyEditingLocal, document.getElementById('schedule-config-container'));
                     scheduleConfigModal.style.display = 'block';
+                    // FIN: Lógica para abrir modal
                 } else if (button.matches('#btn-limpiar-horarios-local')) {
+                     // INICIO: Lógica para limpiar horarios en el modal
                     const localNombre = button.dataset.localNombre;
-                    if (localNombre && confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}?`)) {
-                        saveUndoState();
-                        const config = { ...(state.mapeoConfig[localNombre] || {}) };
+                    if (localNombre && confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se guardará hasta que hagas clic en "Guardar Cambios".`)) {
                         diasSemana.forEach(dia => {
-                            if (config[dia]) {
-                                ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => config[dia][tipo] = 0);
+                            if (!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
+                            ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => tempScheduleConfig[dia][tipo] = 0);
+                        });
+                        renderizarMapeoConfig(localNombre, document.getElementById('schedule-config-container'));
+                        showStatusMessage(`Puestos limpiados para ${localNombre.toUpperCase()}. Haz clic en Guardar para confirmar.`);
+                    }
+                    // FIN: Lógica para limpiar horarios
+                } else if (button.matches('#btn-guardar-horarios')) {
+                    // INICIO: Lógica para guardar horarios
+                    const localNombre = currentlyEditingLocal;
+                    const originalConfig = state.mapeoConfig[localNombre] || {};
+                    const newConfig = tempScheduleConfig;
+                    let hasReductions = false;
+                    diasSemana.forEach(dia => {
+                        ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => {
+                            const oldCount = originalConfig[dia]?.[tipo] || 0;
+                            const newCount = newConfig[dia]?.[tipo] || 0;
+                            if (newCount < oldCount) hasReductions = true;
+                        });
+                    });
+
+                    if (hasReductions && !confirm('Reducir el número de puestos eliminará las asignaciones existentes para los puestos eliminados. ¿Desea continuar?')) {
+                        return; 
+                    }
+
+                    saveUndoState();
+                    await setDoc(doc(db, mapeoConfigCol.path, localNombre), newConfig);
+
+                    const updates = {};
+                    diasSemana.forEach(dia => {
+                         ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => {
+                            const oldCount = originalConfig[dia]?.[tipo] || 0;
+                            const newCount = newConfig[dia]?.[tipo] || 0;
+                            if (newCount < oldCount) {
+                                for (let i = newCount + 1; i <= oldCount; i++) {
+                                    const slotId = `${localNombre}-${dia}-${tipo}-${i}`;
+                                    updates[slotId] = deleteField();
+                                    updates[`${slotId}-vestimenta`] = deleteField();
+                                    updates[`${slotId}-confirmed`] = deleteField();
+                                }
                             }
                         });
-                        await setDoc(doc(db, mapeoConfigCol.path, localNombre), config);
-                        showStatusMessage(`Horarios limpiados para ${localNombre.toUpperCase()}`);
+                    });
+
+                    if (Object.keys(updates).length > 0 && state.selectedWeek) {
+                         await updateDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates);
                     }
+                    showStatusMessage('Horarios guardados correctamente.');
+                    scheduleConfigModal.style.display = 'none';
+                    // FIN: Lógica para guardar horarios
                 } else if (button.matches('.btn-eliminar-local')) {
                     if (confirm('¿Seguro que quieres eliminar este local?')) {
                         await deleteDoc(doc(db, localesCol.path, button.dataset.id));
@@ -1197,43 +1256,21 @@
             const target = e.target;
             try {
                 if (target.matches('.mapeo-config-input')) {
+                    // INICIO: Lógica de cambio en modal de horarios (actualiza estado temporal)
                     const { local, dia, type, part } = target.dataset;
-                    
-                    if (part === 'count' && parseInt(target.value, 10) < ((state.mapeoConfig[local]?.[dia]?.[type]) || 0)) {
-                        if (!confirm(`Reducir el número de puestos eliminará las asignaciones existentes. ¿Desea continuar?`)) {
-                            target.value = (state.mapeoConfig[local]?.[dia]?.[type]) || 0;
-                            return;
-                        }
-                    }
+                    if (local !== currentlyEditingLocal) return; 
 
-                    saveUndoState();
-                    const docRef = doc(db, mapeoConfigCol.path, local);
-                    const config = { ...(state.mapeoConfig[local] || {}) };
+                    const config = tempScheduleConfig;
                     if (!config[dia]) config[dia] = {};
-
+                    
                     if (part === 'count') {
-                        const newCount = parseInt(target.value, 10);
-                        const oldCount = config[dia][type] || 0;
-                        config[dia][type] = newCount;
-                        if (newCount < oldCount) {
-                            const updates = {};
-                            for (let i = newCount + 1; i <= oldCount; i++) {
-                                const slotId = `${local}-${dia}-${type}-${i}`;
-                                updates[slotId] = deleteField();
-                                updates[`${slotId}-vestimenta`] = deleteField();
-                                updates[`${slotId}-confirmed`] = deleteField();
-                            }
-                            if (Object.keys(updates).length > 0) {
-                                await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates, { merge: true });
-                            }
-                        }
+                        config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
                         const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector('[data-part="hour"]').value}:${parent.querySelector('[data-part="minute"]').value} ${parent.querySelector('[data-part="ampm"]').value}`;
                     }
-
-                    await setDoc(docRef, config);
+                    // FIN: Lógica de cambio en modal
                 } else if (target.matches('.mapeo-select')) {
                     const week = state.selectedWeek;
                     const slotId = target.dataset.slotId;
@@ -1297,6 +1334,7 @@
         document.getElementById('close-view-personal-modal').onclick = () => viewPersonalModal.style.display = 'none';
         document.getElementById('close-local-modal').onclick = () => editLocalModal.style.display = 'none';
         document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
+        document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
         navButtons.forEach(btn => btn.addEventListener('click', () => cambiarVista(btn.id.split('-')[1])));
         semanaInputMapeo.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputProgramacion.value = e.target.value; renderizarMapeo(); });
         semanaInputProgramacion.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputMapeo.value = e.target.value; renderizarProgramacionPersonal(); });
@@ -1525,7 +1563,7 @@
             
             const assignmentsByPerson = {};
             Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
-                if (!personaId || !slotId.includes('-')) return;
+                if (!personaId || typeof personaId !== 'string' || !slotId.includes('-')) return;
                 if (!assignmentsByPerson[personaId]) assignmentsByPerson[personaId] = [];
                 const [local, dia, tipo] = slotId.split('-');
                 if(!tipo) return;
@@ -1592,7 +1630,7 @@
             const asignacionesSemana = state.asignaciones[week] || {};
 
             const assignments = Object.entries(asignacionesSemana)
-                .filter(([slotId, pId]) => pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .filter(([slotId, pId]) => pId === personId && slotId.includes('-'))
                 .map(([slotId, _]) => {
                     const [local, dia, tipo, i] = slotId.split('-');
                     return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
@@ -1642,7 +1680,7 @@
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
             const localAssignments = Object.entries(asignacionesSemana)
-                .filter(([slotId, pId]) => slotId.startsWith(localNombre + '-') && pId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .filter(([slotId, pId]) => slotId.startsWith(localNombre + '-') && pId && slotId.includes('-'))
                 .map(([slotId, pId]) => {
                     const [local, dia, tipo, i] = slotId.split('-');
                     const persona = state.personal.find(p => p.id === pId);
@@ -1673,16 +1711,17 @@
         function descargarExcel(week, scheduleData) {
             if (!scheduleData?.asignaciones) return showStatusMessage(`No hay datos para la semana ${week}.`, 'error'); 
             const data = Object.entries(scheduleData.asignaciones)
-                .filter(([slotId, pId]) => pId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .filter(([slotId, pId]) => pId && typeof pId === 'string' && slotId.includes('-'))
                 .map(([slotId, pId]) => {
                     const [local, dia, tipo] = slotId.split('-');
                     const persona = state.personal.find(p => p.id === pId);
                     const config = (scheduleData.mapeoConfig?.[local]?.[dia]) || state.mapeoConfig[local]?.[dia] || {};
+                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
                     return {
                         'Fecha': getWeekDates(week)[dia] || 'N/A', 'Día': diasSemanaFull[diasSemana.indexOf(dia)],
                         'Local': local.toUpperCase(), 'Puesto': tipoPuestoNombres[tipo] || tipo,
                         'Nombre': persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
-                        'Hora': config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`],
+                        'Hora': config[horaKey],
                         'Vestimenta': scheduleData.asignaciones[`${slotId}-vestimenta`] || vestimentaOptions[0]
                     };
                 });
@@ -1718,4 +1757,3 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </body>
 </html>
-
