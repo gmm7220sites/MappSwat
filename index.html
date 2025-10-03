@@ -59,13 +59,26 @@
         #loader { display: flex; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; }
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
 
-        .main-content { display: none; }
+        /* Contenido principal visible por defecto para el efecto de fondo borroso */
+        .main-content { display: block; }
         
         #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(241, 245, 249, 0.95);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10000; display: none; align-items: center; justify-content: center;
+            background-color: rgba(248, 250, 252, 0.7); /* Fondo claro semi-transparente */
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
         }
-        html.dark #login-overlay { background-color: rgba(15, 23, 42, 0.95); }
+        html.dark #login-overlay { 
+             background-color: rgba(15, 23, 42, 0.7); /* Fondo oscuro semi-transparente */
+        }
+
+        #login-overlay .bg-white {
+             background-color: rgba(255, 255, 255, 0.9);
+        }
+        html.dark #login-overlay .bg-white {
+             background-color: rgba(30, 41, 59, 0.9); /* slate-800 con transparencia */
+        }
 
         /* --- ESTILOS VISUALES MEJORADOS --- */
         .local-card {
@@ -162,6 +175,10 @@
                 <div class="mb-6">
                     <label for="password" class="block text-slate-700 font-semibold mb-2">Contraseña</label>
                     <input type="password" id="password" class="w-full p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="flex items-center mb-6">
+                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-slate-900 dark:text-slate-300">Recordar usuario</label>
                 </div>
                 <button type="submit" class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300">Entrar</button>
                 <p id="login-error" class="text-red-500 text-center mt-4 text-sm"></p>
@@ -480,31 +497,30 @@
             e.preventDefault();
             const username = loginForm.username.value;
             const password = loginForm.password.value;
+            const rememberMe = document.getElementById('remember-me').checked;
             loginError.textContent = '';
             
             if (username === 'adminswat' && password === 'adminswat') {
+                if (rememberMe) {
+                    localStorage.setItem('mapeoUsername', username);
+                    localStorage.setItem('mapeoPassword', password);
+                } else {
+                    localStorage.removeItem('mapeoUsername');
+                    localStorage.removeItem('mapeoPassword');
+                }
+                
                 loader.style.display = 'flex';
-                await signInAnonymously(auth);
+                // Credentials are correct, now proceed with app initialization
+                loginOverlay.style.display = 'none';
+                setupListeners();
+                inicializarApp();
             } else {
                 loginError.textContent = 'Usuario o contraseña incorrectos.';
             }
         });
 
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                // User is signed in.
-                loginOverlay.style.display = 'none';
-                mainContent.style.display = 'block';
-                setupApp();
-            } else {
-                // User is signed out.
-                mainContent.style.display = 'none';
-                loginOverlay.style.display = 'flex';
-                loader.style.display = 'none';
-            }
-        });
-
-        function setupApp() {
+        // This will run on page load
+        document.addEventListener('DOMContentLoaded', async () => {
             const appId = "mapeo-app-v2";
             const basePath = `artifacts/${appId}/public/data`;
             personalCol = collection(db, `${basePath}/${FIRESTORE_PATHS.PERSONAL}`);
@@ -513,9 +529,25 @@
             asignacionesCol = collection(db, `${basePath}/${FIRESTORE_PATHS.ASIGNACIONES}`);
             historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
             
-            setupListeners();
-            inicializarApp();
-        }
+            try {
+                await signInAnonymously(auth); // Ensure we are connected
+            } catch (error) {
+                 console.error("Firebase auth failed:", error);
+                 showStatusMessage('Error de conexión con el servidor.', 'error');
+            }
+            
+            // Check for saved credentials
+            const savedUser = localStorage.getItem('mapeoUsername');
+            const savedPass = localStorage.getItem('mapeoPassword');
+            if (savedUser && savedPass) {
+                document.getElementById('username').value = savedUser;
+                document.getElementById('password').value = savedPass;
+                document.getElementById('remember-me').checked = true;
+            }
+
+            loginOverlay.style.display = 'flex';
+            loader.style.display = 'none';
+        });
 
         // --- SETUP DE LISTENERS DE DATOS EN TIEMPO REAL (OPTIMIZADO) ---
         function setupListeners() {
