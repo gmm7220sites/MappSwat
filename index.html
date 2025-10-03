@@ -50,7 +50,7 @@
         html.dark .role-conflict-highlight { background-color: #1e3a8a !important; border-color: #60a5fa !important; }
 
 
-        .vestimenta-btn { cursor: pointer; font-size: 1.5rem; padding: 4px; border-radius: 8px; background-color: #e2e8f0; transition: background-color 0.2s ease; }
+        .vestimenta-btn { cursor: pointer; font-size: 1.5rem; padding: 4px; border-radius: 8px; background-color: #e2e8f0; transition: background-color: 0.2s ease; }
         .vestimenta-btn:hover { background-color: #cbd5e1; }
         html.dark .vestimenta-btn { background-color: #334155; }
         html.dark .vestimenta-btn:hover { background-color: #475569; }
@@ -58,15 +58,60 @@
         .programacion-card { border-top: 4px solid; }
         #loader { display: flex; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; }
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
+
+        .main-content { display: none; }
         
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(241, 245, 249, 0.95);
-            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            z-index: 10000; display: none; align-items: center; justify-content: center;
         }
         html.dark #login-overlay { background-color: rgba(15, 23, 42, 0.95); }
 
-        .main-content { display: none; }
-        .local-header { border-left-width: 6px; }
+        /* --- ESTILOS VISUALES MEJORADOS --- */
+        .local-card {
+            transition: all 0.2s ease-in-out;
+            border-top-width: 4px;
+        }
+        .local-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        html.dark .local-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+        }
+        .dia-grupo {
+            padding-top: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom-width: 1px;
+        }
+        .dia-grupo:last-child {
+            border-bottom-width: 0;
+            padding-bottom: 0;
+        }
+        .asignacion-fila {
+             display: flex;
+             align-items: center;
+             gap: 0.75rem;
+             margin-bottom: 0.5rem;
+             padding: 0.75rem;
+             border-radius: 0.5rem;
+             background-color: #f8fafc;
+             border-left-width: 4px;
+             border-color: transparent;
+             transition: background-color 0.2s ease;
+        }
+        .mapeo-select { min-width: 0; }
+        html.dark .asignacion-fila {
+            background-color: #1a2742;
+        }
+        .asignacion-fila:hover {
+            background-color: #f1f5f9;
+        }
+        html.dark .asignacion-fila:hover {
+            background-color: #334155;
+        }
+        /* --- FIN DE ESTILOS VISUALES --- */
+
 
         /* Estilos Modo Oscuro */
         html.dark .bg-white { background-color: #1e293b; }
@@ -74,10 +119,10 @@
         html.dark .text-slate-900 { color: #f1f5f9; }
         html.dark .text-slate-600 { color: #94a3b8; }
         html.dark .bg-slate-200 { background-color: #334155; }
-        html.dark .bg-slate-50 { background-color: #1e293b; }
+        html.dark .bg-slate-50 { background-color: #0f172a; }
         html.dark .bg-slate-100 { background-color: #334155; }
-        html.dark .border-slate-300 { border-color: #475569; }
-        html.dark input, html.dark select { background-color: #334155; color: #f1f5f9; }
+        html.dark .border-slate-300, html.dark .dia-grupo { border-color: #475569; }
+        html.dark input, html.dark select { background-color: #334155; color: #f1f5f9; border-color: #475569; }
         html.dark input:read-only { background-color: #475569; }
         html.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.4); }
         html.dark .border { border-color: #475569; }
@@ -152,7 +197,6 @@
             <!-- SECCIONES (GESTION, MAPEO, ETC.) -->
             <section id="section-gestion">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Columna Izquierda: Locales y Configuración -->
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <h2 class="text-2xl font-bold mb-4 text-slate-900">Gestión de Locales</h2>
                         <form id="form-locales" class="flex gap-4 mb-6">
@@ -171,8 +215,7 @@
                             </table>
                         </div>
                     </div>
-
-                    <!-- Columna Derecha: Personal -->
+                    
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                             <h2 class="text-2xl font-bold text-slate-900">Base de Datos del Personal</h2>
@@ -290,7 +333,7 @@
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, deleteField } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
         // --- INICIO: Configuración de Firebase ---
         const firebaseConfig = {
@@ -309,6 +352,14 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        const FIRESTORE_PATHS = {
+            PERSONAL: 'personal',
+            LOCALES: 'locales',
+            MAPEO_CONFIG: 'mapeoConfig',
+            ASIGNACIONES: 'asignaciones',
+            HISTORIAL: 'historial'
+        };
+
         // Referencias a Colecciones de Firestore
         let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol;
 
@@ -317,13 +368,17 @@
         const MAX_HISTORY = 30;
 
         function saveUndoState() {
-            const stateSnapshot = {
-                asignaciones: JSON.parse(JSON.stringify(state.asignaciones)),
-                mapeoConfig: JSON.parse(JSON.stringify(state.mapeoConfig))
-            };
-            actionHistory.push(stateSnapshot);
-            if (actionHistory.length > MAX_HISTORY) {
-                actionHistory.shift();
+            try {
+                const stateSnapshot = {
+                    asignaciones: JSON.parse(JSON.stringify(state.asignaciones)),
+                    mapeoConfig: JSON.parse(JSON.stringify(state.mapeoConfig))
+                };
+                actionHistory.push(stateSnapshot);
+                if (actionHistory.length > MAX_HISTORY) {
+                    actionHistory.shift();
+                }
+            } catch (error) {
+                console.error("Failed to save undo state:", error);
             }
         }
 
@@ -332,33 +387,29 @@
                 showStatusMessage('No hay acciones que deshacer.', 'error');
                 return;
             }
+            
+            if (!confirm('¿Está seguro de que desea deshacer la última acción?')) return;
+            
+            loader.style.display = 'flex';
+            const lastState = actionHistory.pop();
 
-            if (confirm('¿Está seguro de que desea deshacer la última acción?')) {
-                loader.style.display = 'flex';
-                const lastState = actionHistory.pop();
-
-                try {
-                    // Restaurar asignaciones
-                    const allWeeks = new Set([...Object.keys(state.asignaciones), ...Object.keys(lastState.asignaciones)]);
-                    for (const week of allWeeks) {
-                        const oldWeekData = lastState.asignaciones[week] || {};
-                        await setDoc(doc(db, asignacionesCol.path, week), oldWeekData);
-                    }
-
-                    // Restaurar mapeoConfig
-                    const allLocales = new Set([...Object.keys(state.mapeoConfig), ...Object.keys(lastState.mapeoConfig)]);
-                     for (const local of allLocales) {
-                        const oldConfigData = lastState.mapeoConfig[local] || {};
-                        await setDoc(doc(db, mapeoConfigCol.path, local), oldConfigData);
-                    }
-                    showStatusMessage('Última acción deshecha.');
-                } catch (error) {
-                    console.error("Error al deshacer:", error);
-                    showStatusMessage('No se pudo deshacer la acción.', 'error');
-                    actionHistory.push(lastState); // Re-agregar al historial si falla
-                } finally {
-                    loader.style.display = 'none';
+            try {
+                const allWeeks = new Set([...Object.keys(state.asignaciones), ...Object.keys(lastState.asignaciones)]);
+                for (const week of allWeeks) {
+                    await setDoc(doc(db, asignacionesCol.path, week), lastState.asignaciones[week] || {});
                 }
+
+                const allLocales = new Set([...Object.keys(state.mapeoConfig), ...Object.keys(lastState.mapeoConfig)]);
+                 for (const local of allLocales) {
+                    await setDoc(doc(db, mapeoConfigCol.path, local), lastState.mapeoConfig[local] || {});
+                }
+                showStatusMessage('Última acción deshecha.');
+            } catch (error) {
+                console.error("Error al deshacer:", error);
+                showStatusMessage('No se pudo deshacer la acción.', 'error');
+                actionHistory.push(lastState);
+            } finally {
+                loader.style.display = 'none';
             }
         }
 
@@ -386,7 +437,6 @@
             yellowConflicts: new Set(),
             celesteConflicts: new Set(),
             pendingNotifications: new Set(),
-            isAuthReady: false
         };
 
         // Constantes y Elementos del DOM
@@ -426,21 +476,15 @@
 
 
         // --- AUTENTICACIÓN Y SETUP DE FIREBASE ---
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const user = loginForm.username.value;
-            const pass = loginForm.password.value;
+            const username = loginForm.username.value;
+            const password = loginForm.password.value;
             loginError.textContent = '';
-
-            if (user === 'adminswat' && pass === 'adminswat') {
+            
+            if (username === 'adminswat' && password === 'adminswat') {
                 loader.style.display = 'flex';
-                signInAnonymously(auth).catch(error => {
-                    console.error("Error en la autenticación anónima:", error);
-                    if (error.code === 'auth/configuration-not-found') {
-                        showStatusMessage('Error: La autenticación anónima no está habilitada en la Consola de Firebase.', 'error');
-                        loader.style.display = 'none';
-                    }
-                });
+                await signInAnonymously(auth);
             } else {
                 loginError.textContent = 'Usuario o contraseña incorrectos.';
             }
@@ -448,41 +492,42 @@
 
         onAuthStateChanged(auth, user => {
             if (user) {
+                // User is signed in.
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
-
-                const appId = "mapeo-app-v2";
-                const basePath = `artifacts/${appId}/public/data`;
-                personalCol = collection(db, `${basePath}/personal`);
-                localesCol = collection(db, `${basePath}/locales`);
-                mapeoConfigCol = collection(db, `${basePath}/mapeoConfig`);
-                asignacionesCol = collection(db, `${basePath}/asignaciones`);
-                historialCol = collection(db, `${basePath}/historial`);
-
-                state.isAuthReady = true;
-                setupListeners();
-                inicializarApp();
+                setupApp();
             } else {
-                loginOverlay.style.display = 'flex';
+                // User is signed out.
                 mainContent.style.display = 'none';
+                loginOverlay.style.display = 'flex';
                 loader.style.display = 'none';
             }
         });
 
+        function setupApp() {
+            const appId = "mapeo-app-v2";
+            const basePath = `artifacts/${appId}/public/data`;
+            personalCol = collection(db, `${basePath}/${FIRESTORE_PATHS.PERSONAL}`);
+            localesCol = collection(db, `${basePath}/${FIRESTORE_PATHS.LOCALES}`);
+            mapeoConfigCol = collection(db, `${basePath}/${FIRESTORE_PATHS.MAPEO_CONFIG}`);
+            asignacionesCol = collection(db, `${basePath}/${FIRESTORE_PATHS.ASIGNACIONES}`);
+            historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
+            
+            setupListeners();
+            inicializarApp();
+        }
+
         // --- SETUP DE LISTENERS DE DATOS EN TIEMPO REAL (OPTIMIZADO) ---
         function setupListeners() {
-            if (!state.isAuthReady) return;
-
             onSnapshot(query(localesCol), snapshot => {
                 state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderizarTablaLocales();
                 renderizarSelectsLocales(document.getElementById('personal-modal'));
                 if (state.currentView === 'mapeo') renderizarMapeo();
-            });
+            }, error => console.error("Error fetching locales:", error));
 
             onSnapshot(query(personalCol), snapshot => {
                 const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
                 const uniquePersonal = [];
                 const duplicatesToDelete = new Set();
                 const seenNames = new Set();
@@ -491,16 +536,7 @@
                 allPersonal.forEach(p => {
                     const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
                     const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
-                    
-                    let isDuplicate = false;
-
-                    if (seenNames.has(fullName)) {
-                        isDuplicate = true;
-                    }
-
-                    if (employeeNumber && seenNumbers.has(employeeNumber)) {
-                        isDuplicate = true;
-                    }
+                    let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
 
                     if (isDuplicate) {
                         duplicatesToDelete.add(p.id);
@@ -519,18 +555,17 @@
                 }
                 
                 state.personal = uniquePersonal;
-
                 renderizarTablaPersonal();
                 if (state.currentView === 'mapeo') renderizarMapeo();
                 if (state.currentView === 'programacion') renderizarProgramacionPersonal();
-            });
+            }, error => console.error("Error fetching personal:", error));
 
             onSnapshot(query(mapeoConfigCol), snapshot => {
                 state.mapeoConfig = {};
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
                 if (state.currentView === 'mapeo') renderizarMapeo();
                 if (state.currentView === 'programacion') checkUpcomingShiftNotifications();
-            });
+            }, error => console.error("Error fetching mapeo config:", error));
 
             onSnapshot(query(asignacionesCol), snapshot => {
                 state.asignaciones = {};
@@ -539,13 +574,13 @@
                 checkUpcomingShiftNotifications();
                 if (state.currentView === 'mapeo') renderizarMapeo();
                 if (state.currentView === 'programacion') renderizarProgramacionPersonal();
-            });
+            }, error => console.error("Error fetching asignaciones:", error));
 
             onSnapshot(query(historialCol), snapshot => {
                 state.historial = {};
                 snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
                 if (state.currentView === 'historial') renderizarHistorial();
-            });
+            }, error => console.error("Error fetching historial:", error));
         }
         
         // --- LÓGICA DE RENDERIZADO ---
@@ -578,9 +613,6 @@
                     <td class="p-3">${p.numero_empleado || 'N/A'}</td>
                     <td class="p-3">${p.nombre} ${p.apellido}</td>
                     <td class="p-3">${p.telefono}</td>
-                    <td class="p-3 text-right">
-                        <!-- Botón eliminado para favorecer el clic en la fila -->
-                    </td>
                 `;
             });
         }
@@ -617,7 +649,7 @@
             diasSemana.forEach(dia => {
                 const config = localConfig[dia] || {};
                 const diaDiv = document.createElement('div');
-                diaDiv.className = 'mb-2 p-3 bg-white rounded-md border';
+                diaDiv.className = 'mb-2 p-3 bg-white dark:bg-slate-800 rounded-md border dark:border-slate-700';
                 diaDiv.innerHTML = `
                     <p class="font-semibold capitalize">${dia}</p>
                     <div class="flex items-center gap-2 mt-2">
@@ -645,6 +677,7 @@
             });
         }
 
+        // --- FUNCIÓN DE RENDERIZADO MEJORADA ---
         function renderizarMapeo() {
             const container = document.getElementById('mapeo-container');
             container.innerHTML = '';
@@ -655,17 +688,15 @@
             const localesFiltrados = state.locales.filter(local => {
                 const searchTerm = state.searchTermMapeo;
                 if (!searchTerm) return true;
-                if (local.nombre.toLowerCase().includes(searchTerm)) {
-                    return true;
-                }
+                if (local.nombre.toLowerCase().includes(searchTerm)) return true;
+                
                 const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
                 const assignedPersonnelIds = Object.entries(asignacionesSemana)
                     .filter(([slotId, personaId]) => slotId.startsWith(local.nombre + '-') && personaId)
                     .map(([_, personaId]) => personaId);
                 
                 if (assignedPersonnelIds.length > 0) {
-                    const uniqueIds = [...new Set(assignedPersonnelIds)];
-                    return uniqueIds.some(personaId => {
+                    return [...new Set(assignedPersonnelIds)].some(personaId => {
                         const persona = state.personal.find(p => p.id === personaId);
                         return persona && `${persona.nombre} ${persona.apellido}`.toLowerCase().includes(searchTerm);
                     });
@@ -673,20 +704,20 @@
                 return false;
             });
 
-
             localesFiltrados.forEach(local => {
                 const localConfig = state.mapeoConfig[local.nombre] || {};
                 const hasPositions = diasSemana.some(dia => (localConfig[dia]?.puestos > 0) || (localConfig[dia]?.cacheos > 0) || (localConfig[dia]?.cacheoIngreso > 0) || (localConfig[dia]?.cacheoSalida > 0));
                 if (!hasPositions) return;
 
                 const localCol = document.createElement('div');
-                localCol.className = 'bg-white p-6 rounded-xl shadow-md local-header';
-                localCol.style.borderColor = local.color || '#cccccc';
+                localCol.className = 'bg-white p-6 rounded-xl shadow-lg local-card'; // Clase para la tarjeta
+                localCol.style.borderTopColor = local.color || '#cccccc';
+
                 localCol.innerHTML = `
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-2xl font-bold">${local.nombre.toUpperCase()}</h3>
                         <div class="flex items-center gap-2">
-                            <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200">🔄</button>
+                            <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">🔄</button>
                             <button data-local-nombre="${local.nombre}" class="btn-copy-local-schedule bg-sky-100 text-sky-700 font-bold py-1 px-3 rounded-md hover:bg-sky-200 text-sm">Copiar</button>
                         </div>
                     </div>`;
@@ -695,14 +726,15 @@
                     const config = localConfig[dia];
                     if (config && ((config.puestos > 0) || (config.cacheos > 0) || (config.cacheoIngreso > 0) || (config.cacheoSalida > 0))) {
                         const diaContenedor = document.createElement('div');
-                        diaContenedor.className = 'mb-6 p-4 bg-slate-100 rounded-lg';
-                        diaContenedor.innerHTML = `<h4 class="text-lg font-bold capitalize">${dia} <span class="text-sm font-normal text-slate-500">${dates[dia] || ''}</span></h4>`;
+                        diaContenedor.className = 'dia-grupo border-slate-200 dark:border-slate-700'; // Clase para el grupo del día
+                        
+                        diaContenedor.innerHTML = `<h4 class="text-lg font-bold capitalize text-slate-800 dark:text-slate-200">${dia} <span class="text-sm font-normal text-slate-500">${dates[dia] || ''}</span></h4>`;
                         
                         const createSubSection = (tipo, count, hora) => {
                              if (count > 0) {
                                 const sub = document.createElement('div');
-                                sub.className = 'mt-2';
-                                sub.innerHTML = `<h5 class="font-semibold text-sm mb-2">${tipoPuestoNombres[tipo]}</h5>`;
+                                sub.className = 'mt-3';
+                                sub.innerHTML = `<h5 class="font-semibold text-slate-600 dark:text-slate-400 text-sm mb-2">${tipoPuestoNombres[tipo]}</h5>`;
                                 for (let i = 1; i <= count; i++) {
                                     sub.appendChild(crearSelectAsignacion(tipo, local.nombre, dia, i, hora));
                                 }
@@ -727,27 +759,32 @@
             const slotId = `${local}-${dia}-${tipo}-${i}`;
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-2 mb-2 p-2 rounded-md bg-slate-50 border-l-4 border-transparent';
+            div.className = 'asignacion-fila'; // Clase para la fila de asignación
             
             const weekSlotId = `${week}-${slotId}`;
-            if (state.redConflicts.has(weekSlotId)) {
-                div.classList.add('conflict-highlight');
-            } else if (state.celesteConflicts.has(weekSlotId)) {
-                div.classList.add('role-conflict-highlight');
-            } else if (state.yellowConflicts.has(weekSlotId)) {
-                div.classList.add('schedule-conflict-highlight');
-            }
+            if (state.redConflicts.has(weekSlotId)) div.classList.add('conflict-highlight');
+            else if (state.celesteConflicts.has(weekSlotId)) div.classList.add('role-conflict-highlight');
+            else if (state.yellowConflicts.has(weekSlotId)) div.classList.add('schedule-conflict-highlight');
 
             const select = document.createElement('select');
             select.dataset.slotId = slotId;
-            select.className = 'mapeo-select flex-grow p-2 border rounded bg-white';
+            select.className = 'mapeo-select flex-grow p-2 border rounded bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600';
             
-            let options = '<option value="">-- Seleccionar --</option>';
+            let optionsHTML = '';
+            const sugerencias = obtenerSugerenciaInteligente(local, dia); // Ahora devuelve un array
+
+            if (!asignacionActual && sugerencias.length > 0) {
+                const suggestionText = sugerencias.map(p => `${p.nombre} ${p.apellido.charAt(0)}`).join(', ');
+                optionsHTML += `<option value="" disabled selected style="color: #9ca3af;">Sugerencia: ${suggestionText}</option>`;
+                optionsHTML += `<option value="">-- Limpiar --</option>`;
+            } else {
+                optionsHTML += `<option value="">-- Seleccionar --</option>`;
+            }
+
             state.personal.filter(p => p.disponibilidad === 'disponible').forEach(p => {
-                const personaId = p.id;
-                options += `<option value="${personaId}" ${personaId === asignacionActual ? 'selected' : ''}>${p.nombre} ${p.apellido}</option>`;
+                optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${p.nombre} ${p.apellido}</option>`;
             });
-            select.innerHTML = options;
+            select.innerHTML = optionsHTML;
             
             const vestimentaActual = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
             const vestimentaBtn = document.createElement('button');
@@ -762,7 +799,7 @@
             confirmationSwitch.title = 'Confirmado';
             confirmationSwitch.innerHTML = `<label class="toggle-switch"><input type="checkbox" class="confirmation-checkbox" data-slot-id="${slotId}" ${isConfirmed ? 'checked' : ''}><span class="toggle-slider"></span></label>`;
             
-            div.innerHTML = `<span class="font-semibold w-8 text-slate-600">${i}.</span><span class="font-semibold w-24 text-sm text-slate-600">${hora || 'N/A'}</span>`;
+            div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-sm text-slate-500 w-24">${hora || 'N/A'}</span>`;
             div.appendChild(select);
             div.appendChild(vestimentaBtn);
             div.appendChild(confirmationSwitch);
@@ -778,9 +815,7 @@
             const personalFiltrado = state.personal.filter(p => {
                 const searchTerm = state.searchTermProgramacion;
                 if (!searchTerm) return true;
-                if (`${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm)) {
-                    return true;
-                }
+                if (`${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm)) return true;
 
                 const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
                 const assignedLocals = Object.entries(asignacionesSemana)
@@ -788,8 +823,7 @@
                     .map(([slotId, _]) => slotId.split('-')[0]);
 
                 if(assignedLocals.length > 0) {
-                    const uniqueLocals = [...new Set(assignedLocals)];
-                    return uniqueLocals.some(localNombre => localNombre.toLowerCase().includes(searchTerm));
+                    return [...new Set(assignedLocals)].some(localNombre => localNombre.toLowerCase().includes(searchTerm));
                 }
                 return false;
             });
@@ -818,13 +852,9 @@
                 
                 let assignmentsHTML = assignments.length > 0 ? `<ul class="mt-4 space-y-2">${assignments.map(a => {
                     let conflictClass = '';
-                    if (state.redConflicts.has(a.weekSlotId)) {
-                        conflictClass = 'conflict-highlight';
-                    } else if (state.celesteConflicts.has(a.weekSlotId)) {
-                        conflictClass = 'role-conflict-highlight';
-                    } else if (state.yellowConflicts.has(a.weekSlotId)) {
-                        conflictClass = 'schedule-conflict-highlight';
-                    }
+                    if (state.redConflicts.has(a.weekSlotId)) conflictClass = 'conflict-highlight';
+                    else if (state.celesteConflicts.has(a.weekSlotId)) conflictClass = 'role-conflict-highlight';
+                    else if (state.yellowConflicts.has(a.weekSlotId)) conflictClass = 'schedule-conflict-highlight';
                     const notificationHTML = state.pendingNotifications.has(a.weekSlotId) ? '<span class="notification-bell" title="Confirmación pendiente - Menos de 24h">🔔</span>' : '';
 
                     return `<li class="p-3 rounded-lg border bg-slate-50 text-sm flex justify-between items-center ${conflictClass}">
@@ -853,13 +883,14 @@
         function renderizarHistorial() {
             const container = document.getElementById('historial-container');
             container.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-100"><tr><th class="p-3">Semana</th><th class="p-3">Asignaciones</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody>${Object.keys(state.historial).length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay programaciones guardadas.</td></tr>` : Object.entries(state.historial).map(([week, data]) => `
-                <tr class="border-b"><td class="p-3 font-medium">${week}</td><td class="p-3">${Object.keys(data.asignaciones || {}).filter(k => !k.includes('-')).length}</td><td class="p-3 text-right space-x-2">
+                <tr class="border-b"><td class="p-3 font-medium">${week}</td><td class="p-3">${Object.keys(data.asignaciones || {}).filter(k => !k.includes('-vestimenta') && !k.includes('-confirmed')).length}</td><td class="p-3 text-right space-x-2">
                     <button data-week="${week}" class="btn-cargar-historial bg-blue-500 text-white font-bold py-1 px-3 rounded-md hover:bg-blue-600">Cargar</button>
                     <button data-week="${week}" class="btn-descargar-historial bg-green-500 text-white font-bold py-1 px-3 rounded-md hover:bg-green-600">Excel</button>
                     <button data-week="${week}" class="btn-eliminar-historial bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
                 </td></tr>`).join('')}</tbody></table>`;
         }
         
+
         // --- LÓGICA DE EVENTOS ---
         document.getElementById('btn-abrir-modal-personal').addEventListener('click', () => {
             document.getElementById('personal-modal-title').textContent = 'Agregar Personal';
@@ -880,9 +911,9 @@
             const newNumEmpleado = formPersonal.numero_empleado.value.trim();
 
             const isDuplicate = state.personal.some(p => {
-                if(id && p.id === id) return false; // Don't check against self when editing
+                if(id && p.id === id) return false;
                 const fullNameMatch = p.nombre.trim().toLowerCase() === newNombre && p.apellido.trim().toLowerCase() === newApellido;
-                const employeeNumberMatch = p.numero_empleado && p.numero_empleado.trim() === newNumEmpleado;
+                const employeeNumberMatch = p.numero_empleado && String(p.numero_empleado).trim() === newNumEmpleado;
                 return fullNameMatch || employeeNumberMatch;
             });
 
@@ -908,14 +939,19 @@
                 local3: formPersonal.local3.value,
             };
 
-            if (id) {
-                await setDoc(doc(db, personalCol.path, id), nuevaPersona);
-                showStatusMessage('Personal actualizado');
-            } else {
-                await addDoc(personalCol, nuevaPersona);
-                showStatusMessage('Personal agregado');
+            try {
+                if (id) {
+                    await setDoc(doc(db, personalCol.path, id), nuevaPersona);
+                    showStatusMessage('Personal actualizado');
+                } else {
+                    await addDoc(personalCol, nuevaPersona);
+                    showStatusMessage('Personal agregado');
+                }
+                personalModal.style.display = 'none';
+            } catch (error) {
+                console.error("Error saving personal:", error);
+                showStatusMessage('Error al guardar datos.', 'error');
             }
-            personalModal.style.display = 'none';
         });
 
         formLocales.addEventListener('submit', async (e) => {
@@ -924,12 +960,17 @@
             const colorPalette = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
             const randomColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
             if (nombre && !state.locales.some(l => l.nombre === nombre)) {
-                await addDoc(localesCol, { nombre, color: randomColor });
-                showStatusMessage('Local agregado');
+                try {
+                    await addDoc(localesCol, { nombre, color: randomColor });
+                    showStatusMessage('Local agregado');
+                    formLocales.reset();
+                } catch (error) {
+                    console.error("Error adding local:", error);
+                    showStatusMessage('No se pudo agregar el local.', 'error');
+                }
             } else {
-                showStatusMessage('El local ya existe o el nombre es inválido', 'error');
+                showStatusMessage('El local ya existe o el nombre es inválido.', 'error');
             }
-            formLocales.reset();
         });
 
         
@@ -939,9 +980,14 @@
             const nombre = e.target['edit-local-name'].value.trim().toLowerCase();
             const color = e.target['edit-local-color'].value;
             if (nombre) {
-                await setDoc(doc(db, localesCol.path, id), { nombre, color });
-                showStatusMessage('Local actualizado');
-                editLocalModal.style.display = 'none';
+                try {
+                    await setDoc(doc(db, localesCol.path, id), { nombre, color });
+                    showStatusMessage('Local actualizado');
+                    editLocalModal.style.display = 'none';
+                } catch (error) {
+                    console.error("Error updating local:", error);
+                    showStatusMessage('No se pudo actualizar el local.', 'error');
+                }
             }
         });
         
@@ -957,386 +1003,259 @@
             if (!button) return;
 
             // --- Lógica de Botones ---
-            if (button.matches('.vestimenta-btn')) {
-                saveUndoState();
-                const week = state.selectedWeek;
-                const slotId = button.dataset.slotId;
-                const docRef = doc(db, asignacionesCol.path, week);
+            try {
+                if (button.matches('.vestimenta-btn')) {
+                    const week = state.selectedWeek;
+                    const slotId = button.dataset.slotId;
+                    const personaId = state.asignaciones[week]?.[slotId];
+                    if (!personaId) return;
 
-                const currentVestimenta = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
-                const currentIndex = vestimentaOptions.indexOf(currentVestimenta);
-                const nextIndex = (currentIndex + 1) % vestimentaOptions.length;
-                const nextVestimenta = vestimentaOptions[nextIndex];
-
-                await setDoc(docRef, { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
-                return;
-            }
-
-            if (button.matches('.btn-confirmar-persona')) {
-                const personId = button.dataset.personId;
-                const persona = state.personal.find(p => p.id === personId);
-                const week = state.selectedWeek;
-                if (!persona || !week) return;
-
-                if (confirm(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`)) {
-                    const asignacionesSemana = state.asignaciones[week] || {};
-                    const updates = {};
-                    Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
-                        if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
-                            updates[`${slotId}-confirmed`] = true;
-                        }
-                    });
-
-                    if (Object.keys(updates).length > 0) {
-                        saveUndoState();
-                        const docRef = doc(db, asignacionesCol.path, week);
-                        await setDoc(docRef, updates, { merge: true });
-                        showStatusMessage(`Asistencia confirmada para ${persona.nombre} ${persona.apellido}`);
-                    } else {
-                        showStatusMessage(`${persona.nombre} ${persona.apellido} no tiene asignaciones para confirmar.`, 'error');
-                    }
-                }
-            } else if (button.matches('.btn-cambiar-vestimenta-local')) {
-                const localNombre = button.dataset.localNombre;
-                const week = state.selectedWeek;
-                if (!week || !localNombre) return;
-
-                const asignacionesSemana = state.asignaciones[week] || {};
-                const updates = {};
-                
-                let firstAssignedSlotId = null;
-                for (const slotId in asignacionesSemana) {
-                    if (slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]) {
-                        firstAssignedSlotId = slotId;
-                        break;
-                    }
-                }
-
-                let currentVestimenta = vestimentaOptions[0];
-                if (firstAssignedSlotId) {
-                    currentVestimenta = asignacionesSemana[`${firstAssignedSlotId}-vestimenta`] || vestimentaOptions[0];
-                }
-                
-                const nextVestimenta = currentVestimenta === vestimentaOptions[0] ? vestimentaOptions[1] : vestimentaOptions[0];
-
-                let hasAssignments = false;
-                Object.keys(asignacionesSemana).forEach(slotId => {
-                    const [local] = slotId.split('-');
-                    if (local === localNombre && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]) {
-                        updates[`${slotId}-vestimenta`] = nextVestimenta;
-                        hasAssignments = true;
-                    }
-                });
-
-                if (hasAssignments) {
-                    if (confirm(`¿Cambiar la vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`)) {
-                        saveUndoState();
-                        const docRef = doc(db, asignacionesCol.path, week);
-                        await setDoc(docRef, updates, { merge: true });
-                        showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
-                    }
-                } else {
-                    showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
-                }
-            } else if (button.matches('#btn-editar-personal-view')) {
-                const id = button.dataset.id;
-                populateEditPersonalModal(id);
-            } else if (button.matches('#btn-eliminar-personal-view')) {
-                const id = button.dataset.id;
-                if (confirm('¿Seguro que quieres eliminar a esta persona?')) {
-                    await deleteDoc(doc(db, personalCol.path, id));
-                    viewPersonalModal.style.display = 'none';
-                    showStatusMessage('Personal eliminado');
-                }
-            } else if (button.matches('.btn-editar-local')) {
-                formEditLocal['edit-local-id'].value = button.dataset.id;
-                formEditLocal['edit-local-name'].value = button.dataset.nombre;
-                formEditLocal['edit-local-color'].value = button.dataset.color;
-                editLocalModal.style.display = 'block';
-            } else if (button.matches('.btn-configurar-horarios')) {
-                const localNombre = button.dataset.nombre;
-                document.getElementById('schedule-config-local-name').textContent = localNombre.toUpperCase();
-                document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = localNombre;
-                const container = document.getElementById('schedule-config-container');
-                renderizarMapeoConfig(localNombre, container);
-                scheduleConfigModal.style.display = 'block';
-            } else if (button.matches('#btn-limpiar-horarios-local')) {
-                const localNombre = button.dataset.localNombre;
-                if (!localNombre) return;
-
-                if (confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se puede deshacer.`)) {
                     saveUndoState();
-                    const docRef = doc(db, mapeoConfigCol.path, localNombre);
-                    let config = { ...(state.mapeoConfig[localNombre] || {}) };
-                    
-                    diasSemana.forEach(dia => {
-                        if (config[dia]) {
-                            config[dia].puestos = 0;
-                            config[dia].cacheos = 0;
-                            config[dia].cacheoIngreso = 0;
-                            config[dia].cacheoSalida = 0;
-                        }
-                    });
+                    const docRef = doc(db, asignacionesCol.path, week);
+                    const currentVestimenta = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
+                    const nextIndex = (vestimentaOptions.indexOf(currentVestimenta) + 1) % vestimentaOptions.length;
+                    const nextVestimenta = vestimentaOptions[nextIndex];
+                    await setDoc(docRef, { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
 
-                    await setDoc(docRef, config);
-                    showStatusMessage(`Horarios limpiados para ${localNombre.toUpperCase()}`);
-                }
-            } else if (button.matches('.btn-eliminar-local')) {
-                const id = button.dataset.id;
-                if (confirm('¿Seguro que quieres eliminar este local?')) {
-                    await deleteDoc(doc(db, localesCol.path, id));
-                    showStatusMessage('Local eliminado');
-                }
-            } else if (button.matches('.btn-copy-schedule')) {
-                const personId = button.dataset.personId;
-                const persona = state.personal.find(p => p.id === personId);
-                if (!persona) return;
-                const week = state.selectedWeek;
-                const asignacionesSemana = state.asignaciones[week] || {};
-                const assignments = Object.entries(asignacionesSemana)
-                    .filter(([slotId, pId]) => pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
-                    .map(([slotId, _]) => {
-                        const [local, dia, tipo] = slotId.split('-');
-                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                        return {
-                            local, dia, tipo,
-                            vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0],
-                            horario: state.mapeoConfig[local]?.[dia]?.[horaKey]
-                        };
-                    })
-                    .sort((a, b) => diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia));
-                if (assignments.length === 0) {
-                    showStatusMessage('Esta persona no tiene asignaciones.', 'error');
-                    return;
-                }
-                let message = `¡Hola ${persona.nombre}! Tu programación:\n\n`;
-                assignments.forEach(a => {
-                    message += `• ${diasSemanaFull[diasSemana.indexOf(a.dia)]} en ${a.local.toUpperCase()}: Vestimenta: ${a.vestimenta}. Horario: ${a.horario}.\n`;
-                });
-                const textArea = document.createElement("textarea");
-                textArea.value = message;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showStatusMessage('Programación copiada');
-            } else if (button.matches('.btn-copy-local-schedule')) {
-                const localNombre = button.dataset.localNombre;
-                const week = state.selectedWeek;
-                const asignacionesSemana = state.asignaciones[week] || {};
-                const localAssignments = Object.entries(asignacionesSemana)
-                    .filter(([slotId, personaId]) => {
-                        const [local] = slotId.split('-');
-                        return local === localNombre && personaId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed');
-                    })
-                    .map(([slotId, personaId]) => {
-                        const [local, dia, tipo, i] = slotId.split('-');
-                        const persona = state.personal.find(p => p.id === personaId);
-                        const config = state.mapeoConfig[local]?.[dia] || {};
-                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                        const hora = config[horaKey];
-                        return {
-                            dia,
-                            tipo: `${tipoPuestoNombres[tipo] || tipo} ${i}`,
-                            hora,
-                            nombrePersona: persona ? `${persona.nombre} ${persona.apellido}` : 'Sin asignar'
-                        };
-                    });
+                } else if (button.matches('.btn-confirmar-persona')) {
+                    const personId = button.dataset.personId;
+                    const persona = state.personal.find(p => p.id === personId);
+                    const week = state.selectedWeek;
+                    if (!persona || !week) return;
 
-                if (localAssignments.length === 0) {
-                    showStatusMessage('Este local no tiene personal asignado.', 'error');
-                    return;
-                }
-                const assignmentsByDay = {};
-                diasSemana.forEach(dia => assignmentsByDay[dia] = []);
-                localAssignments.forEach(a => assignmentsByDay[a.dia].push(a));
-
-                let message = `*Programación para ${localNombre.toUpperCase()} - Semana ${week}*\n\n`;
-                diasSemana.forEach((dia, index) => {
-                    const dailyAssignments = assignmentsByDay[dia];
-                    if (dailyAssignments.length > 0) {
-                        message += `*${diasSemanaFull[index]}*\n`;
-                        dailyAssignments.forEach(a => {
-                            message += `- ${a.tipo}: ${a.nombrePersona} (${a.hora})\n`;
-                        });
-                        message += '\n';
-                    }
-                });
-
-                const textArea = document.createElement("textarea");
-                textArea.value = message;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showStatusMessage('Programación del local copiada');
-            } else if (button.matches('.btn-cargar-historial')) {
-                const week = button.dataset.week;
-                if (confirm(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración de horarios actual.`)) {
-                    const dataHistorial = state.historial[week];
-                    if (dataHistorial) {
-                        saveUndoState(); // Guardar estado actual antes de cargar el historial
-                        if (dataHistorial.asignaciones) {
-                            await setDoc(doc(db, asignacionesCol.path, week), dataHistorial.asignaciones);
-                        }
-                        if (dataHistorial.mapeoConfig) {
-                            for (const local in dataHistorial.mapeoConfig) {
-                                await setDoc(doc(db, mapeoConfigCol.path, local), dataHistorial.mapeoConfig[local]);
+                    if (confirm(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`)) {
+                        const updates = {};
+                        Object.entries(state.asignaciones[week] || {}).forEach(([slotId, pId]) => {
+                            if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
+                                updates[`${slotId}-confirmed`] = true;
                             }
+                        });
+
+                        if (Object.keys(updates).length > 0) {
+                            saveUndoState();
+                            await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                            showStatusMessage(`Asistencia confirmada para ${persona.nombre} ${persona.apellido}`);
+                        } else {
+                            showStatusMessage(`${persona.nombre} no tiene asignaciones para confirmar.`, 'error');
                         }
-                        state.selectedWeek = week;
-                        semanaInputMapeo.value = week;
-                        semanaInputProgramacion.value = week;
-                        cambiarVista('mapeo');
-                        showStatusMessage(`Programación cargada.`);
                     }
+                } else if (button.matches('.btn-cambiar-vestimenta-local')) {
+                    const localNombre = button.dataset.localNombre;
+                    const week = state.selectedWeek;
+                    if (!week || !localNombre) return;
+                    
+                    const asignacionesSemana = state.asignaciones[week] || {};
+                    const firstSlotId = Object.keys(asignacionesSemana).find(slotId => slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]);
+                    const currentVestimenta = (firstSlotId && asignacionesSemana[`${firstSlotId}-vestimenta`]) || vestimentaOptions[0];
+                    const nextVestimenta = currentVestimenta === vestimentaOptions[0] ? vestimentaOptions[1] : vestimentaOptions[0];
+                    const updates = {};
+                    let hasAssignments = false;
+                    Object.keys(asignacionesSemana).forEach(slotId => {
+                        if (slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]) {
+                            updates[`${slotId}-vestimenta`] = nextVestimenta;
+                            hasAssignments = true;
+                        }
+                    });
+
+                    if (hasAssignments && confirm(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`)) {
+                        saveUndoState();
+                        await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                        showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
+                    } else if (!hasAssignments) {
+                        showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
+                    }
+                } else if (button.matches('#btn-editar-personal-view')) {
+                    populateEditPersonalModal(button.dataset.id);
+                } else if (button.matches('#btn-eliminar-personal-view')) {
+                    if (confirm('¿Seguro que quieres eliminar a esta persona?')) {
+                        await deleteDoc(doc(db, personalCol.path, button.dataset.id));
+                        viewPersonalModal.style.display = 'none';
+                        showStatusMessage('Personal eliminado');
+                    }
+                } else if (button.matches('.btn-editar-local')) {
+                    formEditLocal['edit-local-id'].value = button.dataset.id;
+                    formEditLocal['edit-local-name'].value = button.dataset.nombre;
+                    formEditLocal['edit-local-color'].value = button.dataset.color;
+                    editLocalModal.style.display = 'block';
+                } else if (button.matches('.btn-configurar-horarios')) {
+                    document.getElementById('schedule-config-local-name').textContent = button.dataset.nombre.toUpperCase();
+                    document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = button.dataset.nombre;
+                    renderizarMapeoConfig(button.dataset.nombre, document.getElementById('schedule-config-container'));
+                    scheduleConfigModal.style.display = 'block';
+                } else if (button.matches('#btn-limpiar-horarios-local')) {
+                    const localNombre = button.dataset.localNombre;
+                    if (localNombre && confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}?`)) {
+                        saveUndoState();
+                        const config = { ...(state.mapeoConfig[localNombre] || {}) };
+                        diasSemana.forEach(dia => {
+                            if (config[dia]) {
+                                ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => config[dia][tipo] = 0);
+                            }
+                        });
+                        await setDoc(doc(db, mapeoConfigCol.path, localNombre), config);
+                        showStatusMessage(`Horarios limpiados para ${localNombre.toUpperCase()}`);
+                    }
+                } else if (button.matches('.btn-eliminar-local')) {
+                    if (confirm('¿Seguro que quieres eliminar este local?')) {
+                        await deleteDoc(doc(db, localesCol.path, button.dataset.id));
+                        showStatusMessage('Local eliminado');
+                    }
+                } else if (button.matches('.btn-copy-schedule')) {
+                    copyPersonalSchedule(button.dataset.personId);
+                } else if (button.matches('.btn-copy-local-schedule')) {
+                    copyLocalSchedule(button.dataset.localNombre);
+                } else if (button.matches('.btn-cargar-historial')) {
+                    const week = button.dataset.week;
+                    if (confirm(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración actual.`)) {
+                        const dataHistorial = state.historial[week];
+                        if (dataHistorial) {
+                            saveUndoState();
+                            if (dataHistorial.asignaciones) await setDoc(doc(db, asignacionesCol.path, week), dataHistorial.asignaciones);
+                            if (dataHistorial.mapeoConfig) {
+                                for (const local in dataHistorial.mapeoConfig) {
+                                    await setDoc(doc(db, mapeoConfigCol.path, local), dataHistorial.mapeoConfig[local]);
+                                }
+                            }
+                            state.selectedWeek = week;
+                            semanaInputMapeo.value = week;
+                            semanaInputProgramacion.value = week;
+                            cambiarVista('mapeo');
+                            showStatusMessage(`Programación cargada.`);
+                        }
+                    }
+                } else if (button.matches('.btn-eliminar-historial')) {
+                    const week = button.dataset.week;
+                    if (confirm(`¿Eliminar el historial de la semana ${week}?`)) {
+                        await deleteDoc(doc(db, historialCol.path, week));
+                        showStatusMessage('Historial eliminado');
+                    }
+                } else if (button.matches('.btn-descargar-historial')) {
+                    descargarExcel(button.dataset.week, state.historial[button.dataset.week]);
+                } else if (button.matches('#btn-guardar-programacion')) {
+                    const week = state.selectedWeek;
+                    if (week) {
+                        await setDoc(doc(db, historialCol.path, week), {
+                            asignaciones: state.asignaciones[week] || {},
+                            mapeoConfig: state.mapeoConfig
+                        });
+                        showStatusMessage('Programación guardada en el historial.');
+                    } else {
+                        showStatusMessage('Selecciona una semana para poder guardarla.', 'error');
+                    }
+                } else if (button.matches('#btn-limpiar-mapeo')) {
+                    if (confirm('¿Está seguro de que desea limpiar todas las asignaciones de la semana actual?')) {
+                        saveUndoState();
+                        await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
+                        showStatusMessage('Mapeo de la semana limpiado.');
+                    }
+                } else if (button.matches('#btn-descargar-excel')) {
+                    descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
+                } else if (button.matches('#btn-importar-personal')) {
+                    importPersonalInput.click();
+                } else if (button.matches('#btn-exportar-personal')) {
+                    exportarPersonalExcel();
                 }
-            } else if (button.matches('.btn-eliminar-historial')) {
-                const week = button.dataset.week;
-                if (confirm(`¿Eliminar el historial de la semana ${week}?`)) {
-                    await deleteDoc(doc(db, historialCol.path, week));
-                    showStatusMessage('Historial eliminado');
-                }
-            } else if (button.matches('.btn-descargar-historial')) {
-                descargarExcel(button.dataset.week, state.historial[button.dataset.week]);
-            } else if (button.matches('#btn-guardar-programacion')) {
-                const week = state.selectedWeek;
-                if (week) {
-                    const dataToSave = {
-                        asignaciones: state.asignaciones[week] || {},
-                        mapeoConfig: state.mapeoConfig
-                    };
-                    await setDoc(doc(db, historialCol.path, week), dataToSave);
-                    showStatusMessage('Programación guardada');
-                } else {
-                    showStatusMessage('Selecciona una semana primero.', 'error');
-                }
-            } else if (button.matches('#btn-limpiar-mapeo')) {
-                if (confirm('¿Limpiar todas las asignaciones de la semana actual? Esta acción no se puede deshacer.')) {
-                    saveUndoState();
-                    await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
-                    showStatusMessage('Mapeo limpiado');
-                }
-            } else if (button.matches('#btn-descargar-excel')) {
-                descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
-            } else if (button.matches('#btn-importar-personal')) {
-                importPersonalInput.click();
-            } else if (button.matches('#btn-exportar-personal')) {
-                exportarPersonalExcel();
+            } catch (error) {
+                console.error("Button click error:", error);
+                showStatusMessage("La operación falló. Revisa la consola para más detalles.", "error");
             }
         });
 
         document.body.addEventListener('change', async (e) => {
             const target = e.target;
-            if (target.matches('.mapeo-config-input')) {
-                const { local, dia, type, part } = target.dataset;
-                
-                let proceedWithSave = true;
-
-                if (part === 'count') {
-                    const newCount = parseInt(target.value, 10);
-                    const oldCount = (state.mapeoConfig[local]?.[dia]?.[type]) || 0;
-
-                    if (newCount < oldCount) {
-                        if (!confirm(`Reducir el número de puestos a ${newCount} eliminará las asignaciones existentes. ¿Está seguro?`)) {
-                            target.value = oldCount;
-                            return; // Abortar cambio si el usuario cancela
+            try {
+                if (target.matches('.mapeo-config-input')) {
+                    const { local, dia, type, part } = target.dataset;
+                    
+                    if (part === 'count' && parseInt(target.value, 10) < ((state.mapeoConfig[local]?.[dia]?.[type]) || 0)) {
+                        if (!confirm(`Reducir el número de puestos eliminará las asignaciones existentes. ¿Desea continuar?`)) {
+                            target.value = (state.mapeoConfig[local]?.[dia]?.[type]) || 0;
+                            return;
                         }
                     }
-                }
 
-                saveUndoState(); // Guardar estado antes de cualquier cambio en la base de datos
+                    saveUndoState();
+                    const docRef = doc(db, mapeoConfigCol.path, local);
+                    const config = { ...(state.mapeoConfig[local] || {}) };
+                    if (!config[dia]) config[dia] = {};
 
-                const docRef = doc(db, mapeoConfigCol.path, local);
-                let config = { ...(state.mapeoConfig[local] || {}) };
-                if (!config[dia]) config[dia] = {};
-
-                if (part === 'count') {
-                     const newCount = parseInt(target.value, 10);
-                    const oldCount = config[dia][type] || 0;
-                     config[dia][type] = newCount;
-                     if(newCount < oldCount) {
-                        const week = state.selectedWeek;
-                        const asignacionesDocRef = doc(db, asignacionesCol.path, week);
-                        const updates = {};
-                        for (let i = newCount + 1; i <= oldCount; i++) {
-                            const slotId = `${local}-${dia}-${type}-${i}`;
-                            updates[slotId] = deleteField();
-                            updates[`${slotId}-vestimenta`] = deleteField();
-                            updates[`${slotId}-confirmed`] = deleteField();
+                    if (part === 'count') {
+                        const newCount = parseInt(target.value, 10);
+                        const oldCount = config[dia][type] || 0;
+                        config[dia][type] = newCount;
+                        if (newCount < oldCount) {
+                            const updates = {};
+                            for (let i = newCount + 1; i <= oldCount; i++) {
+                                const slotId = `${local}-${dia}-${type}-${i}`;
+                                updates[slotId] = deleteField();
+                                updates[`${slotId}-vestimenta`] = deleteField();
+                                updates[`${slotId}-confirmed`] = deleteField();
+                            }
+                            if (Object.keys(updates).length > 0) {
+                                await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates, { merge: true });
+                            }
                         }
-                        if (Object.keys(updates).length > 0) {
-                            await setDoc(asignacionesDocRef, updates, { merge: true });
-                        }
-                     }
-                } else {
-                    const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                    const hour = target.closest('div').querySelector(`[data-local="${local}"][data-dia="${dia}"][data-type="${type}"][data-part="hour"]`).value;
-                    const minute = target.closest('div').querySelector(`[data-local="${local}"][data-dia="${dia}"][data-type="${type}"][data-part="minute"]`).value;
-                    const ampm = target.closest('div').querySelector(`[data-local="${local}"][data-dia="${dia}"][data-type="${type}"][data-part="ampm"]`).value;
-                    config[dia][horaKey] = `${hour}:${minute} ${ampm}`;
-                }
+                    } else {
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                        const parent = target.closest('div');
+                        config[dia][horaKey] = `${parent.querySelector('[data-part="hour"]').value}:${parent.querySelector('[data-part="minute"]').value} ${parent.querySelector('[data-part="ampm"]').value}`;
+                    }
 
-                await setDoc(docRef, config);
+                    await setDoc(docRef, config);
+                } else if (target.matches('.mapeo-select')) {
+                    const week = state.selectedWeek;
+                    const slotId = target.dataset.slotId;
+                    const newPersonaId = target.value;
+                    const oldPersonaId = state.asignaciones[week]?.[slotId] || '';
 
-            } else if (target.matches('.mapeo-select, .confirmation-checkbox')) {
-                saveUndoState();
-                const week = state.selectedWeek;
-                const slotId = target.dataset.slotId;
-                const docRef = doc(db, asignacionesCol.path, week);
-                let value;
-                let key = slotId;
-                if(target.matches('.mapeo-select')) {
-                    value = target.value;
-                } else { // confirmation-checkbox
-                    key = `${slotId}-confirmed`;
-                    value = target.checked;
+                    if (oldPersonaId === newPersonaId) return;
+
+                    saveUndoState();
+                    await setDoc(doc(db, asignacionesCol.path, week), { [slotId]: newPersonaId }, { merge: true });
+                    
+                } else if (target.matches('.confirmation-checkbox')) {
+                    const week = state.selectedWeek;
+                    const slotId = target.dataset.slotId;
+                    const isChecked = target.checked;
+                    
+                    saveUndoState();
+                    await setDoc(doc(db, asignacionesCol.path, week), { [`${slotId}-confirmed`]: isChecked }, { merge: true });
                 }
-                await setDoc(docRef, { [key]: value }, { merge: true });
+            } catch (error) {
+                console.error("Change event error:", error);
+                showStatusMessage("No se pudo guardar el cambio.", "error");
             }
         });
         
         importPersonalInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
-                    const data = new Uint8Array(event.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
                     let importados = 0;
-                    for (const persona of jsonData) {
-                        const nuevaPersona = {
-                            numero_empleado: persona.numero_empleado || '',
-                            fecha_ingreso: persona.fecha_ingreso || '',
-                            nombre: persona.nombre || '',
-                            apellido: persona.apellido || '',
-                            fecha_nacimiento: persona.fecha_nacimiento || '',
-                            seguridad_social: persona.seguridad_social || '',
-                            direccion: persona.direccion || '',
-                            email: persona.email || '',
-                            telefono: persona.telefono || '',
-                            contacto_emergencia: persona.contacto_emergencia || '',
-                            disponibilidad: persona.disponibilidad || 'disponible',
-                            local1: persona.local1 || '',
-                            local2: persona.local2 || '',
-                            local3: persona.local3 || '',
-                        };
-                        if(nuevaPersona.nombre && nuevaPersona.apellido) {
-                            await addDoc(personalCol, nuevaPersona);
+                    for (const p of jsonData) {
+                        if(p.nombre && p.apellido) {
+                            await addDoc(personalCol, {
+                                numero_empleado: p.numero_empleado || '', fecha_ingreso: p.fecha_ingreso || '',
+                                nombre: p.nombre, apellido: p.apellido,
+                                fecha_nacimiento: p.fecha_nacimiento || '', seguridad_social: p.seguridad_social || '',
+                                direccion: p.direccion || '', email: p.email || '', telefono: p.telefono || '',
+                                contacto_emergencia: p.contacto_emergencia || '', disponibilidad: p.disponibilidad || 'disponible',
+                                local1: p.local1 || '', local2: p.local2 || '', local3: p.local3 || '',
+                            });
                             importados++;
                         }
                     }
-                    showStatusMessage(`${importados} personas importadas con éxito.`);
+                    showStatusMessage(`${importados} personas importadas.`);
                 } catch (error) {
-                    showStatusMessage('Error al importar el archivo. Asegúrate de que el formato es correcto.', 'error');
+                    showStatusMessage('Error al importar el archivo.', 'error');
                     console.error("Error de importación:", error);
                 } finally {
-                    e.target.value = ''; // Reset file input
+                    e.target.value = '';
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -1350,35 +1269,71 @@
         semanaInputMapeo.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputProgramacion.value = e.target.value; renderizarMapeo(); });
         semanaInputProgramacion.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputMapeo.value = e.target.value; renderizarProgramacionPersonal(); });
         
-        const debouncedRenderProgramacion = debounce(() => renderizarProgramacionPersonal(), 300);
-        busquedaProgramacionInput.addEventListener('input', e => {
-            state.searchTermProgramacion = e.target.value.toLowerCase().trim();
-            debouncedRenderProgramacion();
-        });
-        
-        const debouncedRenderMapeo = debounce(() => renderizarMapeo(), 300);
-        filtroLocalBusquedaInput.addEventListener('input', e => {
-            state.searchTermMapeo = e.target.value.toLowerCase().trim();
-            debouncedRenderMapeo();
-        });
+        busquedaProgramacionInput.addEventListener('input', debounce(e => { state.searchTermProgramacion = e.target.value.toLowerCase().trim(); renderizarProgramacionPersonal(); }));
+        filtroLocalBusquedaInput.addEventListener('input', debounce(e => { state.searchTermMapeo = e.target.value.toLowerCase().trim(); renderizarMapeo(); }));
         
         // --- Funciones de Utilidad ---
+        function obtenerSugerenciaInteligente(local, dia) {
+            const week = state.selectedWeek;
+            const asignacionesSemana = state.asignaciones[week] || {};
+
+            const assignedToday = new Set();
+            Object.keys(asignacionesSemana).forEach(slotId => {
+                if (slotId.includes(`-${dia}-`)) {
+                    const personId = asignacionesSemana[slotId];
+                    if (personId) {
+                        assignedToday.add(personId);
+                    }
+                }
+            });
+
+            const availablePersonnel = state.personal.filter(p => 
+                p.disponibilidad === 'disponible' && !assignedToday.has(p.id)
+            );
+
+            if (availablePersonnel.length === 0) return [];
+
+            const scores = {};
+            availablePersonnel.forEach(p => {
+                scores[p.id] = 0;
+                if (p.local1 === local) scores[p.id] += 10;
+                if (p.local2 === local) scores[p.id] += 7;
+                if (p.local3 === local) scores[p.id] += 4;
+            });
+            
+            Object.values(state.historial).forEach(pastWeek => {
+                if (pastWeek.asignaciones) {
+                    Object.entries(pastWeek.asignaciones).forEach(([slotId, personId]) => {
+                        if (slotId.startsWith(local + '-') && scores[personId] !== undefined) {
+                            scores[personId] += 5;
+                        }
+                    });
+                }
+            });
+
+            const sortedSuggestions = Object.entries(scores)
+                .filter(([, score]) => score > 0)
+                .sort((a, b) => b[1] - a[1])
+                .map(([personId]) => state.personal.find(p => p.id === personId));
+
+            return sortedSuggestions.slice(0, 3).filter(p => p);
+        }
+
         function populateViewPersonalModal(id) {
-            const persona = state.personal.find(p => p.id === id);
-            if (!persona) return;
-            document.getElementById('view-personal-name').textContent = `${persona.nombre} ${persona.apellido}`;
-            const detailsContainer = document.getElementById('view-personal-details');
-            detailsContainer.innerHTML = `
-                <span class="detail-label">Nº Empleado:</span><span>${persona.numero_empleado || 'N/A'}</span>
-                <span class="detail-label">F. Ingreso:</span><span>${persona.fecha_ingreso || 'N/A'}</span>
-                <span class="detail-label">F. Nacimiento:</span><span>${persona.fecha_nacimiento || 'N/A'}</span>
-                <span class="detail-label">Seg. Social:</span><span>${persona.seguridad_social || 'N/A'}</span>
-                <span class="detail-label">Dirección:</span><span>${persona.direccion || 'N/A'}</span>
-                <span class="detail-label">E-mail:</span><span>${persona.email || 'N/A'}</span>
-                <span class="detail-label">Teléfono:</span><span>${persona.telefono || 'N/A'}</span>
-                <span class="detail-label">Contacto Emergencia:</span><span>${persona.contacto_emergencia || 'N/A'}</span>
-                <span class="detail-label">Disponibilidad:</span><span>${persona.disponibilidad || 'N/A'}</span>
-                <span class="detail-label">Locales Pref.:</span><span>${[persona.local1, persona.local2, persona.local3].filter(Boolean).join(', ') || 'N/A'}</span>
+            const p = state.personal.find(p => p.id === id);
+            if (!p) return;
+            document.getElementById('view-personal-name').textContent = `${p.nombre} ${p.apellido}`;
+            document.getElementById('view-personal-details').innerHTML = `
+                <span class="detail-label">Nº Empleado:</span><span>${p.numero_empleado || 'N/A'}</span>
+                <span class="detail-label">F. Ingreso:</span><span>${p.fecha_ingreso || 'N/A'}</span>
+                <span class="detail-label">F. Nacimiento:</span><span>${p.fecha_nacimiento || 'N/A'}</span>
+                <span class="detail-label">Seg. Social:</span><span>${p.seguridad_social || 'N/A'}</span>
+                <span class="detail-label">Dirección:</span><span>${p.direccion || 'N/A'}</span>
+                <span class="detail-label">E-mail:</span><span>${p.email || 'N/A'}</span>
+                <span class="detail-label">Teléfono:</span><span>${p.telefono || 'N/A'}</span>
+                <span class="detail-label">Contacto Emergencia:</span><span>${p.contacto_emergencia || 'N/A'}</span>
+                <span class="detail-label">Disponibilidad:</span><span>${p.disponibilidad || 'N/A'}</span>
+                <span class="detail-label">Locales Pref.:</span><span>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'N/A'}</span>
             `;
             document.getElementById('btn-editar-personal-view').dataset.id = id;
             document.getElementById('btn-eliminar-personal-view').dataset.id = id;
@@ -1392,35 +1347,28 @@
             document.getElementById('personal-modal-title').textContent = 'Editar Personal';
             formPersonal.reset();
             formPersonal['personal-id'].value = id;
-            for(const key in persona) {
-                if(formPersonal[key]) {
-                    formPersonal[key].value = persona[key];
+            Object.keys(persona).forEach(key => {
+                if (formPersonal.elements[key]) {
+                    formPersonal.elements[key].value = persona[key];
                 }
-            }
+            });
             formPersonal.numero_empleado.readOnly = false;
             personalModal.style.display = 'block';
         }
 
         function exportarPersonalExcel() {
-            if (state.personal.length === 0) {
-                showStatusMessage('No hay personal para exportar.', 'error');
-                return;
-            }
-            const dataToExport = state.personal.map(({ id, ...rest }) => rest);
-            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            if (state.personal.length === 0) return showStatusMessage('No hay personal para exportar.', 'error');
+            const worksheet = XLSX.utils.json_to_sheet(state.personal.map(({ id, ...rest }) => rest));
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Personal');
             XLSX.writeFile(workbook, `Personal_SwattMapee.xlsx`);
-            showStatusMessage('Exportando personal a Excel.');
         }
 
         function debounce(func, delay = 250) {
             let timeout;
             return (...args) => {
                 clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    func.apply(this, args);
-                }, delay);
+                timeout = setTimeout(() => func.apply(this, args), delay);
             };
         }
 
@@ -1445,27 +1393,22 @@
             for (let i = 0; i < 7; i++) {
                 const currentDay = new Date(monday);
                 currentDay.setDate(monday.getDate() + i);
-                const dayName = diasSemana[i];
-                dates[dayName] = currentDay.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+                dates[diasSemana[i]] = currentDay.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
             }
             return dates;
         }
 
         function inicializarApp() {
-            // Lógica Modo Oscuro
             if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
                 lightIcon.classList.remove('hidden');
             } else {
-                document.documentElement.classList.remove('dark')
                 darkIcon.classList.remove('hidden');
             }
             
             if (!state.selectedWeek) {
                 const now = new Date();
-                const year = now.getFullYear();
-                const week = now.getWeek();
-                state.selectedWeek = `${year}-W${String(week).padStart(2, '0')}`;
+                state.selectedWeek = `${now.getFullYear()}-W${String(now.getWeek()).padStart(2, '0')}`;
             }
             semanaInputMapeo.value = state.selectedWeek;
             semanaInputProgramacion.value = state.selectedWeek;
@@ -1480,7 +1423,6 @@
             document.getElementById(`section-${vista}`).classList.remove('hidden');
             document.getElementById(`btn-${vista}`).classList.add('active');
 
-            // Renderizado selectivo basado en la vista
             switch(vista) {
                 case 'gestion': renderizarTablaLocales(); renderizarTablaPersonal(); break;
                 case 'mapeo': renderizarMapeo(); break;
@@ -1492,48 +1434,29 @@
         themeToggleBtn.addEventListener('click', function() {
             darkIcon.classList.toggle('hidden');
             lightIcon.classList.toggle('hidden');
-
-            if (localStorage.getItem('color-theme')) {
-                if (localStorage.getItem('color-theme') === 'light') {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                }
-            } else {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('color-theme', 'light');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('color-theme', 'dark');
-                }
-            }
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- SISTEMA DE NOTIFICACIONES ---
+        // --- SISTEMA DE NOTIFICACIONES Y CONFLICTOS ---
         function checkUpcomingShiftNotifications() {
             const now = new Date();
             const notifications = new Set();
-            const week = state.selectedWeek;
-            const asignacionesSemana = state.asignaciones[week] || {};
+            const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
 
             Object.keys(asignacionesSemana).forEach(slotId => {
-                if (slotId.includes('-vestimenta') || slotId.includes('-confirmed') || !asignacionesSemana[slotId]) return;
+                if (!slotId.includes('-') || !asignacionesSemana[slotId] || asignacionesSemana[`${slotId}-confirmed`]) return;
                 
-                const isConfirmed = asignacionesSemana[`${slotId}-confirmed`];
-                if (isConfirmed) return;
-
                 const [local, dia, tipo] = slotId.split('-');
+                if (!tipo) return;
                 const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
                 const hora = state.mapeoConfig[local]?.[dia]?.[horaKey];
 
                 if(hora) {
-                    const shiftDate = getShiftDateTime(week, dia, hora);
-                    const hoursUntilShift = (shiftDate - now) / 1000 / 60 / 60;
+                    const shiftDate = getShiftDateTime(state.selectedWeek, dia, hora);
+                    const hoursUntilShift = (shiftDate - now) / 3600000;
                     if (hoursUntilShift > 0 && hoursUntilShift < 24) {
-                        notifications.add(`${week}-${slotId}`);
+                        notifications.add(`${state.selectedWeek}-${slotId}`);
                     }
                 }
             });
@@ -1542,143 +1465,196 @@
 
         function getShiftDateTime(weekString, dayName, timeString) {
             const [year, weekNum] = weekString.split('-W').map(Number);
-            const firstDayOfYear = new Date(Date.UTC(year, 0, 1));
-            const days = (weekNum - 1) * 7;
-            const date = new Date(Date.UTC(year, 0, days + 1));
-            const day = date.getUTCDay();
-            const dayCorrection = day <= 4 ? 1 - day : 8 - day;
-            date.setUTCDate(date.getUTCDate() + dayCorrection);
-
+            const firstDayOfWeek = new Date(year, 0, 1 + (weekNum - 1) * 7);
+            const dayOfWeek = firstDayOfWeek.getDay();
+            const diff = firstDayOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            const monday = new Date(firstDayOfWeek.setDate(diff));
+            
             const dayIndex = diasSemana.indexOf(dayName);
-            date.setUTCDate(date.getUTCDate() + dayIndex);
-
+            const shiftDate = new Date(monday.setDate(monday.getDate() + dayIndex));
+            
             const match = timeString.match(/(\d+):(\d+) (AM|PM)/);
             let [_, hours, minutes, ampm] = match;
             hours = parseInt(hours, 10);
             if (ampm === 'PM' && hours !== 12) hours += 12;
             if (ampm === 'AM' && hours === 12) hours = 0;
             
-            date.setUTCHours(hours, parseInt(minutes, 10), 0, 0);
-
-            // Ajustar a la zona horaria local
-            const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-            return localDate;
+            shiftDate.setHours(hours, parseInt(minutes, 10), 0, 0);
+            return shiftDate;
         }
 
         function recalculateConflicts() {
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
 
-            const redConflicts = new Set();
-            const yellowConflicts = new Set();
-            const celesteConflicts = new Set();
+            state.redConflicts.clear();
+            state.yellowConflicts.clear();
+            state.celesteConflicts.clear();
             
             const assignmentsByPerson = {};
             Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
-                if (!personaId || slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
-
-                if (!assignmentsByPerson[personaId]) {
-                    assignmentsByPerson[personaId] = [];
-                }
-
+                if (!personaId || !slotId.includes('-')) return;
+                if (!assignmentsByPerson[personaId]) assignmentsByPerson[personaId] = [];
                 const [local, dia, tipo] = slotId.split('-');
-                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                const hora = state.mapeoConfig[local]?.[dia]?.[horaKey];
-                
+                if(!tipo) return;
+                const hora = state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`];
                 assignmentsByPerson[personaId].push({
-                    weekSlotId: `${week}-${slotId}`,
-                    dia, local, tipo, hora,
+                    weekSlotId: `${week}-${slotId}`, dia, local, tipo,
                     startMinutes: diasSemana.indexOf(dia) * 1440 + timeToMinutes(hora)
                 });
             });
 
             for (const personaId in assignmentsByPerson) {
-                const personAssignments = assignmentsByPerson[personaId];
+                const personAssignments = assignmentsByPerson[personaId].sort((a, b) => a.startMinutes - b.startMinutes);
 
-                // Between-day schedule conflicts (less than 8h rest)
-                personAssignments.sort((a, b) => a.startMinutes - b.startMinutes);
                 for (let i = 0; i < personAssignments.length - 1; i++) {
-                    const currentEndTime = personAssignments[i].startMinutes + 480; // Assumes 8-hour shift
-                    const timeBetween = personAssignments[i+1].startMinutes - currentEndTime;
-                    if (timeBetween >= 0 && timeBetween < 480) {
-                        yellowConflicts.add(personAssignments[i].weekSlotId);
-                        yellowConflicts.add(personAssignments[i+1].weekSlotId);
+                    const timeBetween = personAssignments[i+1].startMinutes - (personAssignments[i].startMinutes + 480); // Asume turnos de 8h
+                    if (timeBetween >= 0 && timeBetween < 480) { // Menos de 8h de descanso
+                        state.yellowConflicts.add(personAssignments[i].weekSlotId);
+                        state.yellowConflicts.add(personAssignments[i+1].weekSlotId);
                     }
                 }
                 
-                const assignmentsByDay = {};
-                personAssignments.forEach(a => {
-                    if (!assignmentsByDay[a.dia]) assignmentsByDay[a.dia] = [];
-                    assignmentsByDay[a.dia].push(a);
+                const assignmentsByDay = personAssignments.reduce((acc, a) => {
+                    acc[a.dia] = acc[a.dia] || [];
+                    acc[a.dia].push(a);
+                    return acc;
+                }, {});
+
+                Object.values(assignmentsByDay).forEach(dailyAssignments => {
+                    if (dailyAssignments.length < 2) return;
+                    dailyAssignments.forEach(a => state.yellowConflicts.add(a.weekSlotId)); 
+
+                    const localRoles = dailyAssignments.reduce((acc, a) => {
+                        acc[a.local] = acc[a.local] || new Set();
+                        acc[a.local].add(a.tipo);
+                        return acc;
+                    }, {});
+
+                    Object.entries(localRoles).forEach(([local, roles]) => {
+                        if (roles.has('puestos') && (roles.has('cacheos') || roles.has('cacheoIngreso') || roles.has('cacheoSalida'))) {
+                            dailyAssignments.filter(a => a.local === local).forEach(a => state.celesteConflicts.add(a.weekSlotId));
+                        }
+                    });
+
+                    const timeLocalMap = dailyAssignments.reduce((acc, a) => {
+                        const key = `${a.local}-${a.startMinutes}`;
+                        acc[key] = acc[key] || [];
+                        acc[key].push(a.weekSlotId);
+                        return acc;
+                    }, {});
+
+                    Object.values(timeLocalMap).filter(g => g.length > 1).flat().forEach(id => state.redConflicts.add(id));
                 });
-
-                for (const dia in assignmentsByDay) {
-                    const dailyAssignments = assignmentsByDay[dia];
-                    if (dailyAssignments.length < 2) continue;
-
-                    // Mark all as potential yellow (double shift)
-                    dailyAssignments.forEach(a => yellowConflicts.add(a.weekSlotId));
-
-                    const localRoles = {};
-                    dailyAssignments.forEach(a => {
-                        if (!localRoles[a.local]) localRoles[a.local] = new Set();
-                        localRoles[a.local].add(a.tipo);
-                    });
-                    for(const local in localRoles) {
-                        const roles = localRoles[local];
-                        const hasPuesto = roles.has('puestos');
-                        const hasCacheo = roles.has('cacheos') || roles.has('cacheoIngreso') || roles.has('cacheoSalida');
-                        if(hasPuesto && hasCacheo) {
-                            dailyAssignments.forEach(a => {
-                                if (a.local === local) celesteConflicts.add(a.weekSlotId);
-                            });
-                        }
-                    }
-                    
-                    const timeLocalMap = {};
-                    dailyAssignments.forEach(a => {
-                        const key = `${a.local}-${a.hora}`;
-                        if (!timeLocalMap[key]) timeLocalMap[key] = [];
-                        timeLocalMap[key].push(a.weekSlotId);
-                    });
-                    for (const key in timeLocalMap) {
-                        if (timeLocalMap[key].length > 1) {
-                            timeLocalMap[key].forEach(id => redConflicts.add(id));
-                        }
-                    }
-                }
             }
             
-            redConflicts.forEach(id => { yellowConflicts.delete(id); celesteConflicts.delete(id); });
-            celesteConflicts.forEach(id => { yellowConflicts.delete(id); });
+            state.redConflicts.forEach(id => { state.yellowConflicts.delete(id); state.celesteConflicts.delete(id); });
+            state.celesteConflicts.forEach(id => state.yellowConflicts.delete(id));
+        }
+        
+        // --- FUNCIONES DE COPIADO ---
+        function copyPersonalSchedule(personId) {
+            const persona = state.personal.find(p => p.id === personId);
+            if (!persona) return;
+            const week = state.selectedWeek;
+            const asignacionesSemana = state.asignaciones[week] || {};
 
-            state.redConflicts = redConflicts;
-            state.yellowConflicts = yellowConflicts;
-            state.celesteConflicts = celesteConflicts;
+            const assignments = Object.entries(asignacionesSemana)
+                .filter(([slotId, pId]) => pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .map(([slotId, _]) => {
+                    const [local, dia, tipo, i] = slotId.split('-');
+                    return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
+                });
+
+            if (assignments.length === 0) return showStatusMessage('Esta persona no tiene asignaciones para copiar.', 'error');
+
+            const groupedByDayAndLocal = assignments.reduce((acc, a) => {
+                const key = `${a.dia}-${a.local}`;
+                if (!acc[key]) {
+                    acc[key] = { dia: diasSemanaFull[diasSemana.indexOf(a.dia)], local: a.local.toUpperCase(), vestimenta: a.vestimenta, turnos: [] };
+                }
+                acc[key].turnos.push({ raw_tipo: a.raw_tipo, i: a.i, horario: a.horario });
+                return acc;
+            }, {});
+            
+            const dayNameToIndex = diasSemanaFull.reduce((acc, day, index) => ({ ...acc, [day]: index }), {});
+            const sortedGroups = Object.values(groupedByDayAndLocal).sort((a, b) => dayNameToIndex[a.dia] - dayNameToIndex[b.dia]);
+            
+            let message = `¡Hola ${persona.nombre}! Tu programación es la siguiente:\n\n`;
+            
+            message += sortedGroups.map(g => {
+                g.turnos.sort((a,b) => timeToMinutes(a.horario) - timeToMinutes(b.horario));
+                const turnosStrings = g.turnos.map(t => {
+                    if (t.raw_tipo === 'puestos' && g.turnos.length === 1) return `(${t.horario})`;
+                    const name = tipoPuestoNombres[t.raw_tipo] || t.raw_tipo;
+                    const finalName = ['cacheoIngreso', 'cacheoSalida'].includes(t.raw_tipo) ? `${name} ${t.i}` : name;
+                    return `${finalName} (${t.horario})`;
+                }).join(', ');
+                return `• ${g.dia} en ${g.local}: ${turnosStrings}. Vestimenta: ${g.vestimenta}.`;
+            }).join('\n');
+
+            const textArea = document.createElement("textarea");
+            textArea.value = message;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showStatusMessage('Programación copiada');
+            } catch (err) {
+                showStatusMessage('No se pudo copiar el texto.', 'error');
+            }
+            document.body.removeChild(textArea);
         }
 
-        function descargarExcel(week, scheduleData) {
-            if (!scheduleData || !scheduleData.asignaciones) { 
-                showStatusMessage(`No hay datos para la semana ${week}.`, 'error');
-                return; 
+        function copyLocalSchedule(localNombre) {
+            const week = state.selectedWeek;
+            const asignacionesSemana = state.asignaciones[week] || {};
+            const localAssignments = Object.entries(asignacionesSemana)
+                .filter(([slotId, pId]) => slotId.startsWith(localNombre + '-') && pId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .map(([slotId, pId]) => {
+                    const [local, dia, tipo, i] = slotId.split('-');
+                    const persona = state.personal.find(p => p.id === pId);
+                    return { dia, persona, i, tipo, hora: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
+                });
+            if (localAssignments.length === 0) return showStatusMessage('Este local no tiene personal asignado.', 'error');
+            
+            let message = `*Programación ${localNombre.toUpperCase()} - Semana ${week}*\n\n`;
+            diasSemana.forEach((dia, index) => {
+                const daily = localAssignments.filter(a => a.dia === dia);
+                if (daily.length > 0) {
+                    message += `*${diasSemanaFull[index]}*\n${daily.map(a => `- ${tipoPuestoNombres[a.tipo] || a.tipo} ${a.i}: ${a.persona ? `${a.persona.nombre} ${a.persona.apellido}` : 'N/A'} (${a.hora})`).join('\n')}\n\n`;
+                }
+            });
+            const textArea = document.createElement("textarea");
+            textArea.value = message;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showStatusMessage('Programación del local copiada');
+            } catch (err) {
+                showStatusMessage('No se pudo copiar el texto.', 'error');
             }
+            document.body.removeChild(textArea);
+        }
+        
+        function descargarExcel(week, scheduleData) {
+            if (!scheduleData?.asignaciones) return showStatusMessage(`No hay datos para la semana ${week}.`, 'error'); 
             const data = Object.entries(scheduleData.asignaciones)
-                .filter(([slotId, personaId]) => personaId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
-                .map(([slotId, personaId]) => {
+                .filter(([slotId, pId]) => pId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .map(([slotId, pId]) => {
                     const [local, dia, tipo] = slotId.split('-');
-                    const persona = state.personal.find(p => p.id === personaId);
-                    const config = (scheduleData.mapeoConfig && scheduleData.mapeoConfig[local]?.[dia]) || state.mapeoConfig[local]?.[dia] || {};
-                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                    const hora = config[horaKey];
-                    const vestimenta = scheduleData.asignaciones[`${slotId}-vestimenta`] || vestimentaOptions[0];
+                    const persona = state.personal.find(p => p.id === pId);
+                    const config = (scheduleData.mapeoConfig?.[local]?.[dia]) || state.mapeoConfig[local]?.[dia] || {};
                     return {
                         'Fecha': getWeekDates(week)[dia] || 'N/A', 'Día': diasSemanaFull[diasSemana.indexOf(dia)],
                         'Local': local.toUpperCase(), 'Puesto': tipoPuestoNombres[tipo] || tipo,
                         'Nombre': persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
-                        'Hora': hora, 'Vestimenta': vestimenta
+                        'Hora': config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`],
+                        'Vestimenta': scheduleData.asignaciones[`${slotId}-vestimenta`] || vestimentaOptions[0]
                     };
                 });
-            if (data.length === 0) { showStatusMessage('No hay asignaciones válidas.', 'error'); return; }
+            if (data.length === 0) return showStatusMessage('No hay asignaciones válidas para descargar.', 'error');
             const worksheet = XLSX.utils.json_to_sheet(data);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Programacion');
@@ -1693,19 +1669,18 @@
             setTimeout(() => div.classList.remove('translate-x-full'), 10);
             setTimeout(() => {
                 div.classList.add('translate-x-full');
-                setTimeout(() => div.remove(), 300);
+                setTimeout(() => div.remove(), 3000);
             }, 3000);
         }
         function timeToMinutes(timeStr) {
             if (!timeStr) return 0;
             const match = timeStr.match(/(\d+):(\d+) (AM|PM)/);
             if (!match) return 0;
-            let [_, hours, minutes, ampm] = match;
+            let [, hours, minutes, ampm] = match;
             hours = parseInt(hours, 10);
-            minutes = parseInt(minutes, 10);
             if (ampm === 'PM' && hours !== 12) hours += 12;
             if (ampm === 'AM' && hours === 12) hours = 0;
-            return hours * 60 + minutes;
+            return hours * 60 + parseInt(minutes, 10);
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
