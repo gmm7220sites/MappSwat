@@ -1240,7 +1240,7 @@
                     });
 
                     if (Object.keys(updates).length > 0 && state.selectedWeek) {
-                         await updateDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates);
+                         await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates, { merge: true });
                     }
                     showStatusMessage('Horarios guardados correctamente.');
                     scheduleConfigModal.style.display = 'none';
