@@ -12,7 +12,7 @@
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc;
-            color: #1e293b;
+            color: #1e293b; /* Color corregido */
         }
         html.dark body {
             background-color: #0f172a;
@@ -25,10 +25,10 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { 
             background-color: #fefefe; margin: 5% auto; padding: 24px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 12px;
-            color: #1e293b;
+            color: #1e293b; /* Color corregido */
         }
         html.dark .modal-content {
-             background-color: #1e293b;
+             background-color: #1e293b; /* Color corregido */
              border-color: #334155;
              color: #e2e8f0;
         }
@@ -56,7 +56,7 @@
         html.dark .vestimenta-btn:hover { background-color: #475569; }
 
         .programacion-card { border-top: 4px solid; }
-        #loader { display: flex; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; }
+        #loader { display: none; /* Oculto por defecto */ position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; align-items: center; justify-content: center;}
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
 
         /* Contenido principal visible por defecto para el efecto de fondo borroso */
@@ -187,13 +187,13 @@
     </div>
 
     <!-- Loader -->
-    <div id="loader" class="items-center justify-center">
+    <div id="loader">
         <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
     </div>
 
     <div class="container mx-auto p-4 md:p-8 max-w-7xl main-content">
         <header class="text-center mb-8 relative">
-            <h1 class="text-4xl font-bold text-slate-900">Panel de Control de Mapeos</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Panel de Control de Mapeos</h1>
             <p class="text-slate-600 mt-2">Plataforma colaborativa para la gestión de personal y turnos.</p>
             <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" title="Cambiar tema">
                 <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -203,7 +203,7 @@
 
         <div id="status-message-container" class="fixed top-4 right-4 z-50"></div>
 
-        <nav class="flex justify-center bg-slate-200 rounded-lg p-2 mb-8">
+        <nav class="flex flex-col sm:flex-row justify-center bg-slate-200 rounded-lg p-2 mb-8 gap-1 sm:gap-2">
             <button id="btn-gestion" class="nav-button active flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Gestión</button>
             <button id="btn-mapeo" class="nav-button flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Mapeo Semanal</button>
             <button id="btn-programacion" class="nav-button flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Programación</button>
@@ -216,7 +216,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <h2 class="text-2xl font-bold mb-4 text-slate-900">Gestión de Locales</h2>
-                        <form id="form-locales" class="flex gap-4 mb-6">
+                        <form id="form-locales" class="flex flex-col sm:flex-row gap-4 mb-6">
                             <input type="text" id="nuevo-local" placeholder="Nombre del nuevo local" class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500" required>
                             <button type="submit" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Agregar</button>
                         </form>
@@ -236,7 +236,7 @@
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                             <h2 class="text-2xl font-bold text-slate-900">Base de Datos del Personal</h2>
-                            <div class="flex gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2">
                                 <button id="btn-importar-personal" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Importar Excel</button>
                                 <button id="btn-exportar-personal" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Excel</button>
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
@@ -265,10 +265,11 @@
                         <input type="week" id="semana-mapeo" class="p-2 border rounded-md">
                         <input type="text" id="filtro-local-busqueda" placeholder="Buscar local o personal..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <div class="flex justify-end gap-2 mb-6">
+                    <div class="flex flex-col sm:flex-row justify-end gap-2 mb-6">
                         <button id="btn-guardar-programacion" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Guardar</button>
                         <button id="btn-limpiar-mapeo" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Limpiar</button>
                         <button id="btn-descargar-excel" class="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Excel</button>
+                        <button id="btn-download-all-pdf" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">PDF Todos</button>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="mapeo-container"></div>
                 </div>
@@ -333,7 +334,6 @@
 
     <div id="edit-local-modal" class="modal"><div class="modal-content"><h3 class="text-2xl font-bold mb-4">Editar Local</h3><form id="form-edit-local" class="flex flex-col gap-4"><input type="hidden" id="edit-local-id"><input type="text" id="edit-local-name" placeholder="Nombre del Local" class="p-2 border rounded-md" required><div class="flex items-center gap-4"><label for="edit-local-color">Color:</label><input type="color" id="edit-local-color" class="h-10 w-10"></div><div class="flex gap-4"><button type="submit" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button><button type="button" id="close-local-modal" class="flex-1 bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button></div></form></div></div>
     
-    <!-- INICIO: Modal de Horarios Modificado -->
     <div id="schedule-config-modal" class="modal">
         <div class="modal-content !max-w-3xl">
             <div class="flex justify-between items-center mb-4">
@@ -348,9 +348,18 @@
             </div>
         </div>
     </div>
-    <!-- FIN: Modal de Horarios Modificado -->
     
     <div id="message-modal" class="modal"><div class="modal-content"><p id="message-modal-text" class="mb-4"></p><button id="close-message-modal" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">OK</button></div></div>
+    
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <p id="confirmation-modal-text" class="mb-6"></p>
+            <div class="flex justify-end gap-4">
+                <button id="confirmation-modal-cancel" class="bg-slate-300 dark:bg-slate-600 py-2 px-4 rounded-md hover:bg-slate-400 dark:hover:bg-slate-500">Cancelar</button>
+                <button id="confirmation-modal-confirm" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Confirmar</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         // Importaciones de Firebase
@@ -411,8 +420,9 @@
                 return;
             }
             
-            if (!confirm('¿Está seguro de que desea deshacer la última acción?')) return;
-            
+            const confirmed = await showConfirmationModal('¿Está seguro de que desea deshacer la última acción?');
+            if (!confirmed) return;
+
             loader.style.display = 'flex';
             const lastState = actionHistory.pop();
 
@@ -462,10 +472,18 @@
             pendingNotifications: new Set(),
         };
 
-        // INICIO: Variables para el modal de horarios
+        // Estado para carga de datos
+        let initialDataLoaded = {
+            personal: false,
+            locales: false,
+            mapeoConfig: false,
+            asignaciones: false,
+            historial: false
+        };
+
+        // Variables para el modal de horarios
         let tempScheduleConfig = {};
         let currentlyEditingLocal = null;
-        // FIN: Variables para el modal de horarios
 
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
@@ -501,7 +519,10 @@
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
-
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmationModalText = document.getElementById('confirmation-modal-text');
+        const confirmationModalConfirm = document.getElementById('confirmation-modal-confirm');
+        const confirmationModalCancel = document.getElementById('confirmation-modal-cancel');
 
         // --- AUTENTICACIÓN Y SETUP DE FIREBASE ---
         loginForm.addEventListener('submit', async (e) => {
@@ -521,7 +542,6 @@
                 }
                 
                 loader.style.display = 'flex';
-                // Credentials are correct, now proceed with app initialization
                 loginOverlay.style.display = 'none';
                 setupListeners();
                 inicializarApp();
@@ -530,7 +550,6 @@
             }
         });
 
-        // This will run on page load
         document.addEventListener('DOMContentLoaded', async () => {
             const appId = "mapeo-app-v2";
             const basePath = `artifacts/${appId}/public/data`;
@@ -541,13 +560,12 @@
             historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
             
             try {
-                await signInAnonymously(auth); // Ensure we are connected
+                await signInAnonymously(auth);
             } catch (error) {
                  console.error("Firebase auth failed:", error);
                  showStatusMessage('Error de conexión con el servidor.', 'error');
             }
             
-            // Check for saved credentials
             const savedUser = localStorage.getItem('mapeoUsername');
             const savedPass = localStorage.getItem('mapeoPassword');
             if (savedUser && savedPass) {
@@ -560,13 +578,30 @@
             loader.style.display = 'none';
         });
 
-        // --- SETUP DE LISTENERS DE DATOS EN TIEMPO REAL (OPTIMIZADO) ---
+        // --- Lógica de renderizado y carga de datos mejorada ---
+        function renderCurrentView() {
+            switch(state.currentView) {
+                case 'gestion':
+                    if (initialDataLoaded.locales) renderizarTablaLocales();
+                    if (initialDataLoaded.personal) renderizarTablaPersonal();
+                    break;
+                case 'mapeo':
+                    renderizarMapeo();
+                    break;
+                case 'programacion':
+                    renderizarProgramacionPersonal();
+                    break;
+                case 'historial':
+                    if (initialDataLoaded.historial) renderizarHistorial();
+                    break;
+            }
+        }
+
         function setupListeners() {
             onSnapshot(query(localesCol), snapshot => {
                 state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderizarTablaLocales();
-                renderizarSelectsLocales(document.getElementById('personal-modal'));
-                if (state.currentView === 'mapeo') renderizarMapeo();
+                if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
+                renderCurrentView();
             }, error => console.error("Error fetching locales:", error));
 
             onSnapshot(query(personalCol), snapshot => {
@@ -598,31 +633,31 @@
                 }
                 
                 state.personal = uniquePersonal;
-                renderizarTablaPersonal();
-                if (state.currentView === 'mapeo') renderizarMapeo();
-                if (state.currentView === 'programacion') renderizarProgramacionPersonal();
+                if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
+                renderCurrentView();
             }, error => console.error("Error fetching personal:", error));
 
             onSnapshot(query(mapeoConfigCol), snapshot => {
                 state.mapeoConfig = {};
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
-                if (state.currentView === 'mapeo') renderizarMapeo();
-                if (state.currentView === 'programacion') checkUpcomingShiftNotifications();
+                if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
+                renderCurrentView();
             }, error => console.error("Error fetching mapeo config:", error));
 
             onSnapshot(query(asignacionesCol), snapshot => {
                 state.asignaciones = {};
                 snapshot.docs.forEach(doc => { state.asignaciones[doc.id] = doc.data(); });
+                if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
                 recalculateConflicts();
                 checkUpcomingShiftNotifications();
-                if (state.currentView === 'mapeo') renderizarMapeo();
-                if (state.currentView === 'programacion') renderizarProgramacionPersonal();
+                renderCurrentView();
             }, error => console.error("Error fetching asignaciones:", error));
 
             onSnapshot(query(historialCol), snapshot => {
                 state.historial = {};
                 snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
-                if (state.currentView === 'historial') renderizarHistorial();
+                if (!initialDataLoaded.historial) initialDataLoaded.historial = true;
+                renderCurrentView();
             }, error => console.error("Error fetching historial:", error));
         }
         
@@ -677,9 +712,7 @@
             const local = state.locales.find(l => l.nombre === localNombre);
             if (!local) return;
             container.innerHTML = '';
-            // INICIO: Modificación para usar la configuración temporal
             const localConfig = tempScheduleConfig || {};
-            // FIN: Modificación
             
             const createTimeSelectors = (dia, tipo, config) => {
                 const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
@@ -722,11 +755,14 @@
             });
         }
 
-        // --- FUNCIÓN DE RENDERIZADO MEJORADA ---
         function renderizarMapeo() {
             const container = document.getElementById('mapeo-container');
             container.innerHTML = '';
             const week = state.selectedWeek;
+             if (!initialDataLoaded.personal || !initialDataLoaded.locales || !initialDataLoaded.asignaciones || !initialDataLoaded.mapeoConfig) {
+                container.innerHTML = `<div class="col-span-1 lg:col-span-2 text-center p-8 text-slate-500"><p>Cargando mapeo...</p></div>`;
+                return;
+            }
             if (!week) return;
 
             const dates = getWeekDates(week);
@@ -749,13 +785,19 @@
                 return false;
             });
 
+            if (localesFiltrados.length === 0) {
+                container.innerHTML = `<div class="col-span-1 lg:col-span-2 text-center p-8 text-slate-500"><p>No se encontraron locales con los filtros actuales.</p></div>`;
+                return;
+            }
+
             localesFiltrados.forEach(local => {
                 const localConfig = state.mapeoConfig[local.nombre] || {};
                 const hasPositions = diasSemana.some(dia => (localConfig[dia]?.puestos > 0) || (localConfig[dia]?.cacheos > 0) || (localConfig[dia]?.cacheoIngreso > 0) || (localConfig[dia]?.cacheoSalida > 0));
                 if (!hasPositions) return;
 
                 const localCol = document.createElement('div');
-                localCol.className = 'bg-white p-6 rounded-xl shadow-lg local-card'; // Clase para la tarjeta
+                localCol.id = `local-card-${local.nombre.replace(/\s+/g, '-')}`;
+                localCol.className = 'bg-white p-6 rounded-xl shadow-lg local-card';
                 localCol.style.borderTopColor = local.color || '#cccccc';
 
                 localCol.innerHTML = `
@@ -764,6 +806,7 @@
                         <div class="flex items-center gap-2">
                             <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">🔄</button>
                             <button data-local-nombre="${local.nombre}" class="btn-copy-local-schedule bg-sky-100 text-sky-700 font-bold py-1 px-3 rounded-md hover:bg-sky-200 text-sm">Copiar</button>
+                            <button data-local-nombre="${local.nombre}" class="btn-download-pdf bg-red-100 text-red-700 font-bold py-1 px-3 rounded-md hover:bg-red-200 text-sm">PDF</button>
                         </div>
                     </div>`;
                 
@@ -771,7 +814,7 @@
                     const config = localConfig[dia];
                     if (config && ((config.puestos > 0) || (config.cacheos > 0) || (config.cacheoIngreso > 0) || (config.cacheoSalida > 0))) {
                         const diaContenedor = document.createElement('div');
-                        diaContenedor.className = 'dia-grupo border-slate-200 dark:border-slate-700'; // Clase para el grupo del día
+                        diaContenedor.className = 'dia-grupo border-slate-200 dark:border-slate-700';
                         
                         diaContenedor.innerHTML = `<h4 class="text-lg font-bold capitalize text-slate-800 dark:text-slate-200">${dia} <span class="text-sm font-normal text-slate-500">${dates[dia] || ''}</span></h4>`;
                         
@@ -804,7 +847,7 @@
             const slotId = `${local}-${dia}-${tipo}-${i}`;
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
             const div = document.createElement('div');
-            div.className = 'asignacion-fila'; // Clase para la fila de asignación
+            div.className = 'asignacion-fila';
             
             const weekSlotId = `${week}-${slotId}`;
             if (state.redConflicts.has(weekSlotId)) div.classList.add('conflict-highlight');
@@ -816,7 +859,7 @@
             select.className = 'mapeo-select flex-grow p-2 border rounded bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600';
             
             let optionsHTML = '';
-            const sugerencias = obtenerSugerenciaInteligente(local, dia); // Ahora devuelve un array
+            const sugerencias = obtenerSugerenciaInteligente(local, dia);
 
             if (!asignacionActual && sugerencias.length > 0) {
                 const suggestionText = sugerencias.map(p => `${p.nombre} ${p.apellido.charAt(0)}`).join(', ');
@@ -855,7 +898,16 @@
             const container = document.getElementById('programacion-container');
             container.innerHTML = '';
             const week = state.selectedWeek;
-            if (!week) return;
+            
+            if (!initialDataLoaded.personal || !initialDataLoaded.asignaciones || !initialDataLoaded.mapeoConfig) {
+                container.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center p-8 text-slate-500"><p>Cargando programación...</p></div>`;
+                return;
+            }
+
+            if (!week) {
+                container.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center p-8 text-slate-500"><p>Por favor, selecciona una semana.</p></div>`;
+                return;
+            }
             
             const personalFiltrado = state.personal.filter(p => {
                 const searchTerm = state.searchTermProgramacion;
@@ -872,6 +924,11 @@
                 }
                 return false;
             });
+            
+            if (personalFiltrado.length === 0) {
+                container.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center p-8 text-slate-500"><p>No se encontraron resultados para la semana y filtro actual.</p></div>`;
+                return;
+            }
 
             personalFiltrado.forEach(persona => {
                 const asignacionesSemana = state.asignaciones[week] || {};
@@ -941,6 +998,7 @@
             document.getElementById('personal-modal-title').textContent = 'Agregar Personal';
             formPersonal.reset();
             formPersonal['personal-id'].value = '';
+            renderizarSelectsLocales(personalModal);
             const employeeNumbers = state.personal.map(p => parseInt(String(p.numero_empleado).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
             const maxNumber = employeeNumbers.length > 0 ? Math.max(...employeeNumbers) : 0;
             formPersonal.numero_empleado.value = maxNumber + 1;
@@ -1047,7 +1105,6 @@
             const button = e.target.closest('button');
             if (!button) return;
 
-            // --- Lógica de Botones ---
             try {
                 if (button.matches('.vestimenta-btn')) {
                     const week = state.selectedWeek;
@@ -1067,8 +1124,9 @@
                     const persona = state.personal.find(p => p.id === personId);
                     const week = state.selectedWeek;
                     if (!persona || !week) return;
-
-                    if (confirm(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`)) {
+                    
+                    const confirmed = await showConfirmationModal(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`);
+                    if (confirmed) {
                         const updates = {};
                         Object.entries(state.asignaciones[week] || {}).forEach(([slotId, pId]) => {
                             if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
@@ -1101,18 +1159,22 @@
                             hasAssignments = true;
                         }
                     });
-
-                    if (hasAssignments && confirm(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`)) {
-                        saveUndoState();
-                        await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                        showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
-                    } else if (!hasAssignments) {
+                    
+                    if (hasAssignments) {
+                        const confirmed = await showConfirmationModal(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`);
+                        if (confirmed) {
+                            saveUndoState();
+                            await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                            showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
+                        }
+                    } else {
                         showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
                     }
                 } else if (button.matches('#btn-editar-personal-view')) {
                     populateEditPersonalModal(button.dataset.id);
                 } else if (button.matches('#btn-eliminar-personal-view')) {
-                    if (confirm('¿Seguro que quieres eliminar a esta persona?')) {
+                    const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar a esta persona?');
+                    if (confirmed) {
                         await deleteDoc(doc(db, personalCol.path, button.dataset.id));
                         viewPersonalModal.style.display = 'none';
                         showStatusMessage('Personal eliminado');
@@ -1123,18 +1185,16 @@
                     formEditLocal['edit-local-color'].value = button.dataset.color;
                     editLocalModal.style.display = 'block';
                 } else if (button.matches('.btn-configurar-horarios')) {
-                    // INICIO: Lógica para abrir modal de horarios
                     currentlyEditingLocal = button.dataset.nombre;
                     tempScheduleConfig = JSON.parse(JSON.stringify(state.mapeoConfig[currentlyEditingLocal] || {}));
                     document.getElementById('schedule-config-local-name').textContent = currentlyEditingLocal.toUpperCase();
                     document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = currentlyEditingLocal;
                     renderizarMapeoConfig(currentlyEditingLocal, document.getElementById('schedule-config-container'));
                     scheduleConfigModal.style.display = 'block';
-                    // FIN: Lógica para abrir modal
                 } else if (button.matches('#btn-limpiar-horarios-local')) {
-                     // INICIO: Lógica para limpiar horarios en el modal
                     const localNombre = button.dataset.localNombre;
-                    if (localNombre && confirm(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se guardará hasta que hagas clic en "Guardar Cambios".`)) {
+                    const confirmed = await showConfirmationModal(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se guardará hasta que hagas clic en "Guardar Cambios".`);
+                    if (localNombre && confirmed) {
                         diasSemana.forEach(dia => {
                             if (!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
                             ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => tempScheduleConfig[dia][tipo] = 0);
@@ -1142,9 +1202,7 @@
                         renderizarMapeoConfig(localNombre, document.getElementById('schedule-config-container'));
                         showStatusMessage(`Puestos limpiados para ${localNombre.toUpperCase()}. Haz clic en Guardar para confirmar.`);
                     }
-                    // FIN: Lógica para limpiar horarios
                 } else if (button.matches('#btn-guardar-horarios')) {
-                    // INICIO: Lógica para guardar horarios
                     const localNombre = currentlyEditingLocal;
                     const originalConfig = state.mapeoConfig[localNombre] || {};
                     const newConfig = tempScheduleConfig;
@@ -1157,8 +1215,9 @@
                         });
                     });
 
-                    if (hasReductions && !confirm('Reducir el número de puestos eliminará las asignaciones existentes para los puestos eliminados. ¿Desea continuar?')) {
-                        return; 
+                    if (hasReductions) {
+                        const confirmed = await showConfirmationModal('Reducir el número de puestos eliminará las asignaciones existentes para los puestos eliminados. ¿Desea continuar?');
+                        if (!confirmed) return;
                     }
 
                     saveUndoState();
@@ -1185,9 +1244,9 @@
                     }
                     showStatusMessage('Horarios guardados correctamente.');
                     scheduleConfigModal.style.display = 'none';
-                    // FIN: Lógica para guardar horarios
                 } else if (button.matches('.btn-eliminar-local')) {
-                    if (confirm('¿Seguro que quieres eliminar este local?')) {
+                     const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar este local?');
+                    if (confirmed) {
                         await deleteDoc(doc(db, localesCol.path, button.dataset.id));
                         showStatusMessage('Local eliminado');
                     }
@@ -1195,9 +1254,14 @@
                     copyPersonalSchedule(button.dataset.personId);
                 } else if (button.matches('.btn-copy-local-schedule')) {
                     copyLocalSchedule(button.dataset.localNombre);
+                } else if (button.matches('.btn-download-pdf')) {
+                    downloadLocalAsPDF(button.dataset.localNombre);
+                } else if (button.matches('#btn-download-all-pdf')) {
+                    downloadAllLocalsAsPDF();
                 } else if (button.matches('.btn-cargar-historial')) {
                     const week = button.dataset.week;
-                    if (confirm(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración actual.`)) {
+                    const confirmed = await showConfirmationModal(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración actual.`);
+                    if (confirmed) {
                         const dataHistorial = state.historial[week];
                         if (dataHistorial) {
                             saveUndoState();
@@ -1216,7 +1280,8 @@
                     }
                 } else if (button.matches('.btn-eliminar-historial')) {
                     const week = button.dataset.week;
-                    if (confirm(`¿Eliminar el historial de la semana ${week}?`)) {
+                    const confirmed = await showConfirmationModal(`¿Eliminar el historial de la semana ${week}?`);
+                    if (confirmed) {
                         await deleteDoc(doc(db, historialCol.path, week));
                         showStatusMessage('Historial eliminado');
                     }
@@ -1234,7 +1299,8 @@
                         showStatusMessage('Selecciona una semana para poder guardarla.', 'error');
                     }
                 } else if (button.matches('#btn-limpiar-mapeo')) {
-                    if (confirm('¿Está seguro de que desea limpiar todas las asignaciones de la semana actual?')) {
+                    const confirmed = await showConfirmationModal('¿Está seguro de que desea limpiar todas las asignaciones de la semana actual?');
+                    if (confirmed) {
                         saveUndoState();
                         await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
                         showStatusMessage('Mapeo de la semana limpiado.');
@@ -1256,7 +1322,6 @@
             const target = e.target;
             try {
                 if (target.matches('.mapeo-config-input')) {
-                    // INICIO: Lógica de cambio en modal de horarios (actualiza estado temporal)
                     const { local, dia, type, part } = target.dataset;
                     if (local !== currentlyEditingLocal) return; 
 
@@ -1266,11 +1331,10 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + tipo.slice(1)}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector('[data-part="hour"]').value}:${parent.querySelector('[data-part="minute"]').value} ${parent.querySelector('[data-part="ampm"]').value}`;
                     }
-                    // FIN: Lógica de cambio en modal
                 } else if (target.matches('.mapeo-select')) {
                     const week = state.selectedWeek;
                     const slotId = target.dataset.slotId;
@@ -1343,6 +1407,268 @@
         filtroLocalBusquedaInput.addEventListener('input', debounce(e => { state.searchTermMapeo = e.target.value.toLowerCase().trim(); renderizarMapeo(); }));
         
         // --- Funciones de Utilidad ---
+        
+        function showConfirmationModal(message) {
+            return new Promise((resolve) => {
+                confirmationModalText.textContent = message;
+                confirmationModal.style.display = 'block';
+
+                const confirmHandler = () => {
+                    confirmationModal.style.display = 'none';
+                    resolve(true);
+                    cleanup();
+                };
+
+                const cancelHandler = () => {
+                    confirmationModal.style.display = 'none';
+                    resolve(false);
+                    cleanup();
+                };
+
+                const cleanup = () => {
+                    confirmationModalConfirm.removeEventListener('click', confirmHandler);
+                    confirmationModalCancel.removeEventListener('click', cancelHandler);
+                };
+
+                confirmationModalConfirm.addEventListener('click', confirmHandler);
+                confirmationModalCancel.addEventListener('click', cancelHandler);
+            });
+        }
+        
+        function drawLocalBox(doc, localData, x, y, boxWidth) {
+            const margin = 5;
+            const headerHeight = 12;
+            const lineHeight = 6;
+            let currentY = y;
+
+            // Calculate total height first
+            let totalHeight = headerHeight;
+            const orderedDays = diasSemana.filter(dia => localData.assignmentsByDay[dia]);
+            if (orderedDays.length > 0) {
+                orderedDays.forEach(dia => {
+                    totalHeight += lineHeight * 1.5; // Day title + space
+                    totalHeight += localData.assignmentsByDay[dia].length * lineHeight; // Assignments
+                });
+            } else {
+                totalHeight += lineHeight * 2; // "No hay asignaciones" text
+            }
+            totalHeight += margin; // Bottom padding
+
+            // Draw header background
+            doc.setFillColor(localData.color || '#dddddd');
+            doc.rect(x, currentY, boxWidth, headerHeight, 'F');
+            
+            // Draw border for the whole box
+            doc.setDrawColor(150, 150, 150);
+            doc.roundedRect(x, currentY, boxWidth, totalHeight, 2, 2);
+
+            // Draw header text
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(255, 255, 255);
+            doc.text(localData.nombre.toUpperCase(), x + margin, currentY + headerHeight / 2 + 3, { baseline: 'middle' });
+            currentY += headerHeight;
+            
+            // Reset text color
+            doc.setTextColor(0, 0, 0);
+            
+            currentY += margin; // Padding before content
+
+            // Draw body content
+            if (orderedDays.length > 0) {
+                orderedDays.forEach(dia => {
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.text(diasSemanaFull[diasSemana.indexOf(dia)], x + margin, currentY);
+                    currentY += lineHeight;
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(9);
+                    localData.assignmentsByDay[dia].forEach(asig => {
+                        const assignmentText = `- ${asig.puesto}: ${asig.nombre} (${asig.hora})`;
+                        doc.text(assignmentText, x + margin + 3, currentY);
+                        currentY += lineHeight;
+                    });
+                    currentY += lineHeight * 0.5; // Space between days
+                });
+            } else {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.text('No hay asignaciones esta semana.', x + margin, currentY);
+                currentY += lineHeight;
+            }
+
+            return totalHeight;
+        }
+
+        async function downloadLocalAsPDF(localNombre) {
+            showStatusMessage('Generando PDF...', 'success');
+            loader.style.display = 'flex';
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                
+                const local = state.locales.find(l => l.nombre === localNombre);
+                const week = state.selectedWeek;
+                const asignacionesSemana = state.asignaciones[week] || {};
+                
+                const assignmentsByDay = {};
+                diasSemana.forEach(dia => {
+                    const dailyAssignments = [];
+                    Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
+                        if (slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string') {
+                            const [, , tipo] = slotId.split('-');
+                            const persona = state.personal.find(p => p.id === pId);
+                            const config = state.mapeoConfig[localNombre]?.[dia] || {};
+                            const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                            if (persona) {
+                                dailyAssignments.push({
+                                    puesto: tipoPuestoNombres[tipo] || tipo,
+                                    nombre: `${persona.nombre} ${persona.apellido}`,
+                                    hora: config[horaKey] || 'N/A'
+                                });
+                            }
+                        }
+                    });
+                    if (dailyAssignments.length > 0) {
+                        dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+                        assignmentsByDay[dia] = dailyAssignments;
+                    }
+                });
+
+                const localData = {
+                    nombre: localNombre,
+                    color: local?.color,
+                    assignmentsByDay
+                };
+                
+                const margin = 15;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Programación ${localNombre.toUpperCase()}`, pageWidth / 2, margin + 5, { align: 'center' });
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Semana ${week}`, pageWidth / 2, margin + 12, { align: 'center' });
+
+                drawLocalBox(doc, localData, margin, margin + 20, pageWidth - (margin * 2));
+                
+                doc.save(`Programacion_${localNombre}_${week}.pdf`);
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showStatusMessage('Hubo un error al generar el PDF.', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+        
+        async function downloadAllLocalsAsPDF() {
+            const cardElements = document.querySelectorAll('#mapeo-container .local-card');
+            if (cardElements.length === 0) {
+                showStatusMessage('No hay locales visibles para descargar.', 'error');
+                return;
+            }
+
+            showStatusMessage('Generando PDF de todos los locales...', 'success');
+            loader.style.display = 'flex';
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const week = state.selectedWeek;
+                
+                const margin = 10;
+                const gap = 5;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const boxWidth = (pageWidth - (margin * 2) - gap) / 2;
+                let x = margin;
+                let y = margin;
+                
+                const addHeader = (pageNumber) => {
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Programación Completa`, pageWidth / 2, margin, { align: 'center' });
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Semana ${week}`, pageWidth / 2, margin + 7, { align: 'center' });
+                    y = margin + 20;
+                    if (pageNumber > 1) {
+                        doc.setFontSize(8);
+                        doc.text(`Página ${pageNumber}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
+                    }
+                };
+
+                addHeader(doc.internal.getNumberOfPages());
+
+                for (const card of cardElements) {
+                    const localNombre = card.id.replace('local-card-', '').replace(/-/g, ' ');
+                    const local = state.locales.find(l => l.nombre === localNombre);
+                    const asignacionesSemana = state.asignaciones[week] || {};
+                    
+                    const assignmentsByDay = {};
+                    diasSemana.forEach(dia => {
+                        const dailyAssignments = [];
+                         Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
+                            if (slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string') {
+                                const [, , tipo] = slotId.split('-');
+                                const persona = state.personal.find(p => p.id === pId);
+                                const config = state.mapeoConfig[localNombre]?.[dia] || {};
+                                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                                if(persona) {
+                                    dailyAssignments.push({
+                                        puesto: tipoPuestoNombres[tipo] || tipo,
+                                        nombre: `${persona.nombre} ${persona.apellido}`,
+                                        hora: config[horaKey] || 'N/A'
+                                    });
+                                }
+                            }
+                        });
+                        if (dailyAssignments.length > 0) {
+                            dailyAssignments.sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+                            assignmentsByDay[dia] = dailyAssignments;
+                        }
+                    });
+
+                    const localData = { nombre: localNombre, color: local?.color, assignmentsByDay };
+                    
+                    let tempDoc = new jsPDF(); 
+                    const boxHeight = drawLocalBox(tempDoc, localData, 0, 0, boxWidth);
+
+                    if (y + boxHeight > pageHeight - margin) {
+                        if (x === margin) { 
+                            x = margin + boxWidth + gap;
+                            y = margin + 20; 
+                        } else { 
+                            doc.addPage();
+                            addHeader(doc.internal.getNumberOfPages());
+                            x = margin;
+                            y = margin + 20;
+                        }
+                    }
+                    
+                    // Re-check after potential column/page switch
+                    if (y + boxHeight > pageHeight - margin) {
+                         doc.addPage();
+                         addHeader(doc.internal.getNumberOfPages());
+                         x = margin;
+                         y = margin + 20;
+                    }
+
+                    drawLocalBox(doc, localData, x, y, boxWidth);
+                    y += boxHeight + gap;
+                }
+
+                doc.save(`Programacion_Completa_${week}.pdf`);
+            } catch (error) {
+                console.error("Error generating multi-page PDF:", error);
+                showStatusMessage('Hubo un error al generar el PDF de todos los locales.', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
         function obtenerSugerenciaInteligente(local, dia) {
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
@@ -1417,6 +1743,7 @@
             document.getElementById('personal-modal-title').textContent = 'Editar Personal';
             formPersonal.reset();
             formPersonal['personal-id'].value = id;
+            renderizarSelectsLocales(personalModal);
             Object.keys(persona).forEach(key => {
                 if (formPersonal.elements[key]) {
                     formPersonal.elements[key].value = persona[key];
@@ -1492,13 +1819,7 @@
             navButtons.forEach(b => b.classList.remove('active'));
             document.getElementById(`section-${vista}`).classList.remove('hidden');
             document.getElementById(`btn-${vista}`).classList.add('active');
-
-            switch(vista) {
-                case 'gestion': renderizarTablaLocales(); renderizarTablaPersonal(); break;
-                case 'mapeo': renderizarMapeo(); break;
-                case 'programacion': checkUpcomingShiftNotifications(); renderizarProgramacionPersonal(); break;
-                case 'historial': renderizarHistorial(); break;
-            }
+            renderCurrentView();
         }
         
         themeToggleBtn.addEventListener('click', function() {
@@ -1678,25 +1999,43 @@
 
         function copyLocalSchedule(localNombre) {
             const week = state.selectedWeek;
+            if (!week) return showStatusMessage('Por favor, selecciona una semana.', 'error');
             const asignacionesSemana = state.asignaciones[week] || {};
-            const localAssignments = Object.entries(asignacionesSemana)
-                .filter(([slotId, pId]) => slotId.startsWith(localNombre + '-') && pId && slotId.includes('-'))
-                .map(([slotId, pId]) => {
-                    const [local, dia, tipo, i] = slotId.split('-');
-                    const persona = state.personal.find(p => p.id === pId);
-                    return { dia, persona, i, tipo, hora: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
-                });
-            if (localAssignments.length === 0) return showStatusMessage('Este local no tiene personal asignado.', 'error');
             
-            let message = `*Programación ${localNombre.toUpperCase()} - Semana ${week}*\n\n`;
-            diasSemana.forEach((dia, index) => {
-                const daily = localAssignments.filter(a => a.dia === dia);
-                if (daily.length > 0) {
-                    message += `*${diasSemanaFull[index]}*\n${daily.map(a => `- ${tipoPuestoNombres[a.tipo] || a.tipo} ${a.i}: ${a.persona ? `${a.persona.nombre} ${a.persona.apellido}` : 'N/A'} (${a.hora})`).join('\n')}\n\n`;
+            const assignedPersonnelByDay = {};
+
+            Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
+                if (slotId.startsWith(localNombre + '-') && pId && typeof pId === 'string' && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
+                    const [local, dia] = slotId.split('-');
+                    if (!assignedPersonnelByDay[dia]) {
+                        assignedPersonnelByDay[dia] = new Set();
+                    }
+                    assignedPersonnelByDay[dia].add(pId);
                 }
             });
+
+            if (Object.keys(assignedPersonnelByDay).length === 0) {
+                return showStatusMessage('Este local no tiene personal asignado para copiar.', 'error');
+            }
+            
+            let message = `Programación ${localNombre.toUpperCase()}\n\n`;
+
+            diasSemana.forEach((dia, index) => {
+                const personnelIds = assignedPersonnelByDay[dia];
+                if (personnelIds && personnelIds.size > 0) {
+                    message += `${diasSemanaFull[index]}\n`;
+                    personnelIds.forEach(pId => {
+                        const persona = state.personal.find(p => p.id === pId);
+                        if (persona) {
+                            message += `- ${persona.nombre} ${persona.apellido}\n`;
+                        }
+                    });
+                    message += '\n'; 
+                }
+            });
+            
             const textArea = document.createElement("textarea");
-            textArea.value = message;
+            textArea.value = message.trim();
             document.body.appendChild(textArea);
             textArea.select();
             try {
@@ -1755,5 +2094,7 @@
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
+
