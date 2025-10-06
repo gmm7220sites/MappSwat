@@ -825,9 +825,33 @@
                 localCol.id = `local-card-${local.nombre.replace(/\s+/g, '-')}`;
                 localCol.style.borderTopColor = local.color || '#cccccc';
 
+                // --- INICIO: Cálculo de Porcentaje de Completado ---
+                let totalPuestos = 0;
+                let puestosAsignados = 0;
+                const asignacionesSemana = state.asignaciones[week] || {};
+
+                diasSemana.forEach(dia => {
+                    const configDia = localConfig[dia] || {};
+                    ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
+                        const count = configDia[tipo] || 0;
+                        totalPuestos += count;
+                        for (let i = 1; i <= count; i++) {
+                            const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
+                            if (asignacionesSemana[slotId]) {
+                                puestosAsignados++;
+                            }
+                        }
+                    });
+                });
+                const porcentaje = totalPuestos > 0 ? (puestosAsignados / totalPuestos) * 100 : 100;
+                // --- FIN: Cálculo de Porcentaje de Completado ---
+
                 localCol.innerHTML = `
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-2xl font-bold">${local.nombre.toUpperCase()}</h3>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-2xl font-bold">${local.nombre.toUpperCase()}</h3>
+                            ${createCompletionCircle(porcentaje)}
+                        </div>
                         <div class="flex items-center gap-2">
                             <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">🔄</button>
                             <button data-local-nombre="${local.nombre}" class="btn-copy-local-schedule bg-sky-100 text-sky-700 font-bold py-1 px-3 rounded-md hover:bg-sky-200 text-sm">Copiar</button>
@@ -2163,6 +2187,36 @@
                 totalHeight += lineHeight;
             }
             return Math.max(totalHeight, 30);
+        }
+
+        function createCompletionCircle(percentage) {
+            const size = 28;
+            const strokeWidth = 3;
+            const radius = (size / 2) - strokeWidth;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+
+            let color = '#4ade80'; // green-400
+            if (percentage < 50) color = '#f87171'; // red-400
+            else if (percentage < 100) color = '#facc15'; // yellow-400
+
+            return `
+                <div class="relative" title="Completado al ${percentage.toFixed(0)}%">
+                    <svg class="w-7 h-7 transform -rotate-90">
+                        <circle class="text-slate-200 dark:text-slate-700" stroke-width="${strokeWidth}" stroke="currentColor" fill="transparent" r="${radius}" cx="${size/2}" cy="${size/2}"/>
+                        <circle style="stroke: ${color}; transition: stroke-dashoffset 0.5s ease 0s;"
+                            stroke-width="${strokeWidth}"
+                            stroke-dasharray="${circumference}"
+                            stroke-dashoffset="${offset}"
+                            stroke-linecap="round"
+                            fill="transparent"
+                            r="${radius}"
+                            cx="${size/2}"
+                            cy="${size/2}"/>
+                    </svg>
+                    <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-slate-300">${Math.round(percentage)}</span>
+                </div>
+            `;
         }
 
     </script>
