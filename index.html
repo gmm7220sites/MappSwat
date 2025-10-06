@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Personal para Mapeos (Firebase)</title>
+    <link rel="icon" href="logo swat.ico" type="image/x-icon">
     <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -56,7 +57,7 @@
         html.dark .vestimenta-btn:hover { background-color: #475569; }
 
         .programacion-card { border-top: 4px solid; }
-        #loader { display: none; /* Oculto por defecto */ position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; align-items: center; justify-content: center;}
+        #loader { display: none; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; align-items: center; justify-content: center; }
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
 
         /* Contenido principal visible por defecto para el efecto de fondo borroso */
@@ -334,6 +335,7 @@
 
     <div id="edit-local-modal" class="modal"><div class="modal-content"><h3 class="text-2xl font-bold mb-4">Editar Local</h3><form id="form-edit-local" class="flex flex-col gap-4"><input type="hidden" id="edit-local-id"><input type="text" id="edit-local-name" placeholder="Nombre del Local" class="p-2 border rounded-md" required><div class="flex items-center gap-4"><label for="edit-local-color">Color:</label><input type="color" id="edit-local-color" class="h-10 w-10"></div><div class="flex gap-4"><button type="submit" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Guardar</button><button type="button" id="close-local-modal" class="flex-1 bg-slate-300 py-2 px-4 rounded-md hover:bg-slate-400">Cancelar</button></div></form></div></div>
     
+    <!-- INICIO: Modal de Horarios Modificado -->
     <div id="schedule-config-modal" class="modal">
         <div class="modal-content !max-w-3xl">
             <div class="flex justify-between items-center mb-4">
@@ -348,9 +350,11 @@
             </div>
         </div>
     </div>
+    <!-- FIN: Modal de Horarios Modificado -->
     
     <div id="message-modal" class="modal"><div class="modal-content"><p id="message-modal-text" class="mb-4"></p><button id="close-message-modal" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">OK</button></div></div>
     
+    <!-- INICIO: Modal de Confirmación -->
     <div id="confirmation-modal" class="modal">
         <div class="modal-content">
             <p id="confirmation-modal-text" class="mb-6"></p>
@@ -360,12 +364,13 @@
             </div>
         </div>
     </div>
+    <!-- FIN: Modal de Confirmación -->
 
     <script type="module">
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
         // --- INICIO: Configuración de Firebase ---
         const firebaseConfig = {
@@ -422,7 +427,7 @@
             
             const confirmed = await showConfirmationModal('¿Está seguro de que desea deshacer la última acción?');
             if (!confirmed) return;
-
+            
             loader.style.display = 'flex';
             const lastState = actionHistory.pop();
 
@@ -472,7 +477,7 @@
             pendingNotifications: new Set(),
         };
 
-        // Estado para carga de datos
+        // INICIO: Estado para carga de datos
         let initialDataLoaded = {
             personal: false,
             locales: false,
@@ -480,10 +485,12 @@
             asignaciones: false,
             historial: false
         };
+        // FIN: Estado para carga de datos
 
-        // Variables para el modal de horarios
+        // INICIO: Variables para el modal de horarios
         let tempScheduleConfig = {};
         let currentlyEditingLocal = null;
+        // FIN: Variables para el modal de horarios
 
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
@@ -494,7 +501,10 @@
             'puestos': 'Puesto',
             'cacheos': 'Cacheo',
             'cacheoIngreso': 'C. Ingreso',
-            'cacheoSalida': 'C. Salida'
+            'cacheoSalida': 'C. Salida',
+            'turno1': '1er. Turno',
+            'turno2': '2do. Turno',
+            'turno3': '3er. Turno'
         };
         const loader = document.getElementById('loader');
         const mainContent = document.querySelector('.main-content');
@@ -519,10 +529,12 @@
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
+        
         const confirmationModal = document.getElementById('confirmation-modal');
         const confirmationModalText = document.getElementById('confirmation-modal-text');
         const confirmationModalConfirm = document.getElementById('confirmation-modal-confirm');
         const confirmationModalCancel = document.getElementById('confirmation-modal-cancel');
+
 
         // --- AUTENTICACIÓN Y SETUP DE FIREBASE ---
         loginForm.addEventListener('submit', async (e) => {
@@ -542,6 +554,7 @@
                 }
                 
                 loader.style.display = 'flex';
+                // Credentials are correct, now proceed with app initialization
                 loginOverlay.style.display = 'none';
                 setupListeners();
                 inicializarApp();
@@ -550,6 +563,7 @@
             }
         });
 
+        // This will run on page load
         document.addEventListener('DOMContentLoaded', async () => {
             const appId = "mapeo-app-v2";
             const basePath = `artifacts/${appId}/public/data`;
@@ -560,12 +574,13 @@
             historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
             
             try {
-                await signInAnonymously(auth);
+                await signInAnonymously(auth); // Ensure we are connected
             } catch (error) {
                  console.error("Firebase auth failed:", error);
                  showStatusMessage('Error de conexión con el servidor.', 'error');
             }
             
+            // Check for saved credentials
             const savedUser = localStorage.getItem('mapeoUsername');
             const savedPass = localStorage.getItem('mapeoPassword');
             if (savedUser && savedPass) {
@@ -578,7 +593,7 @@
             loader.style.display = 'none';
         });
 
-        // --- Lógica de renderizado y carga de datos mejorada ---
+        // --- INICIO: Lógica de renderizado y carga de datos mejorada ---
         function renderCurrentView() {
             switch(state.currentView) {
                 case 'gestion':
@@ -641,6 +656,7 @@
                 state.mapeoConfig = {};
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
                 if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
+                recalculateConflicts();
                 renderCurrentView();
             }, error => console.error("Error fetching mapeo config:", error));
 
@@ -660,6 +676,7 @@
                 renderCurrentView();
             }, error => console.error("Error fetching historial:", error));
         }
+        // --- FIN: Lógica de renderizado y carga de datos mejorada ---
         
         // --- LÓGICA DE RENDERIZADO ---
         function renderizarTablaLocales() {
@@ -716,7 +733,9 @@
             
             const createTimeSelectors = (dia, tipo, config) => {
                 const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                const [h, m, ampm] = (config[horaKey] || "12:00 AM").match(/(\d+):(\d+) (AM|PM)/).slice(1);
+                const timeString = config[horaKey] || "12:00 AM";
+                const timeMatch = timeString.match(/(\d+):(\d+) (AM|PM)/);
+                const [h, m, ampm] = timeMatch ? timeMatch.slice(1) : ["12", "00", "AM"];
                 return `
                     <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="hour" class="mapeo-config-input p-1 border rounded">${Array.from({length: 12}, (_, i) => `<option value="${i+1}" ${h == i+1 ? 'selected' : ''}>${i+1}</option>`).join('')}</select>
                     <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="minute" class="mapeo-config-input p-1 border rounded"><option value="00" ${m == '00' ? 'selected' : ''}>00</option><option value="30" ${m == '30' ? 'selected' : ''}>30</option></select>
@@ -750,6 +769,21 @@
                         <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="cacheoSalida" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.cacheoSalida || 0}">
                         ${createTimeSelectors(dia, 'cacheoSalida', config)}
                     </div>
+                     <div class="flex items-center gap-2 mt-2">
+                        <label class="text-sm w-20">1er. Turno:</label>
+                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno1" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno1 || 0}">
+                        ${createTimeSelectors(dia, 'turno1', config)}
+                    </div>
+                     <div class="flex items-center gap-2 mt-2">
+                        <label class="text-sm w-20">2do. Turno:</label>
+                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno2" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno2 || 0}">
+                        ${createTimeSelectors(dia, 'turno2', config)}
+                    </div>
+                     <div class="flex items-center gap-2 mt-2">
+                        <label class="text-sm w-20">3er. Turno:</label>
+                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno3" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno3 || 0}">
+                        ${createTimeSelectors(dia, 'turno3', config)}
+                    </div>
                 `;
                 container.appendChild(diaDiv);
             });
@@ -759,10 +793,6 @@
             const container = document.getElementById('mapeo-container');
             container.innerHTML = '';
             const week = state.selectedWeek;
-             if (!initialDataLoaded.personal || !initialDataLoaded.locales || !initialDataLoaded.asignaciones || !initialDataLoaded.mapeoConfig) {
-                container.innerHTML = `<div class="col-span-1 lg:col-span-2 text-center p-8 text-slate-500"><p>Cargando mapeo...</p></div>`;
-                return;
-            }
             if (!week) return;
 
             const dates = getWeekDates(week);
@@ -785,19 +815,14 @@
                 return false;
             });
 
-            if (localesFiltrados.length === 0) {
-                container.innerHTML = `<div class="col-span-1 lg:col-span-2 text-center p-8 text-slate-500"><p>No se encontraron locales con los filtros actuales.</p></div>`;
-                return;
-            }
-
             localesFiltrados.forEach(local => {
                 const localConfig = state.mapeoConfig[local.nombre] || {};
-                const hasPositions = diasSemana.some(dia => (localConfig[dia]?.puestos > 0) || (localConfig[dia]?.cacheos > 0) || (localConfig[dia]?.cacheoIngreso > 0) || (localConfig[dia]?.cacheoSalida > 0));
+                const hasPositions = diasSemana.some(dia => (localConfig[dia]?.puestos > 0) || (localConfig[dia]?.cacheos > 0) || (localConfig[dia]?.cacheoIngreso > 0) || (localConfig[dia]?.cacheoSalida > 0) || (localConfig[dia]?.turno1 > 0) || (localConfig[dia]?.turno2 > 0) || (localConfig[dia]?.turno3 > 0));
                 if (!hasPositions) return;
 
                 const localCol = document.createElement('div');
-                localCol.id = `local-card-${local.nombre.replace(/\s+/g, '-')}`;
                 localCol.className = 'bg-white p-6 rounded-xl shadow-lg local-card';
+                localCol.id = `local-card-${local.nombre.replace(/\s+/g, '-')}`;
                 localCol.style.borderTopColor = local.color || '#cccccc';
 
                 localCol.innerHTML = `
@@ -806,13 +831,13 @@
                         <div class="flex items-center gap-2">
                             <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">🔄</button>
                             <button data-local-nombre="${local.nombre}" class="btn-copy-local-schedule bg-sky-100 text-sky-700 font-bold py-1 px-3 rounded-md hover:bg-sky-200 text-sm">Copiar</button>
-                            <button data-local-nombre="${local.nombre}" class="btn-download-pdf bg-red-100 text-red-700 font-bold py-1 px-3 rounded-md hover:bg-red-200 text-sm">PDF</button>
+                             <button data-local-nombre="${local.nombre}" class="btn-download-pdf bg-red-100 text-red-700 font-bold py-1 px-3 rounded-md hover:bg-red-200 text-sm">PDF</button>
                         </div>
                     </div>`;
                 
                 diasSemana.forEach(dia => {
                     const config = localConfig[dia];
-                    if (config && ((config.puestos > 0) || (config.cacheos > 0) || (config.cacheoIngreso > 0) || (config.cacheoSalida > 0))) {
+                    if (config && ((config.puestos > 0) || (config.cacheos > 0) || (config.cacheoIngreso > 0) || (config.cacheoSalida > 0) || (config.turno1 > 0) || (config.turno2 > 0) || (config.turno3 > 0))) {
                         const diaContenedor = document.createElement('div');
                         diaContenedor.className = 'dia-grupo border-slate-200 dark:border-slate-700';
                         
@@ -834,6 +859,10 @@
                         createSubSection('cacheos', config.cacheos, config.horaCacheos);
                         createSubSection('cacheoIngreso', config.cacheoIngreso, config.horaCacheoIngreso);
                         createSubSection('cacheoSalida', config.cacheoSalida, config.horaCacheoSalida);
+                        createSubSection('turno1', config.turno1, config.horaTurno1);
+                        createSubSection('turno2', config.turno2, config.horaTurno2);
+                        createSubSection('turno3', config.turno3, config.horaTurno3);
+
                        
                         localCol.appendChild(diaContenedor);
                     }
@@ -847,7 +876,7 @@
             const slotId = `${local}-${dia}-${tipo}-${i}`;
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
             const div = document.createElement('div');
-            div.className = 'asignacion-fila';
+            div.className = 'asignacion-fila'; // Clase para la fila de asignación
             
             const weekSlotId = `${week}-${slotId}`;
             if (state.redConflicts.has(weekSlotId)) div.classList.add('conflict-highlight');
@@ -859,7 +888,7 @@
             select.className = 'mapeo-select flex-grow p-2 border rounded bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600';
             
             let optionsHTML = '';
-            const sugerencias = obtenerSugerenciaInteligente(local, dia);
+            const sugerencias = obtenerSugerenciaInteligente(local, dia); // Ahora devuelve un array
 
             if (!asignacionActual && sugerencias.length > 0) {
                 const suggestionText = sugerencias.map(p => `${p.nombre} ${p.apellido.charAt(0)}`).join(', ');
@@ -894,6 +923,7 @@
             return div;
         }
 
+        // INICIO: Renderizado de Programación Mejorado
         function renderizarProgramacionPersonal() {
             const container = document.getElementById('programacion-container');
             container.innerHTML = '';
@@ -981,7 +1011,7 @@
                 container.appendChild(card);
             });
         }
-
+        // FIN: Renderizado de Programación Mejorado
         function renderizarHistorial() {
             const container = document.getElementById('historial-container');
             container.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-100"><tr><th class="p-3">Semana</th><th class="p-3">Asignaciones</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody>${Object.keys(state.historial).length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay programaciones guardadas.</td></tr>` : Object.entries(state.historial).map(([week, data]) => `
@@ -1105,8 +1135,14 @@
             const button = e.target.closest('button');
             if (!button) return;
 
+            // --- Lógica de Botones ---
             try {
-                if (button.matches('.vestimenta-btn')) {
+                 if (button.matches('.btn-download-pdf')) {
+                    downloadLocalAsPDF(button.dataset.localNombre);
+                } else if (button.matches('#btn-download-all-pdf')) {
+                    downloadAllLocalsAsPDF();
+                }
+                else if (button.matches('.vestimenta-btn')) {
                     const week = state.selectedWeek;
                     const slotId = button.dataset.slotId;
                     const personaId = state.asignaciones[week]?.[slotId];
@@ -1124,7 +1160,7 @@
                     const persona = state.personal.find(p => p.id === personId);
                     const week = state.selectedWeek;
                     if (!persona || !week) return;
-                    
+
                     const confirmed = await showConfirmationModal(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`);
                     if (confirmed) {
                         const updates = {};
@@ -1159,15 +1195,15 @@
                             hasAssignments = true;
                         }
                     });
-                    
+
                     if (hasAssignments) {
                         const confirmed = await showConfirmationModal(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`);
-                        if (confirmed) {
+                        if(confirmed) {
                             saveUndoState();
                             await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                             showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
                         }
-                    } else {
+                    } else if (!hasAssignments) {
                         showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
                     }
                 } else if (button.matches('#btn-editar-personal-view')) {
@@ -1185,30 +1221,34 @@
                     formEditLocal['edit-local-color'].value = button.dataset.color;
                     editLocalModal.style.display = 'block';
                 } else if (button.matches('.btn-configurar-horarios')) {
+                    // INICIO: Lógica para abrir modal de horarios
                     currentlyEditingLocal = button.dataset.nombre;
                     tempScheduleConfig = JSON.parse(JSON.stringify(state.mapeoConfig[currentlyEditingLocal] || {}));
                     document.getElementById('schedule-config-local-name').textContent = currentlyEditingLocal.toUpperCase();
                     document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = currentlyEditingLocal;
                     renderizarMapeoConfig(currentlyEditingLocal, document.getElementById('schedule-config-container'));
                     scheduleConfigModal.style.display = 'block';
+                    // FIN: Lógica para abrir modal
                 } else if (button.matches('#btn-limpiar-horarios-local')) {
+                     // INICIO: Lógica para limpiar horarios en el modal
                     const localNombre = button.dataset.localNombre;
                     const confirmed = await showConfirmationModal(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se guardará hasta que hagas clic en "Guardar Cambios".`);
                     if (localNombre && confirmed) {
                         diasSemana.forEach(dia => {
                             if (!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
-                            ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => tempScheduleConfig[dia][tipo] = 0);
+                            ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => tempScheduleConfig[dia][tipo] = 0);
                         });
                         renderizarMapeoConfig(localNombre, document.getElementById('schedule-config-container'));
                         showStatusMessage(`Puestos limpiados para ${localNombre.toUpperCase()}. Haz clic en Guardar para confirmar.`);
                     }
+                    // FIN: Lógica para limpiar horarios
                 } else if (button.matches('#btn-guardar-horarios')) {
                     const localNombre = currentlyEditingLocal;
                     const originalConfig = state.mapeoConfig[localNombre] || {};
                     const newConfig = tempScheduleConfig;
                     let hasReductions = false;
                     diasSemana.forEach(dia => {
-                        ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => {
+                        ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
                             const oldCount = originalConfig[dia]?.[tipo] || 0;
                             const newCount = newConfig[dia]?.[tipo] || 0;
                             if (newCount < oldCount) hasReductions = true;
@@ -1225,7 +1265,7 @@
 
                     const updates = {};
                     diasSemana.forEach(dia => {
-                         ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida'].forEach(tipo => {
+                         ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
                             const oldCount = originalConfig[dia]?.[tipo] || 0;
                             const newCount = newConfig[dia]?.[tipo] || 0;
                             if (newCount < oldCount) {
@@ -1240,12 +1280,13 @@
                     });
 
                     if (Object.keys(updates).length > 0 && state.selectedWeek) {
-                         await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), updates, { merge: true });
+                         const weekDocRef = doc(db, asignacionesCol.path, state.selectedWeek);
+                         await setDoc(weekDocRef, updates, { merge: true });
                     }
                     showStatusMessage('Horarios guardados correctamente.');
                     scheduleConfigModal.style.display = 'none';
                 } else if (button.matches('.btn-eliminar-local')) {
-                     const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar este local?');
+                    const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar este local?');
                     if (confirmed) {
                         await deleteDoc(doc(db, localesCol.path, button.dataset.id));
                         showStatusMessage('Local eliminado');
@@ -1254,10 +1295,6 @@
                     copyPersonalSchedule(button.dataset.personId);
                 } else if (button.matches('.btn-copy-local-schedule')) {
                     copyLocalSchedule(button.dataset.localNombre);
-                } else if (button.matches('.btn-download-pdf')) {
-                    downloadLocalAsPDF(button.dataset.localNombre);
-                } else if (button.matches('#btn-download-all-pdf')) {
-                    downloadAllLocalsAsPDF();
                 } else if (button.matches('.btn-cargar-historial')) {
                     const week = button.dataset.week;
                     const confirmed = await showConfirmationModal(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración actual.`);
@@ -1323,15 +1360,14 @@
             try {
                 if (target.matches('.mapeo-config-input')) {
                     const { local, dia, type, part } = target.dataset;
-                    if (local !== currentlyEditingLocal) return; 
-
+                    
                     const config = tempScheduleConfig;
                     if (!config[dia]) config[dia] = {};
                     
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector('[data-part="hour"]').value}:${parent.querySelector('[data-part="minute"]').value} ${parent.querySelector('[data-part="ampm"]').value}`;
                     }
@@ -1404,13 +1440,13 @@
         semanaInputMapeo.addEventListener('change', (e) => { 
             state.selectedWeek = e.target.value; 
             semanaInputProgramacion.value = e.target.value; 
-            recalculateConflicts(); 
+            recalculateConflicts();
             renderizarMapeo(); 
         });
         semanaInputProgramacion.addEventListener('change', (e) => { 
             state.selectedWeek = e.target.value; 
             semanaInputMapeo.value = e.target.value; 
-            recalculateConflicts(); 
+            recalculateConflicts();
             renderizarProgramacionPersonal(); 
         });
         
@@ -1418,7 +1454,6 @@
         filtroLocalBusquedaInput.addEventListener('input', debounce(e => { state.searchTermMapeo = e.target.value.toLowerCase().trim(); renderizarMapeo(); }));
         
         // --- Funciones de Utilidad ---
-        
         function showConfirmationModal(message) {
             return new Promise((resolve) => {
                 confirmationModalText.textContent = message;
@@ -1427,267 +1462,18 @@
                 const confirmHandler = () => {
                     confirmationModal.style.display = 'none';
                     resolve(true);
-                    cleanup();
                 };
 
                 const cancelHandler = () => {
                     confirmationModal.style.display = 'none';
                     resolve(false);
-                    cleanup();
                 };
 
-                const cleanup = () => {
-                    confirmationModalConfirm.removeEventListener('click', confirmHandler);
-                    confirmationModalCancel.removeEventListener('click', cancelHandler);
-                };
-
-                confirmationModalConfirm.addEventListener('click', confirmHandler);
-                confirmationModalCancel.addEventListener('click', cancelHandler);
+                confirmationModalConfirm.addEventListener('click', confirmHandler, { once: true });
+                confirmationModalCancel.addEventListener('click', cancelHandler, { once: true });
             });
         }
         
-        function drawLocalBox(doc, localData, x, y, boxWidth) {
-            const margin = 5;
-            const headerHeight = 12;
-            const lineHeight = 6;
-            let currentY = y;
-
-            // Calculate total height first
-            let totalHeight = headerHeight;
-            const orderedDays = diasSemana.filter(dia => localData.assignmentsByDay[dia]);
-            if (orderedDays.length > 0) {
-                orderedDays.forEach(dia => {
-                    totalHeight += lineHeight * 1.5; // Day title + space
-                    totalHeight += localData.assignmentsByDay[dia].length * lineHeight; // Assignments
-                });
-            } else {
-                totalHeight += lineHeight * 2; // "No hay asignaciones" text
-            }
-            totalHeight += margin; // Bottom padding
-
-            // Draw header background
-            doc.setFillColor(localData.color || '#dddddd');
-            doc.rect(x, currentY, boxWidth, headerHeight, 'F');
-            
-            // Draw border for the whole box
-            doc.setDrawColor(150, 150, 150);
-            doc.roundedRect(x, currentY, boxWidth, totalHeight, 2, 2);
-
-            // Draw header text
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(12);
-            doc.setTextColor(255, 255, 255);
-            doc.text(localData.nombre.toUpperCase(), x + margin, currentY + headerHeight / 2 + 3, { baseline: 'middle' });
-            currentY += headerHeight;
-            
-            // Reset text color
-            doc.setTextColor(0, 0, 0);
-            
-            currentY += margin; // Padding before content
-
-            // Draw body content
-            if (orderedDays.length > 0) {
-                orderedDays.forEach(dia => {
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(10);
-                    doc.text(diasSemanaFull[diasSemana.indexOf(dia)], x + margin, currentY);
-                    currentY += lineHeight;
-
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(9);
-                    localData.assignmentsByDay[dia].forEach(asig => {
-                        const assignmentText = `- ${asig.puesto}: ${asig.nombre} (${asig.hora})`;
-                        doc.text(assignmentText, x + margin + 3, currentY);
-                        currentY += lineHeight;
-                    });
-                    currentY += lineHeight * 0.5; // Space between days
-                });
-            } else {
-                doc.setFont('helvetica', 'italic');
-                doc.setFontSize(9);
-                doc.text('No hay asignaciones esta semana.', x + margin, currentY);
-                currentY += lineHeight;
-            }
-
-            return totalHeight;
-        }
-
-        async function downloadLocalAsPDF(localNombre) {
-            showStatusMessage('Generando PDF...', 'success');
-            loader.style.display = 'flex';
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-                
-                const local = state.locales.find(l => l.nombre === localNombre);
-                const week = state.selectedWeek;
-                const asignacionesSemana = state.asignaciones[week] || {};
-                
-                const assignmentsByDay = {};
-                diasSemana.forEach(dia => {
-                    const dailyAssignments = [];
-                    Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
-                        if (slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string') {
-                            const [, , tipo] = slotId.split('-');
-                            const persona = state.personal.find(p => p.id === pId);
-                            const config = state.mapeoConfig[localNombre]?.[dia] || {};
-                            const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                            if (persona) {
-                                dailyAssignments.push({
-                                    puesto: tipoPuestoNombres[tipo] || tipo,
-                                    nombre: `${persona.nombre} ${persona.apellido}`,
-                                    hora: config[horaKey] || 'N/A'
-                                });
-                            }
-                        }
-                    });
-                    if (dailyAssignments.length > 0) {
-                        dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
-                        assignmentsByDay[dia] = dailyAssignments;
-                    }
-                });
-
-                const localData = {
-                    nombre: localNombre,
-                    color: local?.color,
-                    assignmentsByDay
-                };
-                
-                const margin = 15;
-                const pageWidth = doc.internal.pageSize.getWidth();
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`Programación ${localNombre.toUpperCase()}`, pageWidth / 2, margin + 5, { align: 'center' });
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Semana ${week}`, pageWidth / 2, margin + 12, { align: 'center' });
-
-                drawLocalBox(doc, localData, margin, margin + 20, pageWidth - (margin * 2));
-                
-                doc.save(`Programacion_${localNombre}_${week}.pdf`);
-            } catch (error) {
-                console.error("Error generating PDF:", error);
-                showStatusMessage('Hubo un error al generar el PDF.', 'error');
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-        
-        async function downloadAllLocalsAsPDF() {
-            const cardElements = document.querySelectorAll('#mapeo-container .local-card');
-            if (cardElements.length === 0) {
-                showStatusMessage('No hay locales visibles para descargar.', 'error');
-                return;
-            }
-
-            showStatusMessage('Generando PDF de todos los locales...', 'success');
-            loader.style.display = 'flex';
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-                const week = state.selectedWeek;
-                
-                const margin = 10;
-                const gap = 5;
-                const pageWidth = doc.internal.pageSize.getWidth();
-                const pageHeight = doc.internal.pageSize.getHeight();
-                const boxWidth = (pageWidth - (margin * 2) - gap) / 2;
-                let x = margin;
-                let y = margin;
-                let isFirstBoxOnPage = true;
-                
-                const addHeader = (pageNumber) => {
-                    doc.setFontSize(18);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(`Programación Completa`, pageWidth / 2, margin, { align: 'center' });
-                    doc.setFontSize(12);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(`Semana ${week}`, pageWidth / 2, margin + 7, { align: 'center' });
-                    y = margin + 20;
-                    x = margin;
-                    isFirstBoxOnPage = true;
-                    if (pageNumber > 1) {
-                        doc.setFontSize(8);
-                        doc.text(`Página ${pageNumber}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-                    }
-                };
-
-                addHeader(doc.internal.getNumberOfPages());
-
-                for (const card of cardElements) {
-                    const localNombre = card.id.replace('local-card-', '').replace(/-/g, ' ');
-                    const local = state.locales.find(l => l.nombre === localNombre);
-                    const asignacionesSemana = state.asignaciones[week] || {};
-                    
-                    const assignmentsByDay = {};
-                    diasSemana.forEach(dia => {
-                        const dailyAssignments = [];
-                         Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
-                            if (slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string') {
-                                const [, , tipo] = slotId.split('-');
-                                const persona = state.personal.find(p => p.id === pId);
-                                const config = state.mapeoConfig[localNombre]?.[dia] || {};
-                                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                                if(persona) {
-                                    dailyAssignments.push({
-                                        puesto: tipoPuestoNombres[tipo] || tipo,
-                                        nombre: `${persona.nombre} ${persona.apellido}`,
-                                        hora: config[horaKey] || 'N/A'
-                                    });
-                                }
-                            }
-                        });
-                        if (dailyAssignments.length > 0) {
-                            dailyAssignments.sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
-                            assignmentsByDay[dia] = dailyAssignments;
-                        }
-                    });
-
-                    const localData = { nombre: localNombre, color: local?.color, assignmentsByDay };
-                    
-                    let tempDoc = new jsPDF(); 
-                    const boxHeight = drawLocalBox(tempDoc, localData, 0, 0, boxWidth);
-
-                    if (y + boxHeight > pageHeight - margin) {
-                        if (x === margin) { 
-                            x = margin + boxWidth + gap;
-                            y = margin + 20; 
-                        } else { 
-                            doc.addPage();
-                            addHeader(doc.internal.getNumberOfPages());
-                            x = margin;
-                            y = margin + 20;
-                        }
-                    }
-                    
-                    if (y + boxHeight > pageHeight - margin) {
-                         doc.addPage();
-                         addHeader(doc.internal.getNumberOfPages());
-                         x = margin;
-                         y = margin + 20;
-                    }
-
-                    drawLocalBox(doc, localData, x, y, boxWidth);
-                    
-                    if(x === margin) {
-                        x = margin + boxWidth + gap;
-                    } else {
-                        x = margin;
-                        y += boxHeight + gap;
-                    }
-                }
-
-                doc.save(`Programacion_Completa_${week}.pdf`);
-            } catch (error) {
-                console.error("Error generating multi-page PDF:", error);
-                showStatusMessage('Hubo un error al generar el PDF de todos los locales.', 'error');
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-
         function obtenerSugerenciaInteligente(local, dia) {
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
@@ -1748,7 +1534,7 @@
                 <span class="detail-label">Teléfono:</span><span>${p.telefono || 'N/A'}</span>
                 <span class="detail-label">Contacto Emergencia:</span><span>${p.contacto_emergencia || 'N/A'}</span>
                 <span class="detail-label">Disponibilidad:</span><span>${p.disponibilidad || 'N/A'}</span>
-                <span class="detail-label">Locales Pref.:</span><span>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'N/A'}</span>
+                <span class="detail-label">Locales Pref.:</span><span>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'N/a'}</span>
             `;
             document.getElementById('btn-editar-personal-view').dataset.id = id;
             document.getElementById('btn-eliminar-personal-view').dataset.id = id;
@@ -1800,15 +1586,12 @@
             if (!weekString) return {};
             const [year, weekNum] = weekString.split('-W').map(Number);
             const firstDayOfYear = new Date(year, 0, 1);
-            const dayOffset = (11 - firstDayOfYear.getDay()) % 7;
-            const date = new Date(year, 0, 1 + dayOffset + (weekNum - 1) * 7);
+            const dayOfWeek = (firstDayOfYear.getDay() + 6) % 7; // Monday is 0
+            const date = new Date(year, 0, 1 + (weekNum - 1) * 7 - dayOfWeek);
             const dates = {};
-            const monday = new Date(date);
-            monday.setDate(date.getDate() - 3);
-
             for (let i = 0; i < 7; i++) {
-                const currentDay = new Date(monday);
-                currentDay.setDate(monday.getDate() + i);
+                const currentDay = new Date(date);
+                currentDay.setDate(date.getDate() + i);
                 dates[diasSemana[i]] = currentDay.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
             }
             return dates;
@@ -1875,13 +1658,13 @@
 
         function getShiftDateTime(weekString, dayName, timeString) {
             const [year, weekNum] = weekString.split('-W').map(Number);
-            const firstDayOfWeek = new Date(year, 0, 1 + (weekNum - 1) * 7);
-            const dayOfWeek = firstDayOfWeek.getDay();
-            const diff = firstDayOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            const monday = new Date(firstDayOfWeek.setDate(diff));
+            const firstDayOfYear = new Date(year, 0, 1);
+            const dayOfWeek = (firstDayOfYear.getDay() + 6) % 7; // Monday is 0
+            const date = new Date(year, 0, 1 + (weekNum - 1) * 7 - dayOfWeek);
             
             const dayIndex = diasSemana.indexOf(dayName);
-            const shiftDate = new Date(monday.setDate(monday.getDate() + dayIndex));
+            const shiftDate = new Date(date);
+            shiftDate.setDate(date.getDate() + dayIndex);
             
             const match = timeString.match(/(\d+):(\d+) (AM|PM)/);
             let [_, hours, minutes, ampm] = match;
@@ -1894,8 +1677,8 @@
         }
 
         function recalculateConflicts() {
-            if (!initialDataLoaded.mapeoConfig || !initialDataLoaded.asignaciones) return;
             const week = state.selectedWeek;
+            if (!week) return;
             const asignacionesSemana = state.asignaciones[week] || {};
 
             state.redConflicts.clear();
@@ -1904,7 +1687,7 @@
             
             const assignmentsByPerson = {};
             Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
-                if (!personaId || typeof personaId !== 'string' || !slotId.includes('-')) return;
+                if (!personaId || typeof personaId !== 'string' || !slotId.includes('-') || slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
                 if (!assignmentsByPerson[personaId]) assignmentsByPerson[personaId] = [];
                 const [local, dia, tipo] = slotId.split('-');
                 if(!tipo) return;
@@ -1971,7 +1754,7 @@
             const asignacionesSemana = state.asignaciones[week] || {};
 
             const assignments = Object.entries(asignacionesSemana)
-                .filter(([slotId, pId]) => pId === personId && slotId.includes('-'))
+                .filter(([slotId, pId]) => pId === personId && slotId.includes('-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
                 .map(([slotId, _]) => {
                     const [local, dia, tipo, i] = slotId.split('-');
                     return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
@@ -2026,11 +1809,20 @@
 
             Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
                 if (slotId.startsWith(localNombre + '-') && pId && typeof pId === 'string' && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
-                    const [local, dia] = slotId.split('-');
+                    const [local, dia, tipo, i] = slotId.split('-');
                     if (!assignedPersonnelByDay[dia]) {
-                        assignedPersonnelByDay[dia] = new Set();
+                        assignedPersonnelByDay[dia] = [];
                     }
-                    assignedPersonnelByDay[dia].add(pId);
+                    const persona = state.personal.find(p => p.id === pId);
+                    const config = state.mapeoConfig[local]?.[dia] || {};
+                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                    if (persona) {
+                        assignedPersonnelByDay[dia].push({
+                            persona,
+                            puesto: `${tipoPuestoNombres[tipo] || tipo} ${i}`,
+                            hora: config[horaKey] || 'N/A'
+                        });
+                    }
                 }
             });
 
@@ -2041,14 +1833,11 @@
             let message = `Programación ${localNombre.toUpperCase()}\n\n`;
 
             diasSemana.forEach((dia, index) => {
-                const personnelIds = assignedPersonnelByDay[dia];
-                if (personnelIds && personnelIds.size > 0) {
+                const personnel = assignedPersonnelByDay[dia];
+                if (personnel && personnel.length > 0) {
                     message += `${diasSemanaFull[index]}\n`;
-                    personnelIds.forEach(pId => {
-                        const persona = state.personal.find(p => p.id === pId);
-                        if (persona) {
-                            message += `- ${persona.nombre} ${persona.apellido}\n`;
-                        }
+                    personnel.forEach(p => {
+                         message += `- ${p.persona.nombre} ${p.persona.apellido}\n`;
                     });
                     message += '\n'; 
                 }
@@ -2070,7 +1859,7 @@
         function descargarExcel(week, scheduleData) {
             if (!scheduleData?.asignaciones) return showStatusMessage(`No hay datos para la semana ${week}.`, 'error'); 
             const data = Object.entries(scheduleData.asignaciones)
-                .filter(([slotId, pId]) => pId && typeof pId === 'string' && slotId.includes('-'))
+                .filter(([slotId, pId]) => pId && typeof pId === 'string' && slotId.includes('-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
                 .map(([slotId, pId]) => {
                     const [local, dia, tipo] = slotId.split('-');
                     const persona = state.personal.find(p => p.id === pId);
@@ -2112,6 +1901,270 @@
             if (ampm === 'AM' && hours === 12) hours = 0;
             return hours * 60 + parseInt(minutes, 10);
         }
+
+        // --- NEW PDF GENERATION LOGIC ---
+        function addLocalDataToPdf(doc, localNombre) {
+            const week = state.selectedWeek;
+            if (!week) {
+                showStatusMessage('Por favor, selecciona una semana.', 'error');
+                return;
+            }
+
+            const asignacionesSemana = state.asignaciones[week] || {};
+            const margin = 10;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            let y = margin + 15; // Start position
+
+            // Header
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(localNombre.toUpperCase(), pageWidth / 2, margin, { align: 'center' });
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Semana ${week}`, pageWidth / 2, margin + 7, { align: 'center' });
+
+            const orderedDays = diasSemana.filter(dia =>
+                Object.keys(asignacionesSemana).some(slotId => slotId.startsWith(`${localNombre}-${dia}-`) && asignacionesSemana[slotId])
+            );
+
+            if (orderedDays.length === 0) {
+                doc.text("No hay personal asignado para esta semana.", margin, y + 10);
+                return;
+            }
+
+            orderedDays.forEach(dia => {
+                if (y > doc.internal.pageSize.getHeight() - 20) {
+                    doc.addPage();
+                    y = margin;
+                }
+
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text(diasSemanaFull[diasSemana.indexOf(dia)], margin, y);
+                y += 7;
+
+                const dailyAssignments = Object.entries(asignacionesSemana)
+                    .filter(([slotId, pId]) => slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string' && !slotId.endsWith('-vestimenta') && !slotId.endsWith('-confirmed'))
+                    .map(([slotId, pId]) => {
+                        const [, , tipo] = slotId.split('-');
+                        const persona = state.personal.find(p => p.id === pId);
+                        const config = state.mapeoConfig[localNombre]?.[dia] || {};
+                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                        return {
+                            puesto: tipoPuestoNombres[tipo] || tipo,
+                            nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
+                            hora: config[horaKey] || 'N/A'
+                        };
+                    }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+
+                dailyAssignments.forEach(asig => {
+                    if (y > doc.internal.pageSize.getHeight() - 10) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    const text = `- ${asig.puesto}: ${asig.nombre} (${asig.hora})`;
+                    doc.text(text, margin + 5, y);
+                    y += 6;
+                });
+                y += 4; // Space between days
+            });
+        }
+        
+        function drawLocalBox(doc, localData, x, y, width) {
+            const margin = 5;
+            const lineHeight = 5;
+            const headerHeight = 10;
+            const contentWidth = width - (margin * 2);
+            let currentY = y;
+            const originalTextColor = doc.getTextColor();
+            const originalFillColor = doc.getFillColor();
+            const originalDrawColor = doc.getDrawColor();
+            const boxHeight = getBoxHeight(doc, localData, width);
+
+            // Box border and header
+            doc.setDrawColor(200);
+            doc.rect(x, y, width, boxHeight);
+            doc.setFillColor(localData.color || '#cccccc');
+            doc.rect(x, y, width, headerHeight, 'F');
+
+            // Header text
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 255, 255);
+            doc.text(localData.nombre.toUpperCase(), x + width / 2, y + headerHeight / 2 + 2, { align: 'center' });
+            currentY += headerHeight + margin;
+
+            // Content
+            doc.setTextColor(0, 0, 0);
+            const orderedDays = diasSemana.filter(dia => localData.assignmentsByDay[dia]);
+
+            if (orderedDays.length === 0) {
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'italic');
+                doc.text("No hay asignaciones", x + margin, currentY);
+            } else {
+                orderedDays.forEach(dia => {
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(diasSemanaFull[diasSemana.indexOf(dia)], x + margin, currentY);
+                    currentY += lineHeight;
+
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    localData.assignmentsByDay[dia].forEach(asig => {
+                        const text = `- ${asig.puesto}: ${asig.nombre} (${asig.hora})`;
+                        const lines = doc.splitTextToSize(text, contentWidth - 3);
+                        if (currentY + (lines.length * lineHeight) > y + boxHeight - margin) return;
+                        doc.text(lines, x + margin + 3, currentY);
+                        currentY += lines.length * lineHeight;
+                    });
+                    currentY += 2; // Space between days
+                });
+            }
+
+            // Reset colors
+            doc.setTextColor(originalTextColor);
+            doc.setFillColor(originalFillColor);
+            doc.setDrawColor(originalDrawColor);
+            return y + boxHeight;
+        }
+
+        function downloadLocalAsPDF(localNombre) {
+            loader.style.display = 'flex';
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                addLocalDataToPdf(doc, localNombre);
+                doc.save(`Programacion_${localNombre.replace(/\s+/g, '_')}_${state.selectedWeek}.pdf`);
+                showStatusMessage('PDF generado correctamente.', 'success');
+            } catch (e) {
+                console.error("Error al generar PDF:", e);
+                showStatusMessage('Error al generar el PDF.', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        async function downloadAllLocalsAsPDF() {
+            const visibleLocales = Array.from(document.querySelectorAll('#mapeo-container .local-card'))
+                                        .map(card => card.id.replace('local-card-', '').replace(/-/g, ' '));
+            if (visibleLocales.length === 0) {
+                showStatusMessage('No hay locales visibles para descargar.', 'error');
+                return;
+            }
+
+            showStatusMessage('Generando PDF de todos los locales...', 'success');
+            loader.style.display = 'flex';
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const week = state.selectedWeek;
+                const margin = 10;
+                const gap = 5;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const boxWidth = (pageWidth - (margin * 2) - gap) / 2;
+                let pageNum = 1;
+
+                const addPageHeader = (pNum) => {
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Programación de Locales`, pageWidth / 2, margin, { align: 'center' });
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Semana ${week}`, pageWidth / 2, margin + 7, { align: 'center' });
+                    if (pNum > 1) {
+                         doc.setFontSize(8);
+                         doc.text(`Página ${pNum}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
+                    }
+                    return margin + 20;
+                };
+                
+                let startY = addPageHeader(pageNum);
+                let colHeights = [startY, startY];
+
+                for (const localNombre of visibleLocales) {
+                    const local = state.locales.find(l => l.nombre === localNombre);
+                    const asignacionesSemana = state.asignaciones[week] || {};
+                    const assignmentsByDay = {};
+                     diasSemana.forEach(dia => {
+                        const dailyAssignments = Object.entries(asignacionesSemana)
+                            .filter(([slotId, pId]) => slotId.startsWith(`${localNombre}-${dia}-`) && pId && typeof pId === 'string' && !slotId.endsWith('-vestimenta') && !slotId.endsWith('-confirmed'))
+                            .map(([slotId, pId]) => {
+                                const [, , tipo] = slotId.split('-');
+                                const persona = state.personal.find(p => p.id === pId);
+                                const config = state.mapeoConfig[localNombre]?.[dia] || {};
+                                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                                return {
+                                    puesto: tipoPuestoNombres[tipo] || tipo,
+                                    nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
+                                    hora: config[horaKey] || 'N/A'
+                                };
+                            }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+                        if (dailyAssignments.length > 0) assignmentsByDay[dia] = dailyAssignments;
+                    });
+
+                    const localData = { nombre: localNombre, color: local?.color, assignmentsByDay };
+                    const boxHeight = getBoxHeight(new jsPDF(), localData, boxWidth);
+
+                    let currentColumn = colHeights[0] <= colHeights[1] ? 0 : 1;
+                    
+                    if (colHeights[currentColumn] + boxHeight + gap > pageHeight - margin) {
+                        currentColumn = (currentColumn + 1) % 2;
+                         if (colHeights[currentColumn] + boxHeight + gap > pageHeight - margin) {
+                            doc.addPage();
+                            pageNum++;
+                            startY = addPageHeader(pageNum);
+                            colHeights = [startY, startY];
+                            currentColumn = 0;
+                         }
+                    }
+
+                    const cursorX = margin + (currentColumn * (boxWidth + gap));
+                    const cursorY = colHeights[currentColumn];
+                    
+                    drawLocalBox(doc, localData, cursorX, cursorY, boxWidth);
+                    colHeights[currentColumn] += boxHeight + gap;
+                }
+
+                doc.save(`Programacion_Completa_${week}.pdf`);
+            } catch (e) {
+                console.error("Error al generar PDF:", e);
+                showStatusMessage('Error al generar el PDF.', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        function getBoxHeight(doc, localData, boxWidth) {
+            const margin = 5;
+            const headerHeight = 10;
+            const lineHeight = 5;
+            let totalHeight = headerHeight + margin * 2;
+            const contentWidth = boxWidth - (margin * 2);
+            
+            const orderedDays = diasSemana.filter(dia => localData.assignmentsByDay[dia]);
+
+            if (orderedDays.length > 0) {
+                orderedDays.forEach(dia => {
+                    totalHeight += lineHeight;
+                    localData.assignmentsByDay[dia].forEach(asig => {
+                        const text = `- ${asig.puesto}: ${asig.nombre} (${asig.hora})`;
+                        const lines = doc.splitTextToSize(text, contentWidth - 3);
+                        totalHeight += lines.length * lineHeight;
+                    });
+                    totalHeight += 2;
+                });
+            } else {
+                totalHeight += lineHeight;
+            }
+            return Math.max(totalHeight, 30);
+        }
+
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
