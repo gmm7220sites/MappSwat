@@ -12,7 +12,7 @@
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc;
-            color: #1e293b; /* Color corregido */
+            color: #1e293b;
         }
         html.dark body {
             background-color: #0f172a;
@@ -25,10 +25,10 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { 
             background-color: #fefefe; margin: 5% auto; padding: 24px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 12px;
-            color: #1e293b; /* Color corregido */
+            color: #1e293b;
         }
         html.dark .modal-content {
-             background-color: #1e293b; /* Color corregido */
+             background-color: #1e293b;
              border-color: #334155;
              color: #e2e8f0;
         }
@@ -1400,8 +1400,19 @@
         document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
         document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
         navButtons.forEach(btn => btn.addEventListener('click', () => cambiarVista(btn.id.split('-')[1])));
-        semanaInputMapeo.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputProgramacion.value = e.target.value; renderizarMapeo(); });
-        semanaInputProgramacion.addEventListener('change', (e) => { state.selectedWeek = e.target.value; semanaInputMapeo.value = e.target.value; renderizarProgramacionPersonal(); });
+        
+        semanaInputMapeo.addEventListener('change', (e) => { 
+            state.selectedWeek = e.target.value; 
+            semanaInputProgramacion.value = e.target.value; 
+            recalculateConflicts(); 
+            renderizarMapeo(); 
+        });
+        semanaInputProgramacion.addEventListener('change', (e) => { 
+            state.selectedWeek = e.target.value; 
+            semanaInputMapeo.value = e.target.value; 
+            recalculateConflicts(); 
+            renderizarProgramacionPersonal(); 
+        });
         
         busquedaProgramacionInput.addEventListener('input', debounce(e => { state.searchTermProgramacion = e.target.value.toLowerCase().trim(); renderizarProgramacionPersonal(); }));
         filtroLocalBusquedaInput.addEventListener('input', debounce(e => { state.searchTermMapeo = e.target.value.toLowerCase().trim(); renderizarMapeo(); }));
@@ -1585,6 +1596,7 @@
                 const boxWidth = (pageWidth - (margin * 2) - gap) / 2;
                 let x = margin;
                 let y = margin;
+                let isFirstBoxOnPage = true;
                 
                 const addHeader = (pageNumber) => {
                     doc.setFontSize(18);
@@ -1594,6 +1606,8 @@
                     doc.setFont('helvetica', 'normal');
                     doc.text(`Semana ${week}`, pageWidth / 2, margin + 7, { align: 'center' });
                     y = margin + 20;
+                    x = margin;
+                    isFirstBoxOnPage = true;
                     if (pageNumber > 1) {
                         doc.setFontSize(8);
                         doc.text(`Página ${pageNumber}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
@@ -1648,7 +1662,6 @@
                         }
                     }
                     
-                    // Re-check after potential column/page switch
                     if (y + boxHeight > pageHeight - margin) {
                          doc.addPage();
                          addHeader(doc.internal.getNumberOfPages());
@@ -1657,7 +1670,13 @@
                     }
 
                     drawLocalBox(doc, localData, x, y, boxWidth);
-                    y += boxHeight + gap;
+                    
+                    if(x === margin) {
+                        x = margin + boxWidth + gap;
+                    } else {
+                        x = margin;
+                        y += boxHeight + gap;
+                    }
                 }
 
                 doc.save(`Programacion_Completa_${week}.pdf`);
@@ -1875,6 +1894,7 @@
         }
 
         function recalculateConflicts() {
+            if (!initialDataLoaded.mapeoConfig || !initialDataLoaded.asignaciones) return;
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
 
