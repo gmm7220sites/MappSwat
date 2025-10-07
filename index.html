@@ -285,7 +285,16 @@
                     <div id="programacion-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
             </section>
-            <section id="section-historial" class="hidden"><div class="bg-white p-6 rounded-xl shadow-md"><h2 class="text-2xl font-bold mb-4">Historial</h2><div id="historial-container" class="overflow-x-auto"></div></div></section>
+            <section id="section-historial" class="hidden">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold mb-4">Historial y Estadísticas</h2>
+                    <div class="mb-8 h-80 relative">
+                        <canvas id="historial-chart"></canvas>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Datos Históricos</h3>
+                    <div id="historial-container" class="overflow-x-auto"></div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -490,6 +499,7 @@
         // INICIO: Variables para el modal de horarios
         let tempScheduleConfig = {};
         let currentlyEditingLocal = null;
+        let historialChartInstance;
         // FIN: Variables para el modal de horarios
 
         // Constantes y Elementos del DOM
@@ -1044,6 +1054,88 @@
                     <button data-week="${week}" class="btn-descargar-historial bg-green-500 text-white font-bold py-1 px-3 rounded-md hover:bg-green-600">Excel</button>
                     <button data-week="${week}" class="btn-eliminar-historial bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
                 </td></tr>`).join('')}</tbody></table>`;
+            
+            // --- INICIO: Lógica del Gráfico ---
+            const ctx = document.getElementById('historial-chart').getContext('2d');
+            
+            if (historialChartInstance) {
+                historialChartInstance.destroy();
+            }
+
+            const historialSemanas = Object.keys(state.historial).sort();
+            if (historialSemanas.length === 0) {
+                document.getElementById('historial-chart').style.display = 'none';
+                return;
+            }
+            document.getElementById('historial-chart').style.display = 'block';
+
+            const dataPoints = historialSemanas.map(week => {
+                const asignaciones = state.historial[week]?.asignaciones || {};
+                const personalUnico = new Set(Object.values(asignaciones).filter(id => id && typeof id === 'string'));
+                return personalUnico.size;
+            });
+
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+
+            historialChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: historialSemanas,
+                    datasets: [{
+                        label: 'Cantidad de Personal Asignado',
+                        data: dataPoints,
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Personal Asignado por Semana',
+                            color: labelColor,
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Nº de Personas',
+                                color: labelColor
+                            },
+                            ticks: {
+                                color: labelColor,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        },
+                        x: {
+                             ticks: {
+                                color: labelColor
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            // --- FIN: Lógica del Gráfico ---
         }
         
 
@@ -1653,6 +1745,9 @@
             lightIcon.classList.toggle('hidden');
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
+            if(state.currentView === 'historial') {
+                renderizarHistorial();
+            }
         });
 
         // --- SISTEMA DE NOTIFICACIONES Y CONFLICTOS ---
@@ -2222,6 +2317,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
 
