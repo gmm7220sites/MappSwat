@@ -14,14 +14,95 @@
             font-family: 'Inter', sans-serif; 
             background-color: #f8fafc;
             color: #1e293b;
+            overflow-x: hidden;
         }
         html.dark body {
             background-color: #0f172a;
             color: #cbd5e1;
         }
 
-        .nav-button.active { background-color: #3b82f6; color: white; }
-        html.dark .nav-button.active { background-color: #2563eb; }
+        /* --- Nuevo Menú de Navegación Lateral --- */
+        #menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 2000;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        html.dark #menu-toggle {
+            background-color: rgba(30, 41, 59, 0.8);
+        }
+        #menu-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        #side-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            padding: 80px 0 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1999;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        }
+        html.dark #side-nav {
+            background-color: rgba(15, 23, 42, 0.7);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.3);
+        }
+        #side-nav.open {
+            transform: translateX(0);
+        }
+        #side-nav .nav-button {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 5px 10px;
+            text-align: left;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        #side-nav .nav-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.1);
+            transition: left 0.4s ease;
+        }
+        html.dark #side-nav .nav-button::before {
+            background-color: rgba(255,255,255,0.1);
+        }
+        #side-nav .nav-button:hover::before {
+            left: 0;
+        }
+        #side-nav .nav-button.active {
+            background-color: #961111;
+            color: white;
+            box-shadow: 0 4px 8px rgba(150, 17, 17, 0.3);
+        }
+        /* --- Fin del Menú de Navegación --- */
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
         .modal-content { 
@@ -60,8 +141,11 @@
         #loader { display: none; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; align-items: center; justify-content: center; }
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
 
-        /* Contenido principal visible por defecto para el efecto de fondo borroso */
-        .main-content { display: block; }
+        .main-content { 
+            display: block;
+            width: 100%;
+            min-height: 100vh;
+        }
         
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -123,6 +207,65 @@
         }
         html.dark .asignacion-fila:hover {
             background-color: #334155;
+        }
+
+        /* --- Icon Buttons --- */
+        .icon-btn {
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 9999px;
+            padding: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .icon-btn:hover {
+            background-color: #e2e8f0; /* slate-200 */
+            transform: scale(1.1);
+        }
+        .icon-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #1e293b; /* slate-800 */
+        }
+        html.dark .icon-btn {
+            background-color: #334155; /* slate-700 */
+        }
+        html.dark .icon-btn:hover {
+            background-color: #475569; /* slate-600 */
+        }
+        html.dark .icon-btn svg {
+            color: #e2e8f0; /* slate-200 */
+        }
+
+        /* --- Floating Search Button --- */
+        #search-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+        #search-panel {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 16px;
+            z-index: 1000;
+            transform: translateY(20px) scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        html.dark #search-panel {
+            background-color: rgba(30, 41, 59, 0.8);
+        }
+        #search-panel.open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
         }
         /* --- FIN DE ESTILOS VISUALES --- */
 
@@ -191,10 +334,22 @@
     <div id="loader">
         <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
     </div>
+    
+    <!-- Nueva Navegación -->
+    <button id="menu-toggle">
+        <svg class="w-6 h-6 text-slate-800 dark:text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+    </button>
+    <nav id="side-nav">
+        <button id="btn-mapeo" class="nav-button">Mapeo Semanal</button>
+        <button id="btn-gestion" class="nav-button">Gestión</button>
+        <button id="btn-programacion" class="nav-button">Programación</button>
+        <button id="btn-historial" class="nav-button">Historial</button>
+    </nav>
 
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl main-content">
+
+    <div class="container mx-auto p-4 md:p-8 w-full main-content">
         <header class="text-center mb-8 relative">
-            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Panel de Control de Mapeos</h1>
+            <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900"></h1>
             <p class="text-slate-600 mt-2">Plataforma colaborativa para la gestión de personal y turnos.</p>
             <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" title="Cambiar tema">
                 <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -204,16 +359,9 @@
 
         <div id="status-message-container" class="fixed top-4 right-4 z-50"></div>
 
-        <nav class="flex flex-col sm:flex-row justify-center bg-slate-200 rounded-lg p-2 mb-8 gap-1 sm:gap-2">
-            <button id="btn-gestion" class="nav-button active flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Gestión</button>
-            <button id="btn-mapeo" class="nav-button flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Mapeo Semanal</button>
-            <button id="btn-programacion" class="nav-button flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Programación</button>
-            <button id="btn-historial" class="nav-button flex-1 text-center py-2 px-4 rounded-md font-semibold transition-colors duration-300">Historial</button>
-        </nav>
-
         <main>
             <!-- SECCIONES (GESTION, MAPEO, ETC.) -->
-            <section id="section-gestion">
+            <section id="section-gestion" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-xl shadow-md">
                         <h2 class="text-2xl font-bold mb-4 text-slate-900">Gestión de Locales</h2>
@@ -259,20 +407,32 @@
                     </div>
                 </div>
             </section>
-            <section id="section-mapeo" class="hidden">
+            <section id="section-mapeo">
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
                         <label for="semana-mapeo" class="font-semibold">Semana:</label>
                         <input type="week" id="semana-mapeo" class="p-2 border rounded-md">
-                        <input type="text" id="filtro-local-busqueda" placeholder="Buscar local o personal..." class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex flex-col sm:flex-row justify-end gap-2 mb-6">
+                        <div class="flex-grow"></div>
                         <button id="btn-guardar-programacion" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Guardar</button>
                         <button id="btn-limpiar-mapeo" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Limpiar</button>
                         <button id="btn-descargar-excel" class="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Excel</button>
                         <button id="btn-download-all-pdf" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">PDF Todos</button>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" id="mapeo-container"></div>
+                </div>
+
+                <!-- Botón Flotante de Búsqueda -->
+                <div id="search-fab">
+                    <button class="icon-btn bg-blue-500 hover:bg-blue-600 text-white w-14 h-14 shadow-lg">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Panel de Búsqueda -->
+                <div id="search-panel">
+                    <label for="filtro-local-busqueda" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Buscar Local o Personal</label>
+                    <input type="text" id="filtro-local-busqueda" placeholder="Escribe aquí..." class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500">
                 </div>
             </section>
             <section id="section-programacion" class="hidden">
@@ -346,12 +506,12 @@
     
     <!-- INICIO: Modal de Horarios Modificado -->
     <div id="schedule-config-modal" class="modal">
-        <div class="modal-content !max-w-3xl">
+        <div class="modal-content !max-w-4xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-bold">Configurar Horarios para <span id="schedule-config-local-name"></span></h3>
                 <button type="button" id="close-schedule-config-modal" class="text-3xl font-bold text-slate-500 hover:text-slate-800">&times;</button>
             </div>
-            <div id="schedule-config-container" class="space-y-4 max-h-[60vh] overflow-y-auto p-2 bg-slate-50 dark:bg-slate-900 rounded-lg"></div>
+            <div id="schedule-config-container" class="space-y-6 max-h-[60vh] overflow-y-auto p-2 bg-slate-50 dark:bg-slate-900 rounded-lg"></div>
             <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end items-center gap-4">
                  <button type="button" id="btn-limpiar-horarios-local" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600 mr-auto">Limpiar Puestos</button>
                  <button type="button" id="btn-cancelar-horarios" class="bg-slate-200 dark:bg-slate-600 py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-500">Cancelar</button>
@@ -477,7 +637,7 @@
             asignaciones: {},
             historial: {},
             selectedWeek: '',
-            currentView: 'gestion',
+            currentView: 'mapeo',
             searchTermMapeo: '',
             searchTermProgramacion: '',
             redConflicts: new Set(),
@@ -522,7 +682,8 @@
         const loginForm = document.getElementById('login-form');
         const loginError = document.getElementById('login-error');
         const allSections = document.querySelectorAll('main > section');
-        const navButtons = document.querySelectorAll('nav > button');
+        const navButtons = document.querySelectorAll('#side-nav .nav-button');
+        const mainTitle = document.getElementById('main-title');
         const formPersonal = document.getElementById('form-personal');
         const formLocales = document.getElementById('form-locales');
         
@@ -741,60 +902,44 @@
             container.innerHTML = '';
             const localConfig = tempScheduleConfig || {};
             
-            const createTimeSelectors = (dia, tipo, config) => {
-                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                const timeString = config[horaKey] || "12:00 AM";
+            const createTimeSelectors = (dia, tipo, config, sufijo) => {
+                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
+                const timeString = config[horaKey] || (sufijo === 'Entrada' ? "12:00 AM" : "12:00 PM");
                 const timeMatch = timeString.match(/(\d+):(\d+) (AM|PM)/);
-                const [h, m, ampm] = timeMatch ? timeMatch.slice(1) : ["12", "00", "AM"];
+                const [h, m, ampm] = timeMatch ? timeMatch.slice(1) : ["12", "00", sufijo === 'Entrada' ? "AM" : "PM"];
                 return `
-                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="hour" class="mapeo-config-input p-1 border rounded">${Array.from({length: 12}, (_, i) => `<option value="${i+1}" ${h == i+1 ? 'selected' : ''}>${i+1}</option>`).join('')}</select>
-                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="minute" class="mapeo-config-input p-1 border rounded"><option value="00" ${m == '00' ? 'selected' : ''}>00</option><option value="30" ${m == '30' ? 'selected' : ''}>30</option></select>
-                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="ampm" class="mapeo-config-input p-1 border rounded"><option ${ampm === 'AM' ? 'selected' : ''}>AM</option><option ${ampm === 'PM' ? 'selected' : ''}>PM</option></select>
+                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="hour" data-sufijo="${sufijo}" class="mapeo-config-input p-1 border rounded">${Array.from({length: 12}, (_, i) => `<option value="${i+1}" ${h == i+1 ? 'selected' : ''}>${i+1}</option>`).join('')}</select>
+                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="minute" data-sufijo="${sufijo}" class="mapeo-config-input p-1 border rounded"><option value="00" ${m == '00' ? 'selected' : ''}>00</option><option value="30" ${m == '30' ? 'selected' : ''}>30</option></select>
+                    <select data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="ampm" data-sufijo="${sufijo}" class="mapeo-config-input p-1 border rounded"><option ${ampm === 'AM' ? 'selected' : ''}>AM</option><option ${ampm === 'PM' ? 'selected' : ''}>PM</option></select>
                 `;
             };
 
             diasSemana.forEach(dia => {
                 const config = localConfig[dia] || {};
                 const diaDiv = document.createElement('div');
-                diaDiv.className = 'mb-2 p-3 bg-white dark:bg-slate-800 rounded-md border dark:border-slate-700';
-                diaDiv.innerHTML = `
-                    <p class="font-semibold capitalize">${dia}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">Puestos:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="puestos" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.puestos || 0}">
-                        ${createTimeSelectors(dia, 'puestos', config)}
-                    </div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">Cacheos:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="cacheos" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.cacheos || 0}">
-                        ${createTimeSelectors(dia, 'cacheos', config)}
-                    </div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">C. Ingreso:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="cacheoIngreso" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.cacheoIngreso || 0}">
-                        ${createTimeSelectors(dia, 'cacheoIngreso', config)}
-                    </div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">C. Salida:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="cacheoSalida" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.cacheoSalida || 0}">
-                        ${createTimeSelectors(dia, 'cacheoSalida', config)}
-                    </div>
-                     <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">1er. Turno:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno1" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno1 || 0}">
-                        ${createTimeSelectors(dia, 'turno1', config)}
-                    </div>
-                     <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">2do. Turno:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno2" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno2 || 0}">
-                        ${createTimeSelectors(dia, 'turno2', config)}
-                    </div>
-                     <div class="flex items-center gap-2 mt-2">
-                        <label class="text-sm w-20">3er. Turno:</label>
-                        <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="turno3" data-part="count" class="mapeo-config-input w-16 p-1 border rounded" min="0" value="${config.turno3 || 0}">
-                        ${createTimeSelectors(dia, 'turno3', config)}
+                diaDiv.className = 'mb-4 p-4 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700';
+                
+                let innerHTML = `<h4 class="font-bold text-lg capitalize mb-3">${dia}</h4>
+                    <div class="space-y-3">
+                        <!-- Header -->
+                        <div class="grid grid-cols-[1.5fr_1fr_2fr_2fr] gap-x-4 pb-2 border-b dark:border-slate-600 text-xs font-bold text-slate-500 dark:text-slate-400">
+                            <span>Tipo de Puesto</span>
+                            <span class="text-center">Cantidad</span>
+                            <span class="text-center">Hora Entrada</span>
+                            <span class="text-center">Hora Salida</span>
+                        </div>
+                        <!-- Rows -->
+                        ${['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].map(tipo => `
+                            <div class="grid grid-cols-[1.5fr_1fr_2fr_2fr] gap-x-4 items-center">
+                                <label class="text-sm font-medium">${tipoPuestoNombres[tipo]}</label>
+                                <input type="number" data-local="${local.nombre}" data-dia="${dia}" data-type="${tipo}" data-part="count" class="mapeo-config-input w-16 p-1 border rounded mx-auto" min="0" value="${config[tipo] || 0}">
+                                <div class="flex items-center gap-1 justify-center">${createTimeSelectors(dia, tipo, config, 'Entrada')}</div>
+                                <div class="flex items-center gap-1 justify-center">${createTimeSelectors(dia, tipo, config, 'Salida')}</div>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
+                diaDiv.innerHTML = innerHTML;
                 container.appendChild(diaDiv);
             });
         }
@@ -863,9 +1008,18 @@
                             ${createCompletionCircle(porcentaje)}
                         </div>
                         <div class="flex items-center gap-2">
-                            <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="btn-cambiar-vestimenta-local text-2xl p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">🔄</button>
-                            <button data-local-nombre="${local.nombre}" class="btn-copy-local-schedule bg-sky-100 text-sky-700 font-bold py-1 px-3 rounded-md hover:bg-sky-200 text-sm">Copiar</button>
-                             <button data-local-nombre="${local.nombre}" class="btn-download-pdf bg-red-100 text-red-700 font-bold py-1 px-3 rounded-md hover:bg-red-200 text-sm">PDF</button>
+                             <button data-local-nombre="${local.nombre}" title="Cambiar vestimenta para este local" class="icon-btn btn-cambiar-vestimenta-local">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-3.18-3.182l-3.182 3.183m0 0V7.5m0 4.993l-3.182-3.182M7.5 19.5l-3.182-3.182" /></svg>
+                            </button>
+                             <button data-id="${local.id}" data-nombre="${local.nombre}" title="Configurar Horarios" class="icon-btn btn-configurar-horarios">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 002.25 2.25h.588c.542 0 1.007.368 1.226.918l.165.441a2.25 2.25 0 010 2.22l-.165.441c-.219.55-.684 1.02-1.226 1.11l-.588.098a2.25 2.25 0 00-2.25 2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010-2.22l.165-.441c.219-.55.684-1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" /></svg>
+                            </button>
+                             <button data-local-nombre="${local.nombre}" title="Copiar Programación" class="icon-btn btn-copy-local-schedule">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                            </button>
+                             <button data-local-nombre="${local.nombre}" title="Descargar PDF" class="icon-btn btn-download-pdf">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                            </button>
                         </div>
                     </div>`;
                 
@@ -877,25 +1031,25 @@
                         
                         diaContenedor.innerHTML = `<h4 class="text-lg font-bold capitalize text-slate-800 dark:text-slate-200">${dia} <span class="text-sm font-normal text-slate-500">${dates[dia] || ''}</span></h4>`;
                         
-                        const createSubSection = (tipo, count, hora) => {
+                        const createSubSection = (tipo, count, horaEntrada, horaSalida) => {
                              if (count > 0) {
                                 const sub = document.createElement('div');
                                 sub.className = 'mt-3';
                                 sub.innerHTML = `<h5 class="font-semibold text-slate-600 dark:text-slate-400 text-sm mb-2">${tipoPuestoNombres[tipo]}</h5>`;
                                 for (let i = 1; i <= count; i++) {
-                                    sub.appendChild(crearSelectAsignacion(tipo, local.nombre, dia, i, hora));
+                                    sub.appendChild(crearSelectAsignacion(tipo, local.nombre, dia, i, horaEntrada, horaSalida));
                                 }
                                 diaContenedor.appendChild(sub);
                             }
                         };
                         
-                        createSubSection('puestos', config.puestos, config.horaPuestos);
-                        createSubSection('cacheos', config.cacheos, config.horaCacheos);
-                        createSubSection('cacheoIngreso', config.cacheoIngreso, config.horaCacheoIngreso);
-                        createSubSection('cacheoSalida', config.cacheoSalida, config.horaCacheoSalida);
-                        createSubSection('turno1', config.turno1, config.horaTurno1);
-                        createSubSection('turno2', config.turno2, config.horaTurno2);
-                        createSubSection('turno3', config.turno3, config.horaTurno3);
+                        createSubSection('puestos', config.puestos, config.horaPuestosEntrada, config.horaPuestosSalida);
+                        createSubSection('cacheos', config.cacheos, config.horaCacheosEntrada, config.horaCacheosSalida);
+                        createSubSection('cacheoIngreso', config.cacheoIngreso, config.horaCacheoIngresoEntrada, config.horaCacheoIngresoSalida);
+                        createSubSection('cacheoSalida', config.cacheoSalida, config.horaCacheoSalidaEntrada, config.horaCacheoSalidaSalida);
+                        createSubSection('turno1', config.turno1, config.horaTurno1Entrada, config.horaTurno1Salida);
+                        createSubSection('turno2', config.turno2, config.horaTurno2Entrada, config.horaTurno2Salida);
+                        createSubSection('turno3', config.turno3, config.horaTurno3Entrada, config.horaTurno3Salida);
 
                        
                         localCol.appendChild(diaContenedor);
@@ -905,7 +1059,7 @@
             });
         }
 
-        function crearSelectAsignacion(tipo, local, dia, i, hora) {
+        function crearSelectAsignacion(tipo, local, dia, i, horaEntrada, horaSalida) {
             const week = state.selectedWeek;
             const slotId = `${local}-${dia}-${tipo}-${i}`;
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
@@ -950,7 +1104,9 @@
             confirmationSwitch.title = 'Confirmado';
             confirmationSwitch.innerHTML = `<label class="toggle-switch"><input type="checkbox" class="confirmation-checkbox" data-slot-id="${slotId}" ${isConfirmed ? 'checked' : ''}><span class="toggle-slider"></span></label>`;
             
-            div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-sm text-slate-500 w-24">${hora || 'N/A'}</span>`;
+            const horaText = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : (horaEntrada || 'N/A');
+
+            div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-xs text-slate-500 w-40">${horaText}</span>`;
             div.appendChild(select);
             div.appendChild(vestimentaBtn);
             div.appendChild(confirmationSwitch);
@@ -1001,12 +1157,15 @@
                     .map(([slotId, _]) => {
                         const [local, dia, tipo] = slotId.split('-');
                         const config = state.mapeoConfig[local]?.[dia] || {};
-                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                        const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                        const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                        const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
+
                         return {
                             slotId,
                             weekSlotId: `${week}-${slotId}`,
                             local, dia, tipo,
-                            horario: config[horaKey],
+                            horario: horario,
                             vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0],
                             isConfirmed: asignacionesSemana[`${slotId}-confirmed`] || false,
                         };
@@ -1475,7 +1634,7 @@
             const target = e.target;
             try {
                 if (target.matches('.mapeo-config-input')) {
-                    const { local, dia, type, part } = target.dataset;
+                    const { local, dia, type, part, sufijo } = target.dataset;
                     
                     const config = tempScheduleConfig;
                     if (!config[dia]) config[dia] = {};
@@ -1483,9 +1642,9 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
-                        config[dia][horaKey] = `${parent.querySelector('[data-part="hour"]').value}:${parent.querySelector('[data-part="minute"]').value} ${parent.querySelector('[data-part="ampm"]').value}`;
+                        config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
                 } else if (target.matches('.mapeo-select')) {
                     const week = state.selectedWeek;
@@ -1551,7 +1710,6 @@
         document.getElementById('close-local-modal').onclick = () => editLocalModal.style.display = 'none';
         document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
         document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
-        navButtons.forEach(btn => btn.addEventListener('click', () => cambiarVista(btn.id.split('-')[1])));
         
         semanaInputMapeo.addEventListener('change', (e) => { 
             state.selectedWeek = e.target.value; 
@@ -1727,19 +1885,51 @@
             }
             semanaInputMapeo.value = state.selectedWeek;
             semanaInputProgramacion.value = state.selectedWeek;
-            cambiarVista('gestion');
+            cambiarVista('mapeo');
             loader.style.display = 'none';
         }
 
         function cambiarVista(vista) {
             state.currentView = vista;
+            const searchFab = document.getElementById('search-fab');
+            if (vista === 'mapeo') {
+                searchFab.style.display = 'block';
+            } else {
+                searchFab.style.display = 'none';
+            }
             allSections.forEach(s => s.classList.add('hidden'));
             navButtons.forEach(b => b.classList.remove('active'));
             document.getElementById(`section-${vista}`).classList.remove('hidden');
-            document.getElementById(`btn-${vista}`).classList.add('active');
+            const activeButton = document.getElementById(`btn-${vista}`);
+            activeButton.classList.add('active');
+            mainTitle.textContent = activeButton.textContent;
             renderCurrentView();
         }
         
+        // --- Eventos de Nueva Navegación ---
+        const menuToggle = document.getElementById('menu-toggle');
+        const sideNav = document.getElementById('side-nav');
+        menuToggle.addEventListener('click', () => sideNav.classList.toggle('open'));
+        sideNav.addEventListener('mouseleave', () => sideNav.classList.remove('open'));
+        navButtons.forEach(btn => btn.addEventListener('click', () => {
+            cambiarVista(btn.id.split('-')[1]);
+            sideNav.classList.remove('open');
+        }));
+
+        // --- Eventos de Búsqueda Flotante ---
+        const searchFab = document.getElementById('search-fab');
+        const searchPanel = document.getElementById('search-panel');
+        searchFab.addEventListener('click', (e) => {
+            e.stopPropagation();
+            searchPanel.classList.toggle('open');
+        });
+        document.addEventListener('click', (e) => {
+            if (!searchPanel.contains(e.target) && !searchFab.contains(e.target)) {
+                searchPanel.classList.remove('open');
+            }
+        });
+
+
         themeToggleBtn.addEventListener('click', function() {
             darkIcon.classList.toggle('hidden');
             lightIcon.classList.toggle('hidden');
@@ -1761,11 +1951,10 @@
                 
                 const [local, dia, tipo] = slotId.split('-');
                 if (!tipo) return;
-                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
-                const hora = state.mapeoConfig[local]?.[dia]?.[horaKey];
+                const horaEntrada = state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
 
-                if(hora) {
-                    const shiftDate = getShiftDateTime(state.selectedWeek, dia, hora);
+                if(horaEntrada) {
+                    const shiftDate = getShiftDateTime(state.selectedWeek, dia, horaEntrada);
                     const hoursUntilShift = (shiftDate - now) / 3600000;
                     if (hoursUntilShift > 0 && hoursUntilShift < 24) {
                         notifications.add(`${state.selectedWeek}-${slotId}`);
@@ -1786,6 +1975,7 @@
             shiftDate.setDate(date.getDate() + dayIndex);
             
             const match = timeString.match(/(\d+):(\d+) (AM|PM)/);
+            if(!match) return shiftDate;
             let [_, hours, minutes, ampm] = match;
             hours = parseInt(hours, 10);
             if (ampm === 'PM' && hours !== 12) hours += 12;
@@ -1810,22 +2000,45 @@
                 if (!assignmentsByPerson[personaId]) assignmentsByPerson[personaId] = [];
                 const [local, dia, tipo] = slotId.split('-');
                 if(!tipo) return;
-                const hora = state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`];
+                const config = state.mapeoConfig[local]?.[dia];
+                if (!config) return;
+
+                const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                
+                const startMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaEntrada);
+                let endMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaSalida);
+
+                if (endMinutes < startMinutes) { // Overnight shift
+                    endMinutes += 1440;
+                }
+
                 assignmentsByPerson[personaId].push({
                     weekSlotId: `${week}-${slotId}`, dia, local, tipo,
-                    startMinutes: diasSemana.indexOf(dia) * 1440 + timeToMinutes(hora)
+                    startMinutes,
+                    endMinutes
                 });
             });
 
             for (const personaId in assignmentsByPerson) {
                 const personAssignments = assignmentsByPerson[personaId].sort((a, b) => a.startMinutes - b.startMinutes);
 
-                for (let i = 0; i < personAssignments.length - 1; i++) {
-                    const timeBetween = personAssignments[i+1].startMinutes - (personAssignments[i].startMinutes + 480); // Asume turnos de 8h
-                    if (timeBetween >= 0 && timeBetween < 480) { // Menos de 8h de descanso
-                        state.yellowConflicts.add(personAssignments[i].weekSlotId);
-                        state.yellowConflicts.add(personAssignments[i+1].weekSlotId);
-                    }
+                for (let i = 0; i < personAssignments.length; i++) {
+                     for (let j = i + 1; j < personAssignments.length; j++) {
+                        const first = personAssignments[i];
+                        const second = personAssignments[j];
+
+                        // Check for direct overlap (Red Conflict)
+                        if (first.startMinutes < second.endMinutes && second.startMinutes < first.endMinutes) {
+                            state.redConflicts.add(first.weekSlotId);
+                            state.redConflicts.add(second.weekSlotId);
+                        }
+                        // Check for insufficient rest (Yellow Conflict)
+                        else if (second.startMinutes - first.endMinutes < 480 && second.startMinutes > first.endMinutes) { // Less than 8 hours
+                            state.yellowConflicts.add(first.weekSlotId);
+                            state.yellowConflicts.add(second.weekSlotId);
+                        }
+                     }
                 }
                 
                 const assignmentsByDay = personAssignments.reduce((acc, a) => {
@@ -1836,7 +2049,6 @@
 
                 Object.values(assignmentsByDay).forEach(dailyAssignments => {
                     if (dailyAssignments.length < 2) return;
-                    dailyAssignments.forEach(a => state.yellowConflicts.add(a.weekSlotId)); 
 
                     const localRoles = dailyAssignments.reduce((acc, a) => {
                         acc[a.local] = acc[a.local] || new Set();
@@ -1849,15 +2061,6 @@
                             dailyAssignments.filter(a => a.local === local).forEach(a => state.celesteConflicts.add(a.weekSlotId));
                         }
                     });
-
-                    const timeLocalMap = dailyAssignments.reduce((acc, a) => {
-                        const key = `${a.local}-${a.startMinutes}`;
-                        acc[key] = acc[key] || [];
-                        acc[key].push(a.weekSlotId);
-                        return acc;
-                    }, {});
-
-                    Object.values(timeLocalMap).filter(g => g.length > 1).flat().forEach(id => state.redConflicts.add(id));
                 });
             }
             
@@ -1876,7 +2079,11 @@
                 .filter(([slotId, pId]) => pId === personId && slotId.includes('-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
                 .map(([slotId, _]) => {
                     const [local, dia, tipo, i] = slotId.split('-');
-                    return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario: state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`] };
+                     const config = state.mapeoConfig[local]?.[dia] || {};
+                    const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                    const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                    const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
+                    return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario };
                 });
 
             if (assignments.length === 0) return showStatusMessage('Esta persona no tiene asignaciones para copiar.', 'error');
@@ -1983,12 +2190,14 @@
                     const [local, dia, tipo] = slotId.split('-');
                     const persona = state.personal.find(p => p.id === pId);
                     const config = (scheduleData.mapeoConfig?.[local]?.[dia]) || state.mapeoConfig[local]?.[dia] || {};
-                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                    const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                    const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
                     return {
                         'Fecha': getWeekDates(week)[dia] || 'N/A', 'Día': diasSemanaFull[diasSemana.indexOf(dia)],
                         'Local': local.toUpperCase(), 'Puesto': tipoPuestoNombres[tipo] || tipo,
                         'Nombre': persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
-                        'Hora': config[horaKey],
+                        'Hora Entrada': horaEntrada,
+                        'Hora Salida': horaSalida,
                         'Vestimenta': scheduleData.asignaciones[`${slotId}-vestimenta`] || vestimentaOptions[0]
                     };
                 });
@@ -2068,11 +2277,13 @@
                         const [, , tipo] = slotId.split('-');
                         const persona = state.personal.find(p => p.id === pId);
                         const config = state.mapeoConfig[localNombre]?.[dia] || {};
-                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                        const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                        const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                        const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
                         return {
                             puesto: tipoPuestoNombres[tipo] || tipo,
                             nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
-                            hora: config[horaKey] || 'N/A'
+                            hora: horario || 'N/A'
                         };
                     }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
 
@@ -2217,11 +2428,13 @@
                                 const [, , tipo] = slotId.split('-');
                                 const persona = state.personal.find(p => p.id === pId);
                                 const config = state.mapeoConfig[localNombre]?.[dia] || {};
-                                const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                                const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                                const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                                const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
                                 return {
                                     puesto: tipoPuestoNombres[tipo] || tipo,
                                     nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
-                                    hora: config[horaKey] || 'N/A'
+                                    hora: horario || 'N/A'
                                 };
                             }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
                         if (dailyAssignments.length > 0) assignmentsByDay[dia] = dailyAssignments;
