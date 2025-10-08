@@ -2120,43 +2120,72 @@
             const assignments = Object.entries(asignacionesSemana)
                 .filter(([slotId, pId]) => pId === personId && slotId.includes('-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
                 .map(([slotId, _]) => {
-                    const [local, dia, tipo, i] = slotId.split('-');
-                     const config = state.mapeoConfig[local]?.[dia] || {};
+                    const [local, dia, tipo] = slotId.split('-');
+                    const config = state.mapeoConfig[local]?.[dia] || {};
                     const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
-                    const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
-                    const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
-                    return { dia, local, raw_tipo: tipo, i: i, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], horario };
+                    return { 
+                        dia, 
+                        local, 
+                        raw_tipo: tipo, 
+                        vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], 
+                        hora: horaEntrada || 'N/A'
+                    };
                 });
 
-            if (assignments.length === 0) return showStatusMessage('Esta persona no tiene asignaciones para copiar.', 'error');
+            if (assignments.length === 0) {
+                showStatusMessage('Esta persona no tiene asignaciones para copiar.', 'error');
+                return;
+            }
 
-            const groupedByDayAndLocal = assignments.reduce((acc, a) => {
-                const key = `${a.dia}-${a.local}`;
-                if (!acc[key]) {
-                    acc[key] = { dia: diasSemanaFull[diasSemana.indexOf(a.dia)], local: a.local.toUpperCase(), vestimenta: a.vestimenta, turnos: [] };
+            // Group assignments by day
+            const groupedByDay = assignments.reduce((acc, a) => {
+                if (!acc[a.dia]) {
+                    acc[a.dia] = [];
                 }
-                acc[key].turnos.push({ raw_tipo: a.raw_tipo, i: a.i, horario: a.horario });
+                acc[a.dia].push(a);
                 return acc;
             }, {});
             
-            const dayNameToIndex = diasSemanaFull.reduce((acc, day, index) => ({ ...acc, [day]: index }), {});
-            const sortedGroups = Object.values(groupedByDayAndLocal).sort((a, b) => dayNameToIndex[a.dia] - dayNameToIndex[b.dia]);
-            
             let message = `¡Hola ${persona.nombre}! Tu programación es la siguiente:\n\n`;
             
-            message += sortedGroups.map(g => {
-                g.turnos.sort((a,b) => timeToMinutes(a.horario) - timeToMinutes(b.horario));
-                const turnosStrings = g.turnos.map(t => {
-                    if (t.raw_tipo === 'puestos' && g.turnos.length === 1) return `(${t.horario})`;
-                    const name = tipoPuestoNombres[t.raw_tipo] || t.raw_tipo;
-                    const finalName = ['cacheoIngreso', 'cacheoSalida'].includes(t.raw_tipo) ? `${name} ${t.i}` : name;
-                    return `${finalName} (${t.horario})`;
-                }).join(', ');
-                return `• ${g.dia} en ${g.local}: ${turnosStrings}. Vestimenta: ${g.vestimenta}.`;
-            }).join('\n');
+            const sortedDays = Object.keys(groupedByDay).sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b));
+
+            sortedDays.forEach(dia => {
+                const dailyAssignments = groupedByDay[dia];
+
+                // Find the cacheo de ingreso, if any
+                const ingresoCacheo = dailyAssignments.find(a => a.raw_tipo === 'cacheoIngreso');
+                
+                // Sort by time to find the earliest assignment
+                dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+                const earliestAssignment = dailyAssignments[0];
+
+                // The primary assignment for display is the ingreso cacheo if it exists, otherwise the earliest one
+                const primaryAssignment = ingresoCacheo || earliestAssignment;
+
+                const allCacheos = dailyAssignments.filter(a => a.raw_tipo.toLowerCase().includes('cacheo'));
+
+                const local = primaryAssignment.local.toUpperCase();
+                const diaSemana = diasSemanaFull[diasSemana.indexOf(dia)];
+                const hora = primaryAssignment.hora; // This will now be the ingreso time if it exists
+                const vestimenta = primaryAssignment.vestimenta;
+
+                let cacheoInfo = '';
+                if (allCacheos.length > 0) {
+                    // Sort cacheos for consistent display order (e.g., Ingreso then Salida)
+                    allCacheos.sort((a, b) => {
+                        const order = { 'cacheoIngreso': 1, 'cacheoSalida': 2, 'cacheos': 3 };
+                        return (order[a.raw_tipo] || 99) - (order[b.raw_tipo] || 99);
+                    });
+                    cacheoInfo = ` (${allCacheos.map(c => tipoPuestoNombres[c.raw_tipo] || c.raw_tipo).join(', ')})`;
+                }
+
+                message += `• ${diaSemana} en ${local}: ${hora} Vestimenta: ${vestimenta}.${cacheoInfo}\n`;
+            });
+
 
             const textArea = document.createElement("textarea");
-            textArea.value = message;
+            textArea.value = message.trim();
             document.body.appendChild(textArea);
             textArea.select();
             try {
@@ -2575,4 +2604,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
+
 
