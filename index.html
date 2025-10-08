@@ -662,6 +662,12 @@
         let historialChartInstance;
         // FIN: Variables para el modal de horarios
 
+        // INICIO: Variables para listeners de Firestore
+        let asignacionesListenerUnsubscribe = null;
+        let mapeoConfigListenerUnsubscribe = null;
+        let historialListenerUnsubscribe = null;
+        // FIN: Variables para listeners
+
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const diasSemanaFull = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -724,11 +730,8 @@
                     localStorage.removeItem('mapeoPassword');
                 }
                 
-                loader.style.display = 'flex';
-                // Credentials are correct, now proceed with app initialization
                 loginOverlay.style.display = 'none';
-                setupListeners();
-                inicializarApp();
+                await initializeAndLoadData();
             } else {
                 loginError.textContent = 'Usuario o contraseña incorrectos.';
             }
@@ -764,7 +767,112 @@
             loader.style.display = 'none';
         });
 
-        // --- INICIO: Lógica de renderizado y carga de datos mejorada ---
+        // --- INICIO: Lógica de carga de datos optimizada ---
+        async function fetchLocales() {
+            const snapshot = await getDocs(query(localesCol));
+            state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
+            if (state.currentView === 'gestion') {
+                renderizarTablaLocales();
+            }
+        }
+
+        async function fetchPersonal() {
+            const snapshot = await getDocs(query(personalCol));
+            const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const uniquePersonal = [];
+            const duplicatesToDelete = new Set();
+            const seenNames = new Set();
+            const seenNumbers = new Set();
+
+            allPersonal.forEach(p => {
+                const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
+                const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
+                let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
+
+                if (isDuplicate) {
+                    duplicatesToDelete.add(p.id);
+                } else {
+                    uniquePersonal.push(p);
+                    if (fullName) seenNames.add(fullName);
+                    if(employeeNumber) seenNumbers.add(employeeNumber);
+                }
+            });
+
+            if (duplicatesToDelete.size > 0) {
+                showStatusMessage(`Se encontraron y eliminaron ${duplicatesToDelete.size} duplicados automáticamente.`, 'success');
+                const deletePromises = Array.from(duplicatesToDelete).map(id => deleteDoc(doc(db, personalCol.path, id)));
+                await Promise.all(deletePromises);
+            }
+            
+            state.personal = uniquePersonal;
+            if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
+            if (state.currentView === 'gestion') {
+                renderizarTablaPersonal();
+            }
+        }
+
+        function listenToAssignments(week) {
+            if (asignacionesListenerUnsubscribe) {
+                asignacionesListenerUnsubscribe();
+            }
+            if (!week) {
+                state.asignaciones[state.selectedWeek] = {};
+                renderCurrentView();
+                return;
+            }
+            const weekDocRef = doc(db, asignacionesCol.path, week);
+            asignacionesListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
+                const weekData = docSnap.exists() ? docSnap.data() : {};
+                state.asignaciones[week] = weekData; // Solo actualizamos la semana activa
+                if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
+                recalculateConflicts();
+                checkUpcomingShiftNotifications();
+                renderCurrentView();
+            }, error => console.error("Error fetching asignaciones:", error));
+        }
+
+        async function initializeAndLoadData() {
+            loader.style.display = 'flex';
+
+            // --- FIX: Set the selected week FIRST ---
+            if (!state.selectedWeek) {
+                const now = new Date();
+                state.selectedWeek = `${now.getFullYear()}-W${String(now.getWeek()).padStart(2, '0')}`;
+            }
+
+            // Cargar datos estáticos una vez
+            await Promise.all([
+                fetchLocales(),
+                fetchPersonal()
+            ]);
+
+            // Escuchar cambios en datos dinámicos
+            if (mapeoConfigListenerUnsubscribe) mapeoConfigListenerUnsubscribe();
+            mapeoConfigListenerUnsubscribe = onSnapshot(query(mapeoConfigCol), snapshot => {
+                state.mapeoConfig = {};
+                snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
+                if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
+                recalculateConflicts();
+                renderCurrentView();
+            }, error => console.error("Error fetching mapeo config:", error));
+
+            if (historialListenerUnsubscribe) historialListenerUnsubscribe();
+            historialListenerUnsubscribe = onSnapshot(query(historialCol), snapshot => {
+                state.historial = {};
+                snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
+                if (!initialDataLoaded.historial) initialDataLoaded.historial = true;
+                renderCurrentView();
+            }, error => console.error("Error fetching historial:", error));
+
+            // Escuchar asignaciones de la semana actual
+            listenToAssignments(state.selectedWeek);
+            
+            inicializarApp();
+        }
+        // --- FIN: Lógica de carga de datos optimizada ---
+
         function renderCurrentView() {
             switch(state.currentView) {
                 case 'gestion':
@@ -782,72 +890,6 @@
                     break;
             }
         }
-
-        function setupListeners() {
-            onSnapshot(query(localesCol), snapshot => {
-                state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
-                renderCurrentView();
-            }, error => console.error("Error fetching locales:", error));
-
-            onSnapshot(query(personalCol), snapshot => {
-                const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const uniquePersonal = [];
-                const duplicatesToDelete = new Set();
-                const seenNames = new Set();
-                const seenNumbers = new Set();
-
-                allPersonal.forEach(p => {
-                    const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
-                    const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
-                    let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
-
-                    if (isDuplicate) {
-                        duplicatesToDelete.add(p.id);
-                    } else {
-                        uniquePersonal.push(p);
-                        if (fullName) seenNames.add(fullName);
-                        if(employeeNumber) seenNumbers.add(employeeNumber);
-                    }
-                });
-
-                if (duplicatesToDelete.size > 0) {
-                    showStatusMessage(`Se encontraron y eliminaron ${duplicatesToDelete.size} duplicados automáticamente.`, 'success');
-                    duplicatesToDelete.forEach(id => {
-                        deleteDoc(doc(db, personalCol.path, id));
-                    });
-                }
-                
-                state.personal = uniquePersonal;
-                if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
-                renderCurrentView();
-            }, error => console.error("Error fetching personal:", error));
-
-            onSnapshot(query(mapeoConfigCol), snapshot => {
-                state.mapeoConfig = {};
-                snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
-                if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
-                recalculateConflicts();
-                renderCurrentView();
-            }, error => console.error("Error fetching mapeo config:", error));
-
-            onSnapshot(query(asignacionesCol), snapshot => {
-                state.asignaciones = {};
-                snapshot.docs.forEach(doc => { state.asignaciones[doc.id] = doc.data(); });
-                if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
-                recalculateConflicts();
-                checkUpcomingShiftNotifications();
-                renderCurrentView();
-            }, error => console.error("Error fetching asignaciones:", error));
-
-            onSnapshot(query(historialCol), snapshot => {
-                state.historial = {};
-                snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
-                if (!initialDataLoaded.historial) initialDataLoaded.historial = true;
-                renderCurrentView();
-            }, error => console.error("Error fetching historial:", error));
-        }
-        // --- FIN: Lógica de renderizado y carga de datos mejorada ---
         
         // --- LÓGICA DE RENDERIZADO ---
         function renderizarTablaLocales() {
@@ -988,7 +1030,8 @@
                 diasSemana.forEach(dia => {
                     const configDia = localConfig[dia] || {};
                     ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
-                        const count = configDia[tipo] || 0;
+                        const count = parseInt(configDia[tipo] || 0);
+                        if(isNaN(count)) return;
                         totalPuestos += count;
                         for (let i = 1; i <= count; i++) {
                             const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
@@ -1032,15 +1075,16 @@
                         diaContenedor.innerHTML = `<h4 class="text-lg font-bold capitalize text-slate-800 dark:text-slate-200">${dia} <span class="text-sm font-normal text-slate-500">${dates[dia] || ''}</span></h4>`;
                         
                         const createSubSection = (tipo, count, horaEntrada, horaSalida) => {
-                             if (count > 0) {
-                                const sub = document.createElement('div');
-                                sub.className = 'mt-3';
-                                sub.innerHTML = `<h5 class="font-semibold text-slate-600 dark:text-slate-400 text-sm mb-2">${tipoPuestoNombres[tipo]}</h5>`;
-                                for (let i = 1; i <= count; i++) {
-                                    sub.appendChild(crearSelectAsignacion(tipo, local.nombre, dia, i, horaEntrada, horaSalida));
-                                }
-                                diaContenedor.appendChild(sub);
+                            const numCount = parseInt(count || 0);
+                            if (isNaN(numCount) || numCount <= 0) return;
+
+                            const sub = document.createElement('div');
+                            sub.className = 'mt-3';
+                            sub.innerHTML = `<h5 class="font-semibold text-slate-600 dark:text-slate-400 text-sm mb-2">${tipoPuestoNombres[tipo]}</h5>`;
+                            for (let i = 1; i <= numCount; i++) {
+                                sub.appendChild(crearSelectAsignacion(tipo, local.nombre, dia, i, horaEntrada, horaSalida));
                             }
+                            diaContenedor.appendChild(sub);
                         };
                         
                         createSubSection('puestos', config.puestos, config.horaPuestosEntrada, config.horaPuestosSalida);
@@ -1356,6 +1400,7 @@
                     showStatusMessage('Personal agregado');
                 }
                 personalModal.style.display = 'none';
+                await fetchPersonal(); // Manually refresh data
             } catch (error) {
                 console.error("Error saving personal:", error);
                 showStatusMessage('Error al guardar datos.', 'error');
@@ -1372,6 +1417,7 @@
                     await addDoc(localesCol, { nombre, color: randomColor });
                     showStatusMessage('Local agregado');
                     formLocales.reset();
+                    await fetchLocales(); // Manually refresh data
                 } catch (error) {
                     console.error("Error adding local:", error);
                     showStatusMessage('No se pudo agregar el local.', 'error');
@@ -1389,9 +1435,10 @@
             const color = e.target['edit-local-color'].value;
             if (nombre) {
                 try {
-                    await setDoc(doc(db, localesCol.path, id), { nombre, color });
+                    await setDoc(doc(db, localesCol.path, id), { nombre, color }, { merge: true });
                     showStatusMessage('Local actualizado');
                     editLocalModal.style.display = 'none';
+                    await fetchLocales(); // Manually refresh data
                 } catch (error) {
                     console.error("Error updating local:", error);
                     showStatusMessage('No se pudo actualizar el local.', 'error');
@@ -1489,6 +1536,7 @@
                         await deleteDoc(doc(db, personalCol.path, button.dataset.id));
                         viewPersonalModal.style.display = 'none';
                         showStatusMessage('Personal eliminado');
+                        await fetchPersonal(); // Manually refresh data
                     }
                 } else if (button.matches('.btn-editar-local')) {
                     formEditLocal['edit-local-id'].value = button.dataset.id;
@@ -1565,6 +1613,7 @@
                     if (confirmed) {
                         await deleteDoc(doc(db, localesCol.path, button.dataset.id));
                         showStatusMessage('Local eliminado');
+                        await fetchLocales(); // Manually refresh data
                     }
                 } else if (button.matches('.btn-copy-schedule')) {
                     copyPersonalSchedule(button.dataset.personId);
@@ -1597,8 +1646,6 @@
                         await deleteDoc(doc(db, historialCol.path, week));
                         showStatusMessage('Historial eliminado');
                     }
-                } else if (button.matches('.btn-descargar-historial')) {
-                    descargarExcel(button.dataset.week, state.historial[button.dataset.week]);
                 } else if (button.matches('#btn-guardar-programacion')) {
                     const week = state.selectedWeek;
                     if (week) {
@@ -1695,6 +1742,7 @@
                         }
                     }
                     showStatusMessage(`${importados} personas importadas.`);
+                    await fetchPersonal(); // Manually refresh data
                 } catch (error) {
                     showStatusMessage('Error al importar el archivo.', 'error');
                     console.error("Error de importación:", error);
@@ -1714,14 +1762,12 @@
         semanaInputMapeo.addEventListener('change', (e) => { 
             state.selectedWeek = e.target.value; 
             semanaInputProgramacion.value = e.target.value; 
-            recalculateConflicts();
-            renderizarMapeo(); 
+            listenToAssignments(state.selectedWeek);
         });
         semanaInputProgramacion.addEventListener('change', (e) => { 
             state.selectedWeek = e.target.value; 
             semanaInputMapeo.value = e.target.value; 
-            recalculateConflicts();
-            renderizarProgramacionPersonal(); 
+            listenToAssignments(state.selectedWeek);
         });
         
         busquedaProgramacionInput.addEventListener('input', debounce(e => { state.searchTermProgramacion = e.target.value.toLowerCase().trim(); renderizarProgramacionPersonal(); }));
@@ -1879,10 +1925,6 @@
                 darkIcon.classList.remove('hidden');
             }
             
-            if (!state.selectedWeek) {
-                const now = new Date();
-                state.selectedWeek = `${now.getFullYear()}-W${String(now.getWeek()).padStart(2, '0')}`;
-            }
             semanaInputMapeo.value = state.selectedWeek;
             semanaInputProgramacion.value = state.selectedWeek;
             cambiarVista('mapeo');
@@ -1987,8 +2029,8 @@
 
         function recalculateConflicts() {
             const week = state.selectedWeek;
-            if (!week) return;
-            const asignacionesSemana = state.asignaciones[week] || {};
+            if (!week || !state.asignaciones[week]) return;
+            const asignacionesSemana = state.asignaciones[week];
 
             state.redConflicts.clear();
             state.yellowConflicts.clear();
