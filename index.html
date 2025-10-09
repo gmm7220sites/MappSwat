@@ -2153,36 +2153,41 @@
             sortedDays.forEach(dia => {
                 const dailyAssignments = groupedByDay[dia];
 
-                // Find the cacheo de ingreso, if any
+                // Find a main assignment (puesto or turno) to get base info
+                let mainAssignment = dailyAssignments.find(a => a.raw_tipo.includes('puesto') || a.raw_tipo.includes('turno'));
+                // If no main assignment, pick the earliest one as a fallback
+                if (!mainAssignment) {
+                    dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
+                    mainAssignment = dailyAssignments[0];
+                }
+
+                // Specifically find the cacheo de ingreso for its time
                 const ingresoCacheo = dailyAssignments.find(a => a.raw_tipo === 'cacheoIngreso');
-                
-                // Sort by time to find the earliest assignment
-                dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
-                const earliestAssignment = dailyAssignments[0];
 
-                // The primary assignment for display is the ingreso cacheo if it exists, otherwise the earliest one
-                const primaryAssignment = ingresoCacheo || earliestAssignment;
+                // The time to display is from cacheoIngreso if it exists, otherwise from the main assignment
+                const displayTime = ingresoCacheo ? ingresoCacheo.hora : mainAssignment.hora;
 
+                // Collect all cacheo roles for the day
                 const allCacheos = dailyAssignments.filter(a => a.raw_tipo.toLowerCase().includes('cacheo'));
 
-                const local = primaryAssignment.local.toUpperCase();
+                const local = mainAssignment.local.toUpperCase();
                 const diaSemana = diasSemanaFull[diasSemana.indexOf(dia)];
-                const hora = primaryAssignment.hora; // This will now be the ingreso time if it exists
-                const vestimenta = primaryAssignment.vestimenta;
+                const vestimenta = mainAssignment.vestimenta;
 
                 let cacheoInfo = '';
                 if (allCacheos.length > 0) {
-                    // Sort cacheos for consistent display order (e.g., Ingreso then Salida)
+                    // Sort cacheos for consistent display order
                     allCacheos.sort((a, b) => {
-                        const order = { 'cacheoIngreso': 1, 'cacheoSalida': 2, 'cacheos': 3 };
+                        const order = { 'cacheoIngreso': 1, 'cacheos': 2, 'cacheoSalida': 3 };
                         return (order[a.raw_tipo] || 99) - (order[b.raw_tipo] || 99);
                     });
-                    cacheoInfo = ` (${allCacheos.map(c => tipoPuestoNombres[c.raw_tipo] || c.raw_tipo).join(', ')})`;
+                    cacheoInfo = ` + (${allCacheos.map(c => tipoPuestoNombres[c.raw_tipo] || c.raw_tipo).join(', ')})`;
                 }
 
-                message += `• ${diaSemana} en ${local}: ${hora} Vestimenta: ${vestimenta}.${cacheoInfo}\n`;
+                message += `• ${diaSemana} en ${local}: ${displayTime} Vestimenta: ${vestimenta}.${cacheoInfo}\n`;
             });
 
+            message += `\nMANDAME TU CONFIRMACIÓN ✅`;
 
             const textArea = document.createElement("textarea");
             textArea.value = message.trim();
@@ -2604,6 +2609,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
 
 
 
