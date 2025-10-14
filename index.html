@@ -317,6 +317,13 @@
         .pago-btn:hover { color: #facc15; }
         .pago-btn.active { color: #facc15; }
 
+        /* Iconos de Status y Conexión */
+        #system-status-icon { transition: color 0.5s ease; color: #e2e8f0; /*slate-200*/ }
+        html.dark #system-status-icon { color: #475569; /*slate-600*/ }
+        #system-status-icon.status-green { color: #22c55e; }
+        #system-status-icon.status-yellow { color: #f59e0b; }
+        #system-status-icon.status-red { color: #ef4444; }
+
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -367,10 +374,17 @@
         <header class="text-center mb-8 relative">
             <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900"></h1>
             <p class="text-slate-600 mt-2">Plataforma colaborativa para la gestión de personal y turnos.</p>
-            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" title="Cambiar tema">
-                <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            </button>
+            <div class="absolute top-0 right-0 flex items-center gap-4">
+                <div id="system-status-container" title="Estado del sistema">
+                    <svg id="system-status-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 14v4M9 10v8M13 6v12M17 2v16" />
+                    </svg>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" title="Cambiar tema">
+                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+            </div>
         </header>
 
         <div id="status-message-container" class="fixed top-4 right-4 z-50"></div>
@@ -602,7 +616,8 @@
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getDatabase, ref, onValue, set, onDisconnect, push, serverTimestamp as databaseServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 
         // --- INICIO: Configuración de Firebase ---
         const firebaseConfig = {
@@ -620,6 +635,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const rtdb = getDatabase(app);
 
         const FIRESTORE_PATHS = {
             PERSONAL: 'personal',
@@ -628,11 +644,13 @@
             ASIGNACIONES: 'asignaciones',
             HISTORIAL: 'historial',
             PLANILLA_CONFIG: 'planillaConfig',
-            TARIFARIOS: 'tarifarios'
+            TARIFARIOS: 'tarifarios',
+            PRESENCE: 'presence',
+            STATUS: 'status'
         };
 
         // Referencias a Colecciones de Firestore
-        let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol, planillaConfigCol, tarifariosCol;
+        let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol, planillaConfigCol, tarifariosCol, statusCol;
 
         // --- INICIO: Lógica para Deshacer (Ctrl+Z) ---
         let actionHistory = [];
@@ -738,6 +756,8 @@
         let planillaConfigListenerUnsubscribe = () => {};
         // FIN: Variables para listeners
 
+        let inactivityTimer;
+
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const diasSemanaFull = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -806,6 +826,8 @@
                 loginOverlay.style.display = 'none';
                 // La carga de datos ahora se centraliza en setupListeners
                 setupListeners(); 
+                setupSystemStatus();
+                resetInactivityTimer();
                 inicializarApp();
             } else {
                 loginError.textContent = 'Usuario o contraseña incorrectos.';
@@ -823,6 +845,7 @@
             historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
             planillaConfigCol = collection(db, `${basePath}/${FIRESTORE_PATHS.PLANILLA_CONFIG}`);
             tarifariosCol = collection(db, `${basePath}/${FIRESTORE_PATHS.TARIFARIOS}`);
+            statusCol = collection(db, `${basePath}/${FIRESTORE_PATHS.STATUS}`);
 
             
             try {
@@ -854,7 +877,7 @@
             onSnapshot(query(localesCol), snapshot => {
                 state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching locales:", error));
 
             // Listener para Personal (con manejo de duplicados)
@@ -887,7 +910,7 @@
                 
                 state.personal = uniquePersonal;
                 if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching personal:", error));
 
             // Listener para Configuración de Mapeo
@@ -896,7 +919,7 @@
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
                 if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
                 recalculateConflicts();
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching mapeo config:", error));
             
             // Listener para Historial
@@ -904,7 +927,7 @@
                 state.historial = {};
                 snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
                 if (!initialDataLoaded.historial) initialDataLoaded.historial = true;
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching historial:", error));
 
             // Listener para Tarifarios individuales
@@ -912,7 +935,7 @@
                 state.tarifarios = {};
                 snapshot.docs.forEach(doc => { state.tarifarios[doc.id] = doc.data(); });
                 if(!initialDataLoaded.tarifarios) initialDataLoaded.tarifarios = true;
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching tarifarios:", error));
             
             // Listener para Asignaciones y Planillas (se activa al cambiar de semana)
@@ -935,7 +958,7 @@
             
             if (!week) {
                 state.asignaciones = {};
-                renderCurrentView();
+                debouncedRender();
                 return;
             }
             
@@ -948,7 +971,7 @@
                 
                 recalculateConflicts();
                 checkUpcomingShiftNotifications();
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching asignaciones:", error));
         }
 
@@ -957,7 +980,7 @@
 
             if (!week) {
                 state.planillaConfig = {};
-                renderCurrentView();
+                debouncedRender();
                 return;
             }
 
@@ -965,7 +988,7 @@
             planillaConfigListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
                 state.planillaConfig = docSnap.exists() ? docSnap.data() : {};
                 if (!initialDataLoaded.planillaConfig) initialDataLoaded.planillaConfig = true;
-                renderCurrentView();
+                debouncedRender();
             }, error => console.error("Error fetching planilla config:", error));
         }
         // --- FIN: Lógica de carga de datos optimizada ---
@@ -2236,6 +2259,8 @@
             XLSX.writeFile(workbook, `Personal_SwattMapee.xlsx`);
         }
 
+        const debouncedRender = debounce(renderCurrentView, 100);
+
         function debounce(func, delay = 250) {
             let timeout;
             return (...args) => {
@@ -3103,7 +3128,7 @@
             const isReserva = data.nombre.toLowerCase().includes('reserva');
             
             let pagoBruto = isReserva ? 0 : data.turnos.reduce((acc, turno) => {
-                const rateKey = `${turno.vestimenta}${turno.isLong ? '_12h' : ''}`;
+                const rateKey = `${turno.vestimenta}`;
                 const rate = parseFloat(tarifasPersona[rateKey] || 0);
                 return acc + rate;
             }, 0);
@@ -3131,6 +3156,53 @@
             return barHTML;
         }
 
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            const fourHours = 4 * 60 * 60 * 1000;
+            inactivityTimer = setTimeout(() => {
+                showStatusMessage('Sesión cerrada por inactividad.', 'error');
+                loginOverlay.style.display = 'flex';
+            }, fourHours);
+        }
+
+        function setupSystemStatus() {
+            // --- Firestore for Latency Check ---
+            const statusRef = doc(db, statusCol.path, 'ping');
+             onSnapshot(statusRef, (doc) => {
+                const data = doc.data();
+                if (data && data.timestamp && typeof data.timestamp.toMillis === 'function') {
+                    const latency = Date.now() - data.timestamp.toMillis();
+                    updateSystemStatus(latency);
+                }
+            });
+            setInterval(async () => {
+                try {
+                    await setDoc(statusRef, { timestamp: serverTimestamp() });
+                } catch(e) {
+                     updateSystemStatus(9999); // Error state
+                }
+            }, 10000);
+        }
+
+        function updateSystemStatus(latency) {
+            const icon = document.getElementById('system-status-icon');
+            icon.classList.remove('status-green', 'status-yellow', 'status-red');
+            if (latency < 800) {
+                icon.classList.add('status-green');
+                icon.parentElement.title = `Sistema fluido (latencia: ${latency}ms)`;
+            } else if (latency < 2000) {
+                icon.classList.add('status-yellow');
+                icon.parentElement.title = `Sistema con lentitud (latencia: ${latency}ms)`;
+            } else {
+                icon.classList.add('status-red');
+                icon.parentElement.title = `Sistema lento o con problemas (latencia: ${latency}ms)`;
+            }
+        }
+
+        ['mousemove', 'mousedown', 'keydown'].forEach(evt => {
+            window.addEventListener(evt, resetInactivityTimer, false);
+        });
+
 
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -3138,4 +3210,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
 
