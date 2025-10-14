@@ -303,6 +303,20 @@
         .detail-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; }
         .detail-label { font-semibold; text-align: right; }
 
+        /* Estilos para Planillas y Tarifario */
+        .planilla-detalle { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+        .planilla-detalle.open { max-height: 500px; }
+        .descuento-input { color: #ef4444; } /* red-500 */
+        .extra-input { color: #22c55e; } /* green-500 */
+        .work-day-bar { display: flex; gap: 2px; }
+        .work-day { flex: 1; text-align: center; padding: 2px; border-radius: 4px; font-size: 10px; background-color: #e2e8f0; color: #64748b;}
+        html.dark .work-day { background-color: #334155; color: #94a3b8; }
+        .work-day.worked { background-color: #22c55e; color: white; font-weight: bold; }
+        html.dark .work-day.worked { background-color: #16a34a; }
+        .pago-btn { cursor: pointer; color: #94a3b8; transition: color 0.2s; }
+        .pago-btn:hover { color: #facc15; }
+        .pago-btn.active { color: #facc15; }
+
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -343,6 +357,8 @@
         <button id="btn-mapeo" class="nav-button">Mapeo Semanal</button>
         <button id="btn-gestion" class="nav-button">Gestión</button>
         <button id="btn-programacion" class="nav-button">Programación</button>
+        <button id="btn-tarifario" class="nav-button">Tarifario</button>
+        <button id="btn-planillas" class="nav-button">Planillas</button>
         <button id="btn-historial" class="nav-button">Historial</button>
     </nav>
 
@@ -445,13 +461,60 @@
                     <div id="programacion-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
             </section>
+            <section id="section-tarifario" class="hidden">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold">Tarifario Individual por Turno (S/)</h2>
+                            <p class="text-sm text-slate-500 mt-1">Los cambios se guardan automáticamente.</p>
+                        </div>
+                        <div class="relative">
+                            <input type="text" id="busqueda-tarifario" placeholder="Buscar por nombre..." class="w-full md:w-64 p-2 pl-10 border rounded-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="p-3 font-semibold">Nombre Completo</th>
+                                    <th class="p-3 font-semibold text-center"><div class="flex items-center justify-center gap-2">🤵<span>TERNO</span></div></th>
+                                    <th class="p-3 font-semibold text-center"><div class="flex items-center justify-center gap-2">🥋<span>TACTICO</span></div></th>
+                                    <th class="p-3 font-semibold text-center"><div class="flex items-center justify-center gap-2">🤝<span>APOYO</span></div></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-tarifario"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="section-planillas" class="hidden">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
+                        <label for="semana-planillas" class="font-semibold">Semana para Calcular:</label>
+                        <input type="week" id="semana-planillas" class="p-2 border rounded-md">
+                        <div class="flex-grow"></div>
+                        <button id="btn-exportar-planilla" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Planilla</button>
+                    </div>
+                    <div id="planillas-container" class="space-y-8">
+                        <!-- Contenido generado por JS -->
+                    </div>
+                </div>
+            </section>
             <section id="section-historial" class="hidden">
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     <h2 class="text-2xl font-bold mb-4">Historial y Estadísticas</h2>
-                    <div class="mb-8 h-80 relative">
-                        <canvas id="historial-chart"></canvas>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="h-80 relative">
+                             <canvas id="historial-chart"></canvas>
+                        </div>
+                        <div class="h-80 relative">
+                             <canvas id="pagos-chart"></canvas>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold mb-4">Datos Históricos</h3>
+                    <h3 class="text-xl font-bold mb-4 mt-8">Datos Históricos</h3>
                     <div id="historial-container" class="overflow-x-auto"></div>
                 </div>
             </section>
@@ -563,11 +626,13 @@
             LOCALES: 'locales',
             MAPEO_CONFIG: 'mapeoConfig',
             ASIGNACIONES: 'asignaciones',
-            HISTORIAL: 'historial'
+            HISTORIAL: 'historial',
+            PLANILLA_CONFIG: 'planillaConfig',
+            TARIFARIOS: 'tarifarios'
         };
 
         // Referencias a Colecciones de Firestore
-        let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol;
+        let personalCol, localesCol, mapeoConfigCol, asignacionesCol, historialCol, planillaConfigCol, tarifariosCol;
 
         // --- INICIO: Lógica para Deshacer (Ctrl+Z) ---
         let actionHistory = [];
@@ -636,10 +701,13 @@
             mapeoConfig: {},
             asignaciones: {},
             historial: {},
+            planillaConfig: {},
+            tarifarios: {},
             selectedWeek: '',
             currentView: 'mapeo',
             searchTermMapeo: '',
             searchTermProgramacion: '',
+            searchTermTarifario: '',
             redConflicts: new Set(),
             yellowConflicts: new Set(),
             celesteConflicts: new Set(),
@@ -652,25 +720,28 @@
             locales: false,
             mapeoConfig: false,
             asignaciones: false,
-            historial: false
+            historial: false,
+            planillaConfig: false,
+            tarifarios: false
         };
         // FIN: Estado para carga de datos
 
         // INICIO: Variables para el modal de horarios
         let tempScheduleConfig = {};
         let currentlyEditingLocal = null;
-        let historialChartInstance;
+        let historialChartInstance, pagosChartInstance;
         // FIN: Variables para el modal de horarios
 
         // INICIO: Variables para listeners de Firestore
-        let asignacionesListenerUnsubscribe = null;
-        let mapeoConfigListenerUnsubscribe = null;
-        let historialListenerUnsubscribe = null;
+        let listenersAreActive = false;
+        let asignacionesListenerUnsubscribe = () => {};
+        let planillaConfigListenerUnsubscribe = () => {};
         // FIN: Variables para listeners
 
         // Constantes y Elementos del DOM
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const diasSemanaFull = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const diasSemanaShort = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
         const vestimentaOptions = ['Ropa Táctica', 'Terno'];
         const vestimentaEmojis = { 'Ropa Táctica': '🥋', 'Terno': '🤵' };
         const tipoPuestoNombres = {
@@ -696,7 +767,9 @@
         const formEditLocal = document.getElementById('form-edit-local');
         const semanaInputMapeo = document.getElementById('semana-mapeo');
         const semanaInputProgramacion = document.getElementById('semana-programacion');
+        const semanaInputPlanillas = document.getElementById('semana-planillas');
         const busquedaProgramacionInput = document.getElementById('busqueda-programacion');
+        const busquedaTarifarioInput = document.getElementById('busqueda-tarifario');
         const filtroLocalBusquedaInput = document.getElementById('filtro-local-busqueda');
         const personalModal = document.getElementById('personal-modal');
         const viewPersonalModal = document.getElementById('view-personal-modal');
@@ -731,7 +804,9 @@
                 }
                 
                 loginOverlay.style.display = 'none';
-                await initializeAndLoadData();
+                // La carga de datos ahora se centraliza en setupListeners
+                setupListeners(); 
+                inicializarApp();
             } else {
                 loginError.textContent = 'Usuario o contraseña incorrectos.';
             }
@@ -746,6 +821,9 @@
             mapeoConfigCol = collection(db, `${basePath}/${FIRESTORE_PATHS.MAPEO_CONFIG}`);
             asignacionesCol = collection(db, `${basePath}/${FIRESTORE_PATHS.ASIGNACIONES}`);
             historialCol = collection(db, `${basePath}/${FIRESTORE_PATHS.HISTORIAL}`);
+            planillaConfigCol = collection(db, `${basePath}/${FIRESTORE_PATHS.PLANILLA_CONFIG}`);
+            tarifariosCol = collection(db, `${basePath}/${FIRESTORE_PATHS.TARIFARIOS}`);
+
             
             try {
                 await signInAnonymously(auth); // Ensure we are connected
@@ -768,108 +846,127 @@
         });
 
         // --- INICIO: Lógica de carga de datos optimizada ---
-        async function fetchLocales() {
-            const snapshot = await getDocs(query(localesCol));
-            state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
-            if (state.currentView === 'gestion') {
-                renderizarTablaLocales();
-            }
-        }
-
-        async function fetchPersonal() {
-            const snapshot = await getDocs(query(personalCol));
-            const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            const uniquePersonal = [];
-            const duplicatesToDelete = new Set();
-            const seenNames = new Set();
-            const seenNumbers = new Set();
-
-            allPersonal.forEach(p => {
-                const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
-                const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
-                let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
-
-                if (isDuplicate) {
-                    duplicatesToDelete.add(p.id);
-                } else {
-                    uniquePersonal.push(p);
-                    if (fullName) seenNames.add(fullName);
-                    if(employeeNumber) seenNumbers.add(employeeNumber);
-                }
-            });
-
-            if (duplicatesToDelete.size > 0) {
-                showStatusMessage(`Se encontraron y eliminaron ${duplicatesToDelete.size} duplicados automáticamente.`, 'success');
-                const deletePromises = Array.from(duplicatesToDelete).map(id => deleteDoc(doc(db, personalCol.path, id)));
-                await Promise.all(deletePromises);
-            }
-            
-            state.personal = uniquePersonal;
-            if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
-            if (state.currentView === 'gestion') {
-                renderizarTablaPersonal();
-            }
-        }
-
-        function listenToAssignments(week) {
-            if (asignacionesListenerUnsubscribe) {
-                asignacionesListenerUnsubscribe();
-            }
-            if (!week) {
-                state.asignaciones[state.selectedWeek] = {};
-                renderCurrentView();
-                return;
-            }
-            const weekDocRef = doc(db, asignacionesCol.path, week);
-            asignacionesListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
-                const weekData = docSnap.exists() ? docSnap.data() : {};
-                state.asignaciones[week] = weekData; // Solo actualizamos la semana activa
-                if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
-                recalculateConflicts();
-                checkUpcomingShiftNotifications();
-                renderCurrentView();
-            }, error => console.error("Error fetching asignaciones:", error));
-        }
-
-        async function initializeAndLoadData() {
+        function setupListeners() {
+            if (listenersAreActive) return;
             loader.style.display = 'flex';
 
-            // --- FIX: Set the selected week FIRST ---
-            if (!state.selectedWeek) {
-                const now = new Date();
-                state.selectedWeek = `${now.getFullYear()}-W${String(now.getWeek()).padStart(2, '0')}`;
-            }
+            // Listener para Locales
+            onSnapshot(query(localesCol), snapshot => {
+                state.locales = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!initialDataLoaded.locales) initialDataLoaded.locales = true;
+                renderCurrentView();
+            }, error => console.error("Error fetching locales:", error));
 
-            // Cargar datos estáticos una vez
-            await Promise.all([
-                fetchLocales(),
-                fetchPersonal()
-            ]);
+            // Listener para Personal (con manejo de duplicados)
+            onSnapshot(query(personalCol), snapshot => {
+                const allPersonal = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const uniquePersonal = [];
+                const duplicatesToDelete = new Set();
+                const seenNames = new Set();
+                const seenNumbers = new Set();
 
-            // Escuchar cambios en datos dinámicos
-            if (mapeoConfigListenerUnsubscribe) mapeoConfigListenerUnsubscribe();
-            mapeoConfigListenerUnsubscribe = onSnapshot(query(mapeoConfigCol), snapshot => {
+                allPersonal.forEach(p => {
+                    const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
+                    const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
+                    let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
+
+                    if (isDuplicate) {
+                        duplicatesToDelete.add(p.id);
+                    } else {
+                        uniquePersonal.push(p);
+                        if (fullName) seenNames.add(fullName);
+                        if(employeeNumber) seenNumbers.add(employeeNumber);
+                    }
+                });
+
+                if (duplicatesToDelete.size > 0) {
+                    showStatusMessage(`Se encontraron y eliminaron ${duplicatesToDelete.size} duplicados automáticamente.`, 'success');
+                    duplicatesToDelete.forEach(id => deleteDoc(doc(db, personalCol.path, id)));
+                }
+                
+                state.personal = uniquePersonal;
+                if (!initialDataLoaded.personal) initialDataLoaded.personal = true;
+                renderCurrentView();
+            }, error => console.error("Error fetching personal:", error));
+
+            // Listener para Configuración de Mapeo
+            onSnapshot(query(mapeoConfigCol), snapshot => {
                 state.mapeoConfig = {};
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
                 if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
                 recalculateConflicts();
                 renderCurrentView();
             }, error => console.error("Error fetching mapeo config:", error));
-
-            if (historialListenerUnsubscribe) historialListenerUnsubscribe();
-            historialListenerUnsubscribe = onSnapshot(query(historialCol), snapshot => {
+            
+            // Listener para Historial
+            onSnapshot(query(historialCol), snapshot => {
                 state.historial = {};
                 snapshot.docs.forEach(doc => { state.historial[doc.id] = doc.data(); });
                 if (!initialDataLoaded.historial) initialDataLoaded.historial = true;
                 renderCurrentView();
             }, error => console.error("Error fetching historial:", error));
 
-            // Escuchar asignaciones de la semana actual
-            listenToAssignments(state.selectedWeek);
+            // Listener para Tarifarios individuales
+            onSnapshot(query(tarifariosCol), snapshot => {
+                state.tarifarios = {};
+                snapshot.docs.forEach(doc => { state.tarifarios[doc.id] = doc.data(); });
+                if(!initialDataLoaded.tarifarios) initialDataLoaded.tarifarios = true;
+                renderCurrentView();
+            }, error => console.error("Error fetching tarifarios:", error));
             
-            inicializarApp();
+            // Listener para Asignaciones y Planillas (se activa al cambiar de semana)
+            if (!state.selectedWeek) {
+                 const now = new Date();
+                 state.selectedWeek = `${now.getFullYear()}-W${String(now.getWeek()).padStart(2, '0')}`;
+            }
+            listenToWeekData(state.selectedWeek);
+            
+            listenersAreActive = true;
+        }
+
+        function listenToWeekData(week) {
+            listenToAssignments(week);
+            listenToPlanillaConfig(week);
+        }
+
+        function listenToAssignments(week) {
+            if (asignacionesListenerUnsubscribe) asignacionesListenerUnsubscribe();
+            
+            if (!week) {
+                state.asignaciones = {};
+                renderCurrentView();
+                return;
+            }
+            
+            const weekDocRef = doc(db, asignacionesCol.path, week);
+            asignacionesListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
+                const weekData = docSnap.exists() ? docSnap.data() : {};
+                state.asignaciones[week] = weekData;
+
+                if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
+                
+                recalculateConflicts();
+                checkUpcomingShiftNotifications();
+                renderCurrentView();
+            }, error => console.error("Error fetching asignaciones:", error));
+        }
+
+        function listenToPlanillaConfig(week) {
+            if (planillaConfigListenerUnsubscribe) planillaConfigListenerUnsubscribe();
+
+            if (!week) {
+                state.planillaConfig = {};
+                renderCurrentView();
+                return;
+            }
+
+            const weekDocRef = doc(db, planillaConfigCol.path, week);
+            planillaConfigListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
+                state.planillaConfig = docSnap.exists() ? docSnap.data() : {};
+                if (!initialDataLoaded.planillaConfig) initialDataLoaded.planillaConfig = true;
+                renderCurrentView();
+            }, error => console.error("Error fetching planilla config:", error));
         }
         // --- FIN: Lógica de carga de datos optimizada ---
 
@@ -884,6 +981,12 @@
                     break;
                 case 'programacion':
                     renderizarProgramacionPersonal();
+                    break;
+                case 'tarifario':
+                    renderizarTarifario();
+                    break;
+                case 'planillas':
+                    renderizarPlanillas();
                     break;
                 case 'historial':
                     if (initialDataLoaded.historial) renderizarHistorial();
@@ -1058,7 +1161,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 002.25 2.25h.588c.542 0 1.007.368 1.226.918l.165.441a2.25 2.25 0 010 2.22l-.165.441c-.219.55-.684 1.02-1.226 1.11l-.588.098a2.25 2.25 0 00-2.25 2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010-2.22l.165-.441c.219-.55.684-1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" /></svg>
                             </button>
                              <button data-local-nombre="${local.nombre}" title="Copiar Programación" class="icon-btn btn-copy-local-schedule">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
                             </button>
                              <button data-local-nombre="${local.nombre}" title="Descargar PDF" class="icon-btn btn-download-pdf">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
@@ -1251,44 +1354,55 @@
         // FIN: Renderizado de Programación Mejorado
         function renderizarHistorial() {
             const container = document.getElementById('historial-container');
-            container.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-100"><tr><th class="p-3">Semana</th><th class="p-3">Asignaciones</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody>${Object.keys(state.historial).length === 0 ? `<tr><td colspan="3" class="p-4 text-center text-slate-500">No hay programaciones guardadas.</td></tr>` : Object.entries(state.historial).map(([week, data]) => `
-                <tr class="border-b"><td class="p-3 font-medium">${week}</td><td class="p-3">${Object.keys(data.asignaciones || {}).filter(k => !k.includes('-vestimenta') && !k.includes('-confirmed')).length}</td><td class="p-3 text-right space-x-2">
-                    <button data-week="${week}" class="btn-cargar-historial bg-blue-500 text-white font-bold py-1 px-3 rounded-md hover:bg-blue-600">Cargar</button>
-                    <button data-week="${week}" class="btn-descargar-historial bg-green-500 text-white font-bold py-1 px-3 rounded-md hover:bg-green-600">Excel</button>
-                    <button data-week="${week}" class="btn-eliminar-historial bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
-                </td></tr>`).join('')}</tbody></table>`;
+            const historialChartCtx = document.getElementById('historial-chart').getContext('2d');
+            const pagosChartCtx = document.getElementById('pagos-chart').getContext('2d');
             
-            // --- INICIO: Lógica del Gráfico ---
-            const ctx = document.getElementById('historial-chart').getContext('2d');
-            
-            if (historialChartInstance) {
-                historialChartInstance.destroy();
-            }
+            if (historialChartInstance) historialChartInstance.destroy();
+            if (pagosChartInstance) pagosChartInstance.destroy();
 
             const historialSemanas = Object.keys(state.historial).sort();
-            if (historialSemanas.length === 0) {
-                document.getElementById('historial-chart').style.display = 'none';
-                return;
-            }
-            document.getElementById('historial-chart').style.display = 'block';
+            
+            container.innerHTML = `<table class="w-full text-left"><thead class="bg-slate-100"><tr><th class="p-3">Semana</th><th class="p-3">Asignaciones</th><th class="p-3 text-right">Pago Neto Total</th><th class="p-3 text-right">Acciones</th></tr></thead><tbody>${historialSemanas.length === 0 ? `<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay programaciones guardadas.</td></tr>` : historialSemanas.map(week => {
+                const data = state.historial[week] || {};
+                const asignacionesCount = Object.keys(data.asignaciones || {}).filter(k => !k.includes('-vestimenta') && !k.includes('-confirmed')).length;
+                const pagoNeto = data.payrollSummary?.pagoNetoTotal || 0;
+                return `
+                <tr class="border-b">
+                    <td class="p-3 font-medium">${week}</td>
+                    <td class="p-3">${asignacionesCount}</td>
+                    <td class="p-3 text-right">S/ ${pagoNeto.toFixed(2)}</td>
+                    <td class="p-3 text-right space-x-2">
+                        <button data-week="${week}" class="btn-cargar-historial bg-blue-500 text-white font-bold py-1 px-3 rounded-md hover:bg-blue-600">Cargar</button>
+                        <button data-week="${week}" class="btn-descargar-historial bg-green-500 text-white font-bold py-1 px-3 rounded-md hover:bg-green-600">Excel</button>
+                        <button data-week="${week}" class="btn-eliminar-historial bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
+                    </td>
+                </tr>`
+            }).join('')}</tbody></table>`;
+            
+            if (historialSemanas.length === 0) return;
 
-            const dataPoints = historialSemanas.map(week => {
+            // --- Lógica de Gráficos ---
+            const personalDataPoints = historialSemanas.map(week => {
                 const asignaciones = state.historial[week]?.asignaciones || {};
                 const personalUnico = new Set(Object.values(asignaciones).filter(id => id && typeof id === 'string'));
                 return personalUnico.size;
+            });
+
+             const pagosDataPoints = historialSemanas.map(week => {
+                return state.historial[week]?.payrollSummary?.pagoNetoTotal || 0;
             });
 
             const isDarkMode = document.documentElement.classList.contains('dark');
             const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
             const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
 
-            historialChartInstance = new Chart(ctx, {
+            historialChartInstance = new Chart(historialChartCtx, {
                 type: 'bar',
                 data: {
                     labels: historialSemanas,
                     datasets: [{
                         label: 'Cantidad de Personal Asignado',
-                        data: dataPoints,
+                        data: personalDataPoints,
                         backgroundColor: 'rgba(59, 130, 246, 0.5)',
                         borderColor: 'rgba(59, 130, 246, 1)',
                         borderWidth: 1,
@@ -1298,49 +1412,202 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Personal Asignado por Semana',
-                            color: labelColor,
-                            font: {
-                                size: 16
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Personal Asignado por Semana', color: labelColor, font: { size: 16 } } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Nº de Personas',
-                                color: labelColor
-                            },
-                            ticks: {
-                                color: labelColor,
-                                stepSize: 1
-                            },
-                            grid: {
-                                color: gridColor
-                            }
-                        },
-                        x: {
-                             ticks: {
-                                color: labelColor
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
+                        y: { beginAtZero: true, title: { display: true, text: 'Nº de Personas', color: labelColor }, ticks: { color: labelColor, stepSize: 1 }, grid: { color: gridColor } },
+                        x: { ticks: { color: labelColor }, grid: { display: false } }
                     }
                 }
             });
-            // --- FIN: Lógica del Gráfico ---
+
+            pagosChartInstance = new Chart(pagosChartCtx, {
+                type: 'line',
+                data: {
+                    labels: historialSemanas,
+                    datasets: [{
+                        label: 'Pago Neto Total (S/)',
+                        data: pagosDataPoints,
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Pagos Netos por Semana', color: labelColor, font: { size: 16 } } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Monto (S/)', color: labelColor }, ticks: { color: labelColor }, grid: { color: gridColor } },
+                        x: { ticks: { color: labelColor }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderizarTarifario() {
+            const tabla = document.getElementById('tabla-tarifario');
+            tabla.innerHTML = '';
+            
+            const personalFiltrado = state.personal.filter(p => {
+                const searchTerm = state.searchTermTarifario;
+                if (!searchTerm) return true;
+                return `${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm);
+            });
+
+            personalFiltrado.sort((a,b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(persona => {
+                const tarifas = state.tarifarios[persona.id] || {};
+                const row = tabla.insertRow();
+                row.className = "border-b dark:border-slate-700";
+                row.innerHTML = `
+                    <td class="p-3 font-medium">${persona.nombre} ${persona.apellido}</td>
+                    <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Terno || 50}" data-person-id="${persona.id}" data-rate-key="Terno"></td>
+                    <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Tactica || 50}" data-person-id="${persona.id}" data-rate-key="Tactica"></td>
+                    <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Apoyo || 0}" data-person-id="${persona.id}" data-rate-key="Apoyo"></td>
+                `;
+            });
         }
         
+        async function renderizarPlanillas() {
+            const week = semanaInputPlanillas.value;
+            const container = document.getElementById('planillas-container');
+            container.innerHTML = '';
+
+            if (!week) {
+                container.innerHTML = '<p class="text-center p-8 text-slate-500">Seleccione una semana para calcular la planilla.</p>';
+                return;
+            }
+
+            if (!state.asignaciones[week]) {
+                container.innerHTML = '<p class="text-center p-8 text-slate-500">Cargando datos de la semana...</p>';
+                return;
+            }
+            
+            const { payrollByLocal, paucarReservas } = calculatePayrollData(week);
+
+            if (Object.keys(payrollByLocal).length === 0 && paucarReservas.length === 0) {
+                 container.innerHTML = `<p class="text-center p-8 text-slate-500">No hay personal con turnos asignados en la semana ${week}.</p>`;
+                return;
+            }
+
+            let granTotalBruto = 0;
+            let granTotalExtra = 0;
+            let granTotalDescuento = 0;
+
+            Object.keys(payrollByLocal).sort().forEach(localNombre => {
+                const localData = payrollByLocal[localNombre];
+                const localDiv = document.createElement('div');
+                
+                let tableHTML = `
+                    <h3 class="text-xl font-bold mb-4">${localNombre.toUpperCase()}</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left mb-8">
+                             <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="p-3 font-semibold">Nombre Completo</th>
+                                    <th class="p-3 font-semibold text-center">Días Trabajados</th>
+                                    <th class="p-3 font-semibold text-right">Pago Bruto</th>
+                                    <th class="p-3 font-semibold text-right w-32">Extras</th>
+                                    <th class="p-3 font-semibold text-right w-32">Descuento</th>
+                                    <th class="p-3 font-semibold text-right">Pago Neto</th>
+                                    <th class="p-3 font-semibold text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                
+                Object.values(localData).sort((a,b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(data => {
+                    const { pagoBruto, extra, descuento, pagoNeto } = calculatePagos(data);
+                    
+                    granTotalBruto += pagoBruto;
+                    granTotalExtra += extra;
+                    granTotalDescuento += descuento;
+                    
+                    const cacheoIcon = data.hizoCacheo ? '<span>🕵🏼‍♂️</span>' : '';
+                    const turnoLargoIcon = data.tuvoTurnoLargo ? '<span>👁️</span>' : '';
+                    const apoyoActivo = state.planillaConfig[`apoyo_${data.id}`];
+
+                    tableHTML += `
+                        <tr class="border-b">
+                            <td class="p-3">
+                                <div class="flex items-center gap-2">
+                                    <span>${data.nombre} ${data.apellido}</span>
+                                    ${cacheoIcon} ${turnoLargoIcon}
+                                    <button title="Pago de Apoyo" class="pago-btn btn-pago-apoyo ${apoyoActivo ? 'active' : ''}" data-person-id="${data.id}" data-type="Apoyo">🤝</button>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center">${createWorkdayBar(data.workedDays)}</td>
+                            <td class="p-3 text-right">S/ ${pagoBruto.toFixed(2)}</td>
+                            <td class="p-3 text-right"><input type="number" min="0" step="1" value="${extra.toFixed(2)}" data-planilla-key="extra_${data.id}" class="extra-input w-full p-1 border rounded text-right"></td>
+                            <td class="p-3 text-right"><input type="number" min="0" step="1" value="${descuento.toFixed(2)}" data-planilla-key="descuento_${data.id}" class="descuento-input w-full p-1 border rounded text-right"></td>
+                            <td class="p-3 text-right font-bold text-lg">S/ ${pagoNeto.toFixed(2)}</td>
+                            <td class="p-3 text-center"><button class="btn-ver-detalle bg-sky-100 text-sky-700 text-xs font-bold py-1 px-2 rounded hover:bg-sky-200">Ver Detalles</button></td>
+                        </tr>
+                        <tr><td colspan="7"><div class="planilla-detalle bg-slate-50 dark:bg-slate-800 p-4"><ul class="list-disc list-inside text-sm space-y-1">${data.turnosDetalle.map(t => `<li><span class="font-semibold">${t.dia}</span> en ${t.local} (${t.tipo})</li>`).join('')}</ul></div></td></tr>
+                    `;
+                });
+                tableHTML += `</tbody></table></div>`;
+                localDiv.innerHTML = tableHTML;
+                container.appendChild(localDiv);
+            });
+
+            if (paucarReservas.length > 0) {
+                 let tableHTML = `
+                    <h3 class="text-xl font-bold mb-4">APOYOS (RESERVA)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left mb-8">
+                             <thead class="bg-slate-100">
+                                <tr>
+                                    <th class="p-3 font-semibold">Nombre</th>
+                                    <th class="p-3 font-semibold">Local</th>
+                                    <th class="p-3 font-semibold text-right w-32">Pago (Extras)</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+                
+                paucarReservas.forEach((data, index) => {
+                     const extraKey = `extra_${data.id}`;
+                     const extra = parseFloat(state.planillaConfig[extraKey] || 0);
+                     granTotalExtra += extra;
+
+                    tableHTML += `
+                         <tr class="border-b">
+                            <td class="p-3">${index + 1}. ${data.nombre}</td>
+                            <td class="p-3">${data.locales.join(', ')}</td>
+                            <td class="p-3 text-right"><input type="number" min="0" step="1" value="${extra.toFixed(2)}" data-planilla-key="${extraKey}" class="extra-input w-full p-1 border rounded text-right bg-yellow-100 dark:bg-yellow-900"></td>
+                        </tr>
+                    `;
+                });
+                tableHTML += `</tbody></table></div>`;
+                container.innerHTML += tableHTML;
+            }
+
+            let totalsHTML = `
+                <div class="mt-8 pt-4 border-t-2">
+                    <h3 class="text-xl font-bold mb-4">TOTALES DE LA SEMANA</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="p-4 bg-slate-100 rounded-lg">
+                            <p class="text-sm text-slate-500">PAGO BRUTO</p>
+                            <p class="text-2xl font-bold" id="total-pago-bruto">S/ ${granTotalBruto.toFixed(2)}</p>
+                        </div>
+                        <div class="p-4 bg-green-100 rounded-lg">
+                            <p class="text-sm text-green-700">EXTRAS</p>
+                            <p class="text-2xl font-bold text-green-800" id="total-extra">S/ ${granTotalExtra.toFixed(2)}</p>
+                        </div>
+                        <div class="p-4 bg-red-100 rounded-lg">
+                            <p class="text-sm text-red-700">DESCUENTOS</p>
+                            <p class="text-2xl font-bold text-red-800" id="total-descuento">S/ ${granTotalDescuento.toFixed(2)}</p>
+                        </div>
+                         <div class="p-4 bg-blue-100 rounded-lg">
+                            <p class="text-sm text-blue-700">PAGO NETO</p>
+                            <p class="text-2xl font-bold text-blue-800" id="total-pago-neto">S/ ${(granTotalBruto + granTotalExtra - granTotalDescuento).toFixed(2)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += totalsHTML;
+        }
+
 
         // --- LÓGICA DE EVENTOS ---
         document.getElementById('btn-abrir-modal-personal').addEventListener('click', () => {
@@ -1358,13 +1625,13 @@
         formPersonal.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = formPersonal['personal-id'].value;
-            const newNombre = formPersonal.nombre.value.trim().toLowerCase();
-            const newApellido = formPersonal.apellido.value.trim().toLowerCase();
+            const newNombre = formPersonal.nombre.value.trim();
+            const newApellido = formPersonal.apellido.value.trim();
             const newNumEmpleado = formPersonal.numero_empleado.value.trim();
 
             const isDuplicate = state.personal.some(p => {
                 if(id && p.id === id) return false;
-                const fullNameMatch = p.nombre.trim().toLowerCase() === newNombre && p.apellido.trim().toLowerCase() === newApellido;
+                const fullNameMatch = p.nombre.trim().toLowerCase() === newNombre.toLowerCase() && p.apellido.trim().toLowerCase() === newApellido.toLowerCase();
                 const employeeNumberMatch = p.numero_empleado && String(p.numero_empleado).trim() === newNumEmpleado;
                 return fullNameMatch || employeeNumberMatch;
             });
@@ -1377,8 +1644,8 @@
             const nuevaPersona = {
                 numero_empleado: newNumEmpleado,
                 fecha_ingreso: formPersonal.fecha_ingreso.value,
-                nombre: formPersonal.nombre.value,
-                apellido: formPersonal.apellido.value,
+                nombre: newNombre,
+                apellido: newApellido,
                 fecha_nacimiento: formPersonal.fecha_nacimiento.value,
                 seguridad_social: formPersonal.seguridad_social.value,
                 direccion: formPersonal.direccion.value,
@@ -1400,7 +1667,6 @@
                     showStatusMessage('Personal agregado');
                 }
                 personalModal.style.display = 'none';
-                await fetchPersonal(); // Manually refresh data
             } catch (error) {
                 console.error("Error saving personal:", error);
                 showStatusMessage('Error al guardar datos.', 'error');
@@ -1417,7 +1683,6 @@
                     await addDoc(localesCol, { nombre, color: randomColor });
                     showStatusMessage('Local agregado');
                     formLocales.reset();
-                    await fetchLocales(); // Manually refresh data
                 } catch (error) {
                     console.error("Error adding local:", error);
                     showStatusMessage('No se pudo agregar el local.', 'error');
@@ -1438,7 +1703,6 @@
                     await setDoc(doc(db, localesCol.path, id), { nombre, color }, { merge: true });
                     showStatusMessage('Local actualizado');
                     editLocalModal.style.display = 'none';
-                    await fetchLocales(); // Manually refresh data
                 } catch (error) {
                     console.error("Error updating local:", error);
                     showStatusMessage('No se pudo actualizar el local.', 'error');
@@ -1459,7 +1723,21 @@
 
             // --- Lógica de Botones ---
             try {
-                 if (button.matches('.btn-download-pdf')) {
+                 if (button.matches('.btn-pago-apoyo')) {
+                    const personId = button.dataset.personId;
+                    const type = button.dataset.type;
+                    const week = state.selectedWeek;
+                    if (!personId || !type || !week) return;
+
+                    const key = `${type.toLowerCase()}_${personId}`;
+                    const currentState = !!state.planillaConfig[key];
+                    await setDoc(doc(db, planillaConfigCol.path, week), { [key]: !currentState }, { merge: true });
+                }
+                else if (button.matches('.btn-ver-detalle')) {
+                    const detailDiv = button.closest('tr').nextElementSibling.querySelector('.planilla-detalle');
+                    detailDiv.classList.toggle('open');
+                }
+                else if (button.matches('.btn-download-pdf')) {
                     downloadLocalAsPDF(button.dataset.localNombre);
                 } else if (button.matches('#btn-download-all-pdf')) {
                     downloadAllLocalsAsPDF();
@@ -1536,7 +1814,6 @@
                         await deleteDoc(doc(db, personalCol.path, button.dataset.id));
                         viewPersonalModal.style.display = 'none';
                         showStatusMessage('Personal eliminado');
-                        await fetchPersonal(); // Manually refresh data
                     }
                 } else if (button.matches('.btn-editar-local')) {
                     formEditLocal['edit-local-id'].value = button.dataset.id;
@@ -1613,7 +1890,6 @@
                     if (confirmed) {
                         await deleteDoc(doc(db, localesCol.path, button.dataset.id));
                         showStatusMessage('Local eliminado');
-                        await fetchLocales(); // Manually refresh data
                     }
                 } else if (button.matches('.btn-copy-schedule')) {
                     copyPersonalSchedule(button.dataset.personId);
@@ -1632,9 +1908,13 @@
                                     await setDoc(doc(db, mapeoConfigCol.path, local), dataHistorial.mapeoConfig[local]);
                                 }
                             }
+                             if (dataHistorial.planillaConfig) {
+                                await setDoc(doc(db, planillaConfigCol.path, week), dataHistorial.planillaConfig);
+                            }
                             state.selectedWeek = week;
                             semanaInputMapeo.value = week;
                             semanaInputProgramacion.value = week;
+                            semanaInputPlanillas.value = week;
                             cambiarVista('mapeo');
                             showStatusMessage(`Programación cargada.`);
                         }
@@ -1649,11 +1929,26 @@
                 } else if (button.matches('#btn-guardar-programacion')) {
                     const week = state.selectedWeek;
                     if (week) {
+                        const { payrollByLocal, paucarReservas } = calculatePayrollData(week);
+                        let pagoNetoTotal = 0;
+                        Object.values(payrollByLocal).forEach(localData => {
+                            Object.values(localData).forEach(data => {
+                                const { pagoNeto } = calculatePagos(data);
+                                pagoNetoTotal += pagoNeto;
+                            });
+                        });
+                         paucarReservas.forEach(data => {
+                            const extra = parseFloat(state.planillaConfig[`extra_${data.id}`] || 0);
+                            pagoNetoTotal += extra;
+                        });
+
                         await setDoc(doc(db, historialCol.path, week), {
                             asignaciones: state.asignaciones[week] || {},
-                            mapeoConfig: state.mapeoConfig
+                            mapeoConfig: state.mapeoConfig,
+                            planillaConfig: state.planillaConfig || {},
+                            payrollSummary: { pagoNetoTotal }
                         });
-                        showStatusMessage('Programación guardada en el historial.');
+                        showStatusMessage('Programación y planilla guardada en el historial.');
                     } else {
                         showStatusMessage('Selecciona una semana para poder guardarla.', 'error');
                     }
@@ -1670,12 +1965,54 @@
                     importPersonalInput.click();
                 } else if (button.matches('#btn-exportar-personal')) {
                     exportarPersonalExcel();
+                } else if (button.matches('#btn-exportar-planilla')) {
+                    exportarPlanillaExcel();
                 }
             } catch (error) {
                 console.error("Button click error:", error);
                 showStatusMessage("La operación falló. Revisa la consola para más detalles.", "error");
             }
         });
+
+        document.getElementById('section-tarifario').addEventListener('input', debounce(async (e) => {
+            const target = e.target;
+            if (target.matches('input[type="number"]')) {
+                const personId = target.dataset.personId;
+                const rateKey = target.dataset.rateKey;
+                const value = parseFloat(target.value) || 0;
+                if (personId && rateKey) {
+                    try {
+                        await setDoc(doc(db, tarifariosCol.path, personId), { [rateKey]: value }, { merge: true });
+                    } catch (error) {
+                         console.error("Error updating tarifario: ", error);
+                         showStatusMessage("No se pudo guardar la tarifa.", "error");
+                    }
+                }
+            }
+        }, 500));
+
+
+        document.getElementById('section-planillas').addEventListener('input', debounce(async (e) => {
+            const target = e.target;
+            const week = semanaInputPlanillas.value;
+            if (!week) return;
+
+            const update = {};
+            if (target.matches('.extra-input, .descuento-input')) {
+                const key = target.dataset.planillaKey;
+                const value = parseFloat(target.value) || 0;
+                update[key] = value;
+            }
+
+            if (Object.keys(update).length > 0) {
+                try {
+                    await setDoc(doc(db, planillaConfigCol.path, week), update, { merge: true });
+                } catch (error) {
+                    console.error("Error updating planilla config: ", error);
+                    showStatusMessage("No se pudo guardar el cambio en la planilla.", "error");
+                }
+            }
+        }, 500));
 
         document.body.addEventListener('change', async (e) => {
             const target = e.target;
@@ -1689,7 +2026,7 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
+                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
@@ -1728,21 +2065,22 @@
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
                     let importados = 0;
+                    const addPromises = [];
                     for (const p of jsonData) {
                         if(p.nombre && p.apellido) {
-                            await addDoc(personalCol, {
+                            addPromises.push(addDoc(personalCol, {
                                 numero_empleado: p.numero_empleado || '', fecha_ingreso: p.fecha_ingreso || '',
                                 nombre: p.nombre, apellido: p.apellido,
                                 fecha_nacimiento: p.fecha_nacimiento || '', seguridad_social: p.seguridad_social || '',
                                 direccion: p.direccion || '', email: p.email || '', telefono: p.telefono || '',
                                 contacto_emergencia: p.contacto_emergencia || '', disponibilidad: p.disponibilidad || 'disponible',
                                 local1: p.local1 || '', local2: p.local2 || '', local3: p.local3 || '',
-                            });
+                            }));
                             importados++;
                         }
                     }
+                    await Promise.all(addPromises);
                     showStatusMessage(`${importados} personas importadas.`);
-                    await fetchPersonal(); // Manually refresh data
                 } catch (error) {
                     showStatusMessage('Error al importar el archivo.', 'error');
                     console.error("Error de importación:", error);
@@ -1760,17 +2098,29 @@
         document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
         
         semanaInputMapeo.addEventListener('change', (e) => { 
-            state.selectedWeek = e.target.value; 
-            semanaInputProgramacion.value = e.target.value; 
-            listenToAssignments(state.selectedWeek);
+            const week = e.target.value;
+            state.selectedWeek = week;
+            semanaInputProgramacion.value = week; 
+            semanaInputPlanillas.value = week;
+            listenToWeekData(week);
         });
         semanaInputProgramacion.addEventListener('change', (e) => { 
-            state.selectedWeek = e.target.value; 
-            semanaInputMapeo.value = e.target.value; 
-            listenToAssignments(state.selectedWeek);
+            const week = e.target.value;
+            state.selectedWeek = week; 
+            semanaInputMapeo.value = week; 
+            semanaInputPlanillas.value = week;
+            listenToWeekData(week);
+        });
+        semanaInputPlanillas.addEventListener('change', (e) => { 
+             const week = e.target.value;
+             state.selectedWeek = week;
+             semanaInputMapeo.value = week;
+             semanaInputProgramacion.value = week;
+             listenToWeekData(week);
         });
         
         busquedaProgramacionInput.addEventListener('input', debounce(e => { state.searchTermProgramacion = e.target.value.toLowerCase().trim(); renderizarProgramacionPersonal(); }));
+        busquedaTarifarioInput.addEventListener('input', debounce(e => { state.searchTermTarifario = e.target.value.toLowerCase().trim(); renderizarTarifario(); }));
         filtroLocalBusquedaInput.addEventListener('input', debounce(e => { state.searchTermMapeo = e.target.value.toLowerCase().trim(); renderizarMapeo(); }));
         
         // --- Funciones de Utilidad ---
@@ -1927,6 +2277,7 @@
             
             semanaInputMapeo.value = state.selectedWeek;
             semanaInputProgramacion.value = state.selectedWeek;
+            semanaInputPlanillas.value = state.selectedWeek;
             cambiarVista('mapeo');
             loader.style.display = 'none';
         }
@@ -2305,6 +2656,16 @@
             if (ampm === 'AM' && hours === 12) hours = 0;
             return hours * 60 + parseInt(minutes, 10);
         }
+        
+        function calculateShiftDuration(startStr, endStr) {
+            if (!startStr || !endStr) return 0;
+            let startMinutes = timeToMinutes(startStr);
+            let endMinutes = timeToMinutes(endStr);
+            if (endMinutes < startMinutes) {
+                endMinutes += 1440; // Add 24 hours for overnight shifts
+            }
+            return (endMinutes - startMinutes) / 60;
+        }
 
         // --- NEW PDF GENERATION LOGIC ---
         function addLocalDataToPdf(doc, localNombre) {
@@ -2602,6 +2963,174 @@
                 </div>
             `;
         }
+        
+        function exportarPlanillaExcel() {
+            const week = semanaInputPlanillas.value;
+            if (!week) {
+                showStatusMessage('Por favor, seleccione una semana para exportar.', 'error');
+                return;
+            }
+
+            const { payrollByLocal, paucarReservas } = calculatePayrollData(week);
+             if (Object.keys(payrollByLocal).length === 0 && paucarReservas.length === 0) {
+                showStatusMessage('No hay datos de planilla para exportar.', 'error');
+                return;
+            }
+
+            const resumenData = [];
+            const detalleData = [];
+
+            Object.keys(payrollByLocal).sort().forEach(localNombre => {
+                Object.values(payrollByLocal[localNombre]).forEach(data => {
+                    const { pagoBruto, extra, descuento, pagoNeto } = calculatePagos(data);
+                    resumenData.push({
+                        'Local': localNombre.toUpperCase(),
+                        'Nombre Completo': `${data.nombre} ${data.apellido}`,
+                        'Turnos': data.turnosDetalle.length,
+                        'Pago Bruto (S/)': pagoBruto,
+                        'Extras (S/)': extra,
+                        'Descuento (S/)': descuento,
+                        'Pago Neto (S/)': pagoNeto,
+                    });
+
+                    data.turnosDetalle.forEach(detalle => {
+                        detalleData.push({
+                            'Local': localNombre.toUpperCase(),
+                            'Nombre Completo': `${data.nombre} ${data.apellido}`,
+                            'Día': detalle.dia,
+                            'Puesto': detalle.tipo,
+                        });
+                    });
+                });
+            });
+
+            paucarReservas.forEach((data, index) => {
+                const extra = parseFloat(state.planillaConfig[`extra_${data.id}`] || 0);
+                resumenData.push({
+                    'Local': 'APOYO',
+                    'Nombre Completo': `${index + 1}. ${data.nombre}`,
+                    'Turnos': data.turnos,
+                    'Pago Bruto (S/)': 0,
+                    'Extras (S/)': extra,
+                    'Descuento (S/)': 0,
+                    'Pago Neto (S/)': extra,
+                });
+            });
+
+            const wsResumen = XLSX.utils.json_to_sheet(resumenData);
+            const wsDetalle = XLSX.utils.json_to_sheet(detalleData);
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen de Pagos");
+            XLSX.utils.book_append_sheet(wb, wsDetalle, "Detalle de Turnos");
+
+            XLSX.writeFile(wb, `Planilla_Semana_${week}.xlsx`);
+            showStatusMessage('Planilla exportada a Excel.', 'success');
+        }
+
+        function calculatePayrollData(week) {
+            const asignacionesSemana = state.asignaciones[week];
+            if (!asignacionesSemana) return { payrollByLocal: {}, paucarReservas: [] };
+
+            const payrollByLocal = {};
+            const paucarReservasData = {};
+
+            for (const slotId in asignacionesSemana) {
+                const personaId = asignacionesSemana[slotId];
+                if (!personaId || typeof personaId !== 'string' || !slotId.includes('-')) continue;
+
+                const [local, dia, tipo] = slotId.split('-');
+                
+                const isReserva = personaId.toLowerCase().includes('paucar reserva');
+
+                if (!isReserva) {
+                    const persona = state.personal.find(p => p.id === personaId);
+                    if (!persona) continue;
+                    
+                    if (!payrollByLocal[local]) {
+                        payrollByLocal[local] = {};
+                    }
+                    if (!payrollByLocal[local][personaId]) {
+                        payrollByLocal[local][personaId] = { ...persona, turnos: [], turnosDetalle: [], workedDays: new Set(), hizoCacheo: false, tuvoTurnoLargo: false };
+                    }
+                    
+                    const data = payrollByLocal[local][personaId];
+                    const config = state.mapeoConfig[local]?.[dia];
+                    if (!config) continue;
+
+                    const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                    const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                    
+                    const duracionHoras = calculateShiftDuration(horaEntrada, horaSalida);
+                    const isLongShift = duracionHoras >= 12;
+                    const vestimenta = asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0];
+                    const vestimentaKey = vestimenta === 'Terno' ? 'Terno' : 'Tactica';
+                    const hizoCacheo = tipo.toLowerCase().includes('cacheo');
+                    
+                    data.turnos.push({ 
+                        vestimenta: vestimentaKey, 
+                        isLong: isLongShift
+                    });
+                    data.turnosDetalle.push({
+                        dia: diasSemanaFull[diasSemana.indexOf(dia)],
+                        local: local.toUpperCase(),
+                        tipo: `${tipoPuestoNombres[tipo] || tipo} (${duracionHoras.toFixed(1)}h)`
+                    });
+                    data.workedDays.add(diasSemana.indexOf(dia));
+                    if(hizoCacheo) data.hizoCacheo = true;
+                    if(isLongShift) data.tuvoTurnoLargo = true;
+
+                } else { 
+                     if (!paucarReservasData[personaId]) {
+                        paucarReservasData[personaId] = { id: personaId, nombre: personaId, locales: new Set(), turnos: 1 };
+                    } else {
+                        paucarReservasData[personaId].turnos++;
+                    }
+                    paucarReservasData[personaId].locales.add(local.toUpperCase());
+                }
+            }
+
+            const paucarReservas = Object.values(paucarReservasData).map(reserva => ({
+                ...reserva,
+                locales: Array.from(reserva.locales)
+            }));
+
+            return { payrollByLocal, paucarReservas };
+        }
+        
+        function calculatePagos(data) {
+            const tarifasPersona = state.tarifarios[data.id] || {};
+            const isReserva = data.nombre.toLowerCase().includes('reserva');
+            
+            let pagoBruto = isReserva ? 0 : data.turnos.reduce((acc, turno) => {
+                const rateKey = `${turno.vestimenta}${turno.isLong ? '_12h' : ''}`;
+                const rate = parseFloat(tarifasPersona[rateKey] || 0);
+                return acc + rate;
+            }, 0);
+
+            if (state.planillaConfig[`apoyo_${data.id}`]) {
+                pagoBruto += parseFloat(tarifasPersona['Apoyo'] || 0);
+            }
+
+            const extraKey = `extra_${data.id}`;
+            const descuentoKey = `descuento_${data.id}`;
+            const extra = parseFloat(state.planillaConfig[extraKey] || 0);
+            const descuento = parseFloat(state.planillaConfig[descuentoKey] || 0);
+            const pagoNeto = pagoBruto + extra - descuento;
+
+            return { pagoBruto, extra, descuento, pagoNeto };
+        }
+
+        function createWorkdayBar(workedDaysSet) {
+            let barHTML = '<div class="work-day-bar">';
+            for(let i=0; i < 7; i++) {
+                const isWorked = workedDaysSet.has(i);
+                barHTML += `<div class="work-day ${isWorked ? 'worked' : ''}" title="${diasSemanaFull[i]}">${diasSemanaShort[i]}</div>`;
+            }
+            barHTML += '</div>';
+            return barHTML;
+        }
+
 
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
@@ -2609,7 +3138,4 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
-
-
-
 
