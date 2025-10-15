@@ -416,8 +416,8 @@
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                             <h2 class="text-2xl font-bold text-slate-900">Base de Datos del Personal</h2>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <button id="btn-importar-personal" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Importar Excel</button>
-                                <button id="btn-exportar-personal" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Excel</button>
+                                <button id="btn-reemplazar-personal" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Reemplazar Base de Datos</button>
+                                <button id="btn-exportar-bd-personal" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Base de Datos</button>
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
                             </div>
                         </div>
@@ -616,7 +616,7 @@
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
         import { getDatabase, ref, onValue, set, onDisconnect, push, serverTimestamp as databaseServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 
         // --- INICIO: Configuración de Firebase ---
@@ -2001,10 +2001,10 @@
                     }
                 } else if (button.matches('#btn-descargar-excel')) {
                     descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
-                } else if (button.matches('#btn-importar-personal')) {
+                } else if (button.matches('#btn-reemplazar-personal')) {
                     importPersonalInput.click();
-                } else if (button.matches('#btn-exportar-personal')) {
-                    exportarPersonalExcel();
+                } else if (button.matches('#btn-exportar-bd-personal')) {
+                    exportarBaseDatosPersonal();
                 } else if (button.matches('#btn-exportar-planilla')) {
                     exportarPlanillaExcel();
                 }
@@ -2097,38 +2097,7 @@
         
         importPersonalInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
-                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                    
-                    let importados = 0;
-                    const addPromises = [];
-                    for (const p of jsonData) {
-                        if(p.nombre && p.apellido) {
-                            addPromises.push(addDoc(personalCol, {
-                                numero_empleado: p.numero_empleado || '', fecha_ingreso: p.fecha_ingreso || '',
-                                nombre: p.nombre, apellido: p.apellido,
-                                fecha_nacimiento: p.fecha_nacimiento || '', seguridad_social: p.seguridad_social || '',
-                                direccion: p.direccion || '', email: p.email || '', telefono: p.telefono || '',
-                                contacto_emergencia: p.contacto_emergencia || '', disponibilidad: p.disponibilidad || 'disponible',
-                                local1: p.local1 || '', local2: p.local2 || '', local3: p.local3 || '',
-                            }));
-                            importados++;
-                        }
-                    }
-                    await Promise.all(addPromises);
-                    showStatusMessage(`${importados} personas importadas.`);
-                } catch (error) {
-                    showStatusMessage('Error al importar el archivo.', 'error');
-                    console.error("Error de importación:", error);
-                } finally {
-                    e.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
+            reemplazarBaseDatosDesdeExcel(file);
         });
 
         document.getElementById('close-personal-modal').onclick = () => personalModal.style.display = 'none';
@@ -2268,12 +2237,77 @@
             personalModal.style.display = 'block';
         }
 
-        function exportarPersonalExcel() {
+        function exportarBaseDatosPersonal() {
             if (state.personal.length === 0) return showStatusMessage('No hay personal para exportar.', 'error');
-            const worksheet = XLSX.utils.json_to_sheet(state.personal.map(({ id, ...rest }) => rest));
+            const worksheet = XLSX.utils.json_to_sheet(state.personal);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Personal');
-            XLSX.writeFile(workbook, `Personal_SwattMapee.xlsx`);
+            XLSX.writeFile(workbook, `Base_Datos_Personal_SwattMapee.xlsx`);
+        }
+
+        async function reemplazarBaseDatosDesdeExcel(file) {
+            if (!file) return;
+
+            const confirmed = await showConfirmationModal(
+                "¿Estás seguro de que deseas reemplazar TODA la base de datos del personal con este archivo? El personal que no esté en el Excel será eliminado. Esta acción no se puede deshacer."
+            );
+            if (!confirmed) {
+                importPersonalInput.value = ''; 
+                return;
+            }
+            
+            loader.style.display = 'flex';
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                try {
+                    const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                    if (jsonData.length > 0 && jsonData[0].id === undefined) {
+                        throw new Error("El archivo Excel no es válido. Debe ser uno exportado desde esta aplicación y contener la columna 'id'.");
+                    }
+                    
+                    const newPersonalData = jsonData;
+                    const oldPersonalData = state.personal;
+
+                    const newIds = new Set(newPersonalData.map(p => p.id).filter(Boolean));
+                    const oldIds = new Set(oldPersonalData.map(p => p.id));
+
+                    const toAdd = newPersonalData.filter(p => !p.id);
+                    const toUpdate = newPersonalData.filter(p => p.id && oldIds.has(p.id));
+                    const toDelete = oldPersonalData.filter(p => !newIds.has(p.id));
+
+                    const batch = writeBatch(db);
+
+                    toDelete.forEach(p => {
+                        batch.delete(doc(personalCol, p.id));
+                    });
+
+                    toUpdate.forEach(p => {
+                        const { id, ...data } = p;
+                        batch.set(doc(personalCol, id), data);
+                    });
+
+                    toAdd.forEach(p => {
+                        const { id, ...data } = p;
+                        const newDocRef = doc(personalCol);
+                        batch.set(newDocRef, data);
+                    });
+
+                    await batch.commit();
+
+                    showStatusMessage(`Base de datos actualizada: ${toUpdate.length} actualizados, ${toAdd.length} agregados, ${toDelete.length} eliminados.`, 'success');
+
+                } catch (error) {
+                    console.error("Error al reemplazar la base de datos:", error);
+                    showStatusMessage(error.message || 'Error al procesar el archivo Excel.', 'error');
+                } finally {
+                    loader.style.display = 'none';
+                    importPersonalInput.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         const debouncedRender = debounce(renderCurrentView, 100);
