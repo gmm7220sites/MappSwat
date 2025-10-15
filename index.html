@@ -289,8 +289,10 @@
         @keyframes blink {
             50% { opacity: 0.3; }
         }
-        .notification-bell {
+        .notification-bell, .pending-change-indicator {
             animation: blink 1.5s infinite;
+        }
+        .notification-bell {
             color: #ef4444;
             font-size: 1.2rem;
             margin-left: 8px;
@@ -1198,7 +1200,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-3.18-3.182l-3.182 3.183m0 0V7.5m0 4.993l-3.182-3.182M7.5 19.5l-3.182-3.182" /></svg>
                             </button>
                              <button data-id="${local.id}" data-nombre="${local.nombre}" title="Configurar Horarios" class="icon-btn btn-configurar-horarios">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 002.25 2.25h.588c.542 0 1.007.368 1.226.918l.165.441a2.25 2.25 0 010 2.22l-.165.441c-.219.55-.684 1.02-1.226 1.11l-.588.098a2.25 2.25 0 00-2.25 2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 002.25 2.25h.588c.542 0 1.007.368 1.226.918l.165.441a2.25 2.25 0 010 2.22l-.165.441c-.219.55-.684 1.02-1.226 1.11l-.588.098a2.25 2.25 0 00-2.25 2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" /></svg>
                             </button>
                              <button data-local-nombre="${local.nombre}" title="Copiar Programación" class="icon-btn btn-copy-local-schedule">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
@@ -1293,8 +1295,12 @@
             
             const horaText = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : (horaEntrada || 'N/A');
 
+            const hasPendingChange = state.asignaciones[week]?.[`${slotId}-pendingNotification`];
+            const pendingIconHTML = hasPendingChange ? `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar">❗</span>` : '';
+
             div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-xs text-slate-500 w-40">${horaText}</span>`;
             div.appendChild(select);
+            div.innerHTML += pendingIconHTML;
             div.appendChild(vestimentaBtn);
             div.appendChild(confirmationSwitch);
             return div;
@@ -1357,7 +1363,7 @@
                             isConfirmed: asignacionesSemana[`${slotId}-confirmed`] || false,
                         };
                     })
-                    .sort((a, b) => diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia));
+                    .sort((a, b) => diasSemana.indexOf(a.dia) - b.dia.indexOf(a.dia));
                 
                 const card = document.createElement('div');
                 card.className = `programacion-card bg-white p-6 rounded-xl shadow-md ${assignments.length > 0 ? 'border-green-500' : 'border-slate-200'}`;
@@ -2052,26 +2058,16 @@
             }
         }, 500));
 
-
+        // INICIO: Bloque de código corregido
         document.getElementById('section-planillas').addEventListener('input', debounce(async (e) => {
             const target = e.target;
             const week = semanaInputPlanillas.value;
             if (!week) return;
 
-            const update = {};
-            if (target.matches('.extra-input, .descuento-input')) {
+            if (target.matches('[data-planilla-key]')) {
                 const key = target.dataset.planillaKey;
                 const value = parseFloat(target.value) || 0;
-                update[key] = value;
-            }
-
-            if (Object.keys(update).length > 0) {
-                try {
-                    await setDoc(doc(db, planillaConfigCol.path, week), update, { merge: true });
-                } catch (error) {
-                    console.error("Error updating planilla config: ", error);
-                    showStatusMessage("No se pudo guardar el cambio en la planilla.", "error");
-                }
+                await setDoc(doc(db, planillaConfigCol.path, week), { [key]: value }, { merge: true });
             }
         }, 500));
 
@@ -2100,7 +2096,28 @@
                     if (oldPersonaId === newPersonaId) return;
 
                     saveUndoState();
-                    await setDoc(doc(db, asignacionesCol.path, week), { [slotId]: newPersonaId }, { merge: true });
+                    const updates = { [slotId]: newPersonaId };
+
+                    // Por defecto, se elimina la bandera de notificación. Se volverá a añadir solo si es un cambio significativo.
+                    updates[`${slotId}-pendingNotification`] = deleteField();
+
+                    // Caso: Se está asignando o cambiando una persona.
+                    if (newPersonaId) {
+                        // Solo activar la lógica de notificación si es un CAMBIO, no una asignación a un espacio vacío.
+                        if (oldPersonaId) { 
+                            const triggerNotification = shouldTriggerNotification(week, newPersonaId, slotId);
+                            
+                            if (triggerNotification) {
+                                updates[`${slotId}-pendingNotification`] = true; // Se añade la bandera de nuevo.
+                                // Se inicia un temporizador para alertar si no se notifica.
+                                setTimeout(() => {
+                                    checkIfNotificationWasSent(week, slotId);
+                                }, 15 * 60 * 1000); // 15 minutos
+                            }
+                        }
+                    }
+                    
+                    await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                     
                 } else if (target.matches('.confirmation-checkbox')) {
                     const week = state.selectedWeek;
@@ -2115,6 +2132,7 @@
                 showStatusMessage("No se pudo guardar el cambio.", "error");
             }
         });
+        // FIN: Bloque de código corregido
         
         importPersonalInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -2447,6 +2465,71 @@
         });
 
         // --- SISTEMA DE NOTIFICACIONES Y CONFLICTOS ---
+        async function checkIfNotificationWasSent(week, slotId) {
+            try {
+                const weekDocRef = doc(db, asignacionesCol.path, week);
+                const docSnap = await getDoc(weekDocRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const notificationStillPending = data[`${slotId}-pendingNotification`];
+                    const personId = data[slotId];
+
+                    if (notificationStillPending && personId) {
+                        const persona = state.personal.find(p => p.id === personId);
+                        const [local, dia] = slotId.split('-');
+                        const personName = persona ? `${persona.nombre} ${persona.apellido}` : 'un trabajador';
+                        
+                        showStatusMessage(`ALERTA: Notificación pendiente para ${personName} en ${local.toUpperCase()} (${dia.toUpperCase()}).`, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error("Error checking notification status:", error);
+            }
+        }
+
+        function shouldTriggerNotification(week, newPersonaId, newSlotId) {
+            const asignacionesSemana = state.asignaciones[week] || {};
+            const [newLocal, newDia, newTipo] = newSlotId.split('-');
+
+            // Encuentra otras asignaciones para esta persona en el mismo día (estado *antes* del cambio)
+            const otherSameDayAssignments = Object.keys(asignacionesSemana).filter(slotId =>
+                asignacionesSemana[slotId] === newPersonaId &&
+                slotId.includes(`-${newDia}-`) &&
+                !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')
+            );
+
+            // Si no hay otras asignaciones el mismo día, es un nuevo turno, se notifica.
+            if (otherSameDayAssignments.length === 0) {
+                return true;
+            }
+
+            const newTypeIsCacheo = newTipo.toLowerCase().includes('cacheo');
+
+            // Recopila los locales y tipos de roles que la persona ya tiene asignados este día.
+            const existingLocals = new Set();
+            const existingRoleTypes = new Set(); // true para cacheo, false para no-cacheo
+
+            otherSameDayAssignments.forEach(slotId => {
+                const [local, , tipo] = slotId.split('-');
+                existingLocals.add(local);
+                existingRoleTypes.add(tipo.toLowerCase().includes('cacheo'));
+            });
+
+            // Notificar si el nuevo local no está en la lista de locales donde ya trabaja hoy.
+            if (!existingLocals.has(newLocal)) {
+                return true;
+            }
+
+            // Notificar si el nuevo tipo de rol no está en la lista de roles que ya desempeña hoy.
+            if (!existingRoleTypes.has(newTypeIsCacheo)) {
+                return true;
+            }
+
+            // Si ya trabaja en este local con este tipo de rol hoy, no se necesita nueva notificación.
+            return false;
+        }
+
         function checkUpcomingShiftNotifications() {
             const now = new Date();
             const notifications = new Set();
@@ -2700,6 +2783,29 @@
             document.getElementById('ai-analysis-content').innerHTML = formattedResult;
         }
 
+        async function clearPendingNotifications(personId) {
+            const week = state.selectedWeek;
+            if (!week || !personId) return;
+
+            const updates = {};
+            const asignacionesSemana = state.asignaciones[week] || {};
+
+            Object.keys(asignacionesSemana).forEach(slotId => {
+                if (asignacionesSemana[slotId] === personId && asignacionesSemana[`${slotId}-pendingNotification`]) {
+                    updates[`${slotId}-pendingNotification`] = deleteField();
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                try {
+                    await updateDoc(doc(db, asignacionesCol.path, week), updates);
+                } catch (error) {
+                    console.error("Error clearing pending notifications:", error);
+                }
+            }
+        }
+
+
         function getPersonalScheduleMessage(personId) {
             const persona = state.personal.find(p => p.id === personId);
             if (!persona) return { error: 'Persona no encontrada.' };
@@ -2770,6 +2876,7 @@
             try {
                 document.execCommand('copy');
                 showStatusMessage('Programación copiada');
+                clearPendingNotifications(personId);
             } catch (err) {
                 showStatusMessage('No se pudo copiar el texto.', 'error');
             }
@@ -2793,6 +2900,7 @@
             }
             const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
+            clearPendingNotifications(personId);
         }
 
         function copyLocalSchedule(localNombre) {
@@ -3430,4 +3538,5 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
 
