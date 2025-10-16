@@ -753,6 +753,7 @@
             redConflicts: new Set(),
             yellowConflicts: new Set(),
             celesteConflicts: new Set(),
+            pendingNotifications: new Set(),
             notifiedChanges: new Set()
         };
 
@@ -994,6 +995,7 @@
                 if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
                 
                 recalculateConflicts();
+                checkUpcomingShiftNotifications();
                 debouncedRender();
             }, error => console.error("Error fetching asignaciones:", error));
         }
@@ -1302,17 +1304,22 @@
             // --- INICIO: Nueva Lógica de Iconos de Notificación ---
             const changeTimestamp = state.asignaciones[week]?.[`${slotId}-changeTimestamp`];
             let pendingIconHTML = '';
+            const isUpcoming = state.pendingNotifications.has(weekSlotId);
 
-            if (changeTimestamp && typeof changeTimestamp.toDate === 'function' && !isConfirmed) {
-                const changeTime = changeTimestamp.toDate();
-                const now = new Date();
-                const minutesSinceChange = (now - changeTime) / (1000 * 60);
+            if (!isConfirmed) {
+                if (changeTimestamp && typeof changeTimestamp.toDate === 'function') {
+                    const changeTime = changeTimestamp.toDate();
+                    const now = new Date();
+                    const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
-                if (minutesSinceChange > 15) {
-                    pendingIconHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
-                    triggerDelayedNotificationAlert(slotId, week);
-                } else {
-                    pendingIconHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                    if (minutesSinceChange > 15) {
+                        pendingIconHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
+                        triggerDelayedNotificationAlert(slotId, week);
+                    } else {
+                        pendingIconHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                    }
+                } else if (isUpcoming) {
+                    pendingIconHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
                 }
             }
             // --- FIN: Nueva Lógica de Iconos de Notificación ---
@@ -1396,15 +1403,20 @@
                     
                     // --- INICIO: Nueva Lógica de Iconos de Notificación para Programación ---
                     let notificationHTML = '';
-                    if (a.changeTimestamp && typeof a.changeTimestamp.toDate === 'function' && !a.isConfirmed) {
-                        const changeTime = a.changeTimestamp.toDate();
-                        const now = new Date();
-                        const minutesSinceChange = (now - changeTime) / (1000 * 60);
+                    const isUpcoming = state.pendingNotifications.has(a.weekSlotId);
+                    if (!a.isConfirmed) {
+                        if (a.changeTimestamp && typeof a.changeTimestamp.toDate === 'function') {
+                            const changeTime = a.changeTimestamp.toDate();
+                            const now = new Date();
+                            const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
-                        if (minutesSinceChange > 15) {
-                            notificationHTML = `<span class="notification-bell" title="Cambio no confirmado (+15 min)">🔔</span>`;
-                        } else {
-                            notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente">❗</span>`;
+                            if (minutesSinceChange > 15) {
+                                notificationHTML = `<span class="notification-bell" title="Cambio no confirmado (+15 min)">🔔</span>`;
+                            } else {
+                                notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente">❗</span>`;
+                            }
+                        } else if (isUpcoming) {
+                            notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
                         }
                     }
                     // --- FIN: Nueva Lógica de Iconos de Notificación ---
@@ -2130,7 +2142,7 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
@@ -2479,6 +2491,7 @@
             // Inicia el actualizador periódico para las alertas de tiempo
             setInterval(() => {
                 if ((state.currentView === 'mapeo' || state.currentView === 'programacion') && listenersAreActive) {
+                    checkUpcomingShiftNotifications();
                     renderCurrentView();
                 }
             }, 30 * 1000); // Se actualiza cada 30 segundos
@@ -2536,6 +2549,51 @@
         });
 
         // --- SISTEMA DE NOTIFICACIONES Y CONFLICTOS ---
+        function checkUpcomingShiftNotifications() {
+            const now = new Date();
+            const notifications = new Set();
+            const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
+
+            Object.keys(asignacionesSemana).forEach(slotId => {
+                if (!slotId.includes('-') || !asignacionesSemana[slotId] || asignacionesSemana[`${slotId}-confirmed`]) return;
+                
+                const [local, dia, tipo] = slotId.split('-');
+                if (!tipo) return;
+                const horaEntrada = state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+
+                if(horaEntrada) {
+                    const shiftDate = getShiftDateTime(state.selectedWeek, dia, horaEntrada);
+                    const hoursUntilShift = (shiftDate - now) / 3600000;
+                    if (hoursUntilShift > 0 && hoursUntilShift < 24) {
+                        notifications.add(`${state.selectedWeek}-${slotId}`);
+                    }
+                }
+            });
+            state.pendingNotifications = notifications;
+        }
+
+        function getShiftDateTime(weekString, dayName, timeString) {
+            if (!weekString || !dayName || !timeString) return new Date();
+            const [year, weekNum] = weekString.split('-W').map(Number);
+            const firstDayOfYear = new Date(year, 0, 1);
+            const dayOfWeek = (firstDayOfYear.getDay() + 6) % 7; // Monday is 0
+            const date = new Date(year, 0, 1 + (weekNum - 1) * 7 - dayOfWeek);
+            
+            const dayIndex = diasSemana.indexOf(dayName);
+            const shiftDate = new Date(date);
+            shiftDate.setDate(date.getDate() + dayIndex);
+            
+            const match = timeString.match(/(\d+):(\d+) (AM|PM)/);
+            if(!match) return shiftDate;
+            let [_, hours, minutes, ampm] = match;
+            hours = parseInt(hours, 10);
+            if (ampm === 'PM' && hours !== 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            
+            shiftDate.setHours(hours, parseInt(minutes, 10), 0, 0);
+            return shiftDate;
+        }
+
         function triggerDelayedNotificationAlert(slotId, week) {
             const notificationKey = `${week}-${slotId}`;
             if (state.notifiedChanges.has(notificationKey)) {
@@ -3514,6 +3572,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
+
+
+
 
 
 
