@@ -289,12 +289,19 @@
         @keyframes blink {
             50% { opacity: 0.3; }
         }
-        .notification-bell {
+        .notification-bell, .pending-change-indicator {
             animation: blink 1.5s infinite;
-            color: #ef4444;
+            cursor: help;
+        }
+        .notification-bell {
+            color: #f59e0b; /* amber-500 */
             font-size: 1.2rem;
             margin-left: 8px;
         }
+        .pending-change-indicator {
+            color: #ef4444; /* red-500 */
+        }
+
 
         #tabla-personal tbody tr { cursor: pointer; }
         #tabla-personal tbody tr:hover { background-color: #f1f5f9; }
@@ -416,8 +423,8 @@
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                             <h2 class="text-2xl font-bold text-slate-900">Base de Datos del Personal</h2>
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <button id="btn-importar-personal" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Importar Excel</button>
-                                <button id="btn-exportar-personal" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Excel</button>
+                                <button id="btn-reemplazar-personal" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Reemplazar Base de Datos</button>
+                                <button id="btn-exportar-bd-personal" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar Base de Datos</button>
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
                             </div>
                         </div>
@@ -612,11 +619,28 @@
     </div>
     <!-- FIN: Modal de Confirmación -->
 
+    <!-- INICIO: Modal de Análisis con IA -->
+    <div id="ai-analysis-modal" class="modal">
+        <div class="modal-content !max-w-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold flex items-center gap-2">✨ Análisis de la Semana con IA</h3>
+                <button type="button" id="close-ai-analysis-modal" class="text-3xl font-bold text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <div id="ai-analysis-content" class="prose dark:prose-invert max-w-none max-h-[60vh] overflow-y-auto p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <!-- Contenido generado por Gemini -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="copy-ai-analysis" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Copiar Texto</button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN: Modal de Análisis con IA -->
+
     <script type="module">
         // Importaciones de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, getDocs, updateDoc, deleteField, getDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
         import { getDatabase, ref, onValue, set, onDisconnect, push, serverTimestamp as databaseServerTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
 
         // --- INICIO: Configuración de Firebase ---
@@ -729,7 +753,7 @@
             redConflicts: new Set(),
             yellowConflicts: new Set(),
             celesteConflicts: new Set(),
-            pendingNotifications: new Set(),
+            notifiedChanges: new Set()
         };
 
         // INICIO: Estado para carga de datos
@@ -970,7 +994,6 @@
                 if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
                 
                 recalculateConflicts();
-                checkUpcomingShiftNotifications();
                 debouncedRender();
             }, error => console.error("Error fetching asignaciones:", error));
         }
@@ -1276,8 +1299,27 @@
             
             const horaText = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : (horaEntrada || 'N/A');
 
+            // --- INICIO: Nueva Lógica de Iconos de Notificación ---
+            const changeTimestamp = state.asignaciones[week]?.[`${slotId}-changeTimestamp`];
+            let pendingIconHTML = '';
+
+            if (changeTimestamp && typeof changeTimestamp.toDate === 'function' && !isConfirmed) {
+                const changeTime = changeTimestamp.toDate();
+                const now = new Date();
+                const minutesSinceChange = (now - changeTime) / (1000 * 60);
+
+                if (minutesSinceChange > 15) {
+                    pendingIconHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
+                    triggerDelayedNotificationAlert(slotId, week);
+                } else {
+                    pendingIconHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                }
+            }
+            // --- FIN: Nueva Lógica de Iconos de Notificación ---
+
             div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-xs text-slate-500 w-40">${horaText}</span>`;
             div.appendChild(select);
+            div.innerHTML += pendingIconHTML;
             div.appendChild(vestimentaBtn);
             div.appendChild(confirmationSwitch);
             return div;
@@ -1338,6 +1380,7 @@
                             horario: horario,
                             vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0],
                             isConfirmed: asignacionesSemana[`${slotId}-confirmed`] || false,
+                            changeTimestamp: asignacionesSemana[`${slotId}-changeTimestamp`] || null,
                         };
                     })
                     .sort((a, b) => diasSemana.indexOf(a.dia) - diasSemana.indexOf(b.dia));
@@ -1350,7 +1393,22 @@
                     if (state.redConflicts.has(a.weekSlotId)) conflictClass = 'conflict-highlight';
                     else if (state.celesteConflicts.has(a.weekSlotId)) conflictClass = 'role-conflict-highlight';
                     else if (state.yellowConflicts.has(a.weekSlotId)) conflictClass = 'schedule-conflict-highlight';
-                    const notificationHTML = state.pendingNotifications.has(a.weekSlotId) ? '<span class="notification-bell" title="Confirmación pendiente - Menos de 24h">🔔</span>' : '';
+                    
+                    // --- INICIO: Nueva Lógica de Iconos de Notificación para Programación ---
+                    let notificationHTML = '';
+                    if (a.changeTimestamp && typeof a.changeTimestamp.toDate === 'function' && !a.isConfirmed) {
+                        const changeTime = a.changeTimestamp.toDate();
+                        const now = new Date();
+                        const minutesSinceChange = (now - changeTime) / (1000 * 60);
+
+                        if (minutesSinceChange > 15) {
+                            notificationHTML = `<span class="notification-bell" title="Cambio no confirmado (+15 min)">🔔</span>`;
+                        } else {
+                            notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente">❗</span>`;
+                        }
+                    }
+                    // --- FIN: Nueva Lógica de Iconos de Notificación ---
+
 
                     return `<li class="p-3 rounded-lg border bg-slate-50 text-sm flex justify-between items-center ${conflictClass}">
                         <span><span class="font-bold">${diasSemanaFull[diasSemana.indexOf(a.dia)]}</span> - ${a.local.toUpperCase()}<br><span class="text-xs text-slate-500">${tipoPuestoNombres[a.tipo] || a.tipo} (${a.horario})</span></span>
@@ -1365,9 +1423,16 @@
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <h4 class="text-lg font-bold">${persona.nombre} ${persona.apellido}</h4>
-                        <div class="flex gap-2">
-                             <button data-person-id="${persona.id}" class="btn-confirmar-persona bg-green-100 text-green-800 font-bold py-1 px-3 rounded-md hover:bg-green-200">Confirmar</button>
-                             <button data-person-id="${persona.id}" class="btn-copy-schedule bg-blue-100 text-blue-700 font-bold py-1 px-3 rounded-md hover:bg-blue-200">Copiar</button>
+                        <div class="flex items-center gap-2">
+                             <button data-person-id="${persona.id}" title="Enviar por WhatsApp" class="btn-send-whatsapp icon-btn !bg-green-100 hover:!bg-green-200 dark:!bg-green-800 dark:hover:!bg-green-700">
+                                <svg class="!text-green-600 dark:!text-green-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.433-9.89-9.889-9.89-5.452 0-9.887 4.428-9.888 9.89 .001 2.225.651 4.315 1.731 6.086l-.579 2.168 2.223-.58zM12.072 6.78c-.24-.003-.48.09-.662.271l-1.933 1.933c-.021.021-.035.05-.043.081-.006.021-.006.041 0 .062.086.324.239.636.444.939.22.326.477.63.785.908.347.312.721.573 1.129.773.348.174.71.296 1.077.362.016.004.033.004.049 0 .03-.003.059-.013.081-.03l1.832-1.832c.205-.183.498-.246.761-.154a3.179 3.179 0 0 1 1.59 1.59c.092.262.029.555-.154.761l-1.448 1.447c-.426.426-1.01.66-1.611.66-.566 0-1.114-.21-1.554-.582-1.359-1.144-2.429-2.58-3.138-4.119-.245-.536-.358-1.111-.341-1.691.017-.579.208-1.142.55-1.611l1.37-1.37c.24-.24.576-.375.926-.375.213 0 .423.053.618.154a3.179 3.179 0 0 1 1.59 1.59c.101.196.153.406.153.618z"/></svg>
+                             </button>
+                             <button data-person-id="${persona.id}" title="Confirmar todos los turnos" class="btn-confirmar-persona icon-btn !bg-yellow-100 hover:!bg-yellow-200 dark:!bg-yellow-800 dark:hover:!bg-yellow-700">
+                                 <svg class="!text-yellow-600 dark:!text-yellow-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                             </button>
+                             <button data-person-id="${persona.id}" title="Copiar programación al portapapeles" class="btn-copy-schedule icon-btn !bg-blue-100 hover:!bg-blue-200 dark:!bg-blue-800 dark:hover:!bg-blue-700">
+                                <svg class="!text-blue-600 dark:!text-blue-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                            </button>
                         </div>
                     </div>
                     ${assignmentsHTML}`;
@@ -1395,6 +1460,7 @@
                     <td class="p-3">${asignacionesCount}</td>
                     <td class="p-3 text-right">S/ ${pagoNeto.toFixed(2)}</td>
                     <td class="p-3 text-right space-x-2">
+                        <button data-week="${week}" class="btn-analizar-historial bg-purple-500 text-white font-bold py-1 px-3 rounded-md hover:bg-purple-600">✨ Analizar</button>
                         <button data-week="${week}" class="btn-cargar-historial bg-blue-500 text-white font-bold py-1 px-3 rounded-md hover:bg-blue-600">Cargar</button>
                         <button data-week="${week}" class="btn-descargar-historial bg-green-500 text-white font-bold py-1 px-3 rounded-md hover:bg-green-600">Excel</button>
                         <button data-week="${week}" class="btn-eliminar-historial bg-red-500 text-white font-bold py-1 px-3 rounded-md hover:bg-red-600">Eliminar</button>
@@ -1778,6 +1844,11 @@
                     const nextVestimenta = vestimentaOptions[nextIndex];
                     await setDoc(docRef, { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
 
+                } else if (button.matches('.btn-send-whatsapp')) {
+                    sendWhatsappMessage(button.dataset.personId);
+                } else if (button.matches('.btn-analizar-historial')) {
+                    const week = button.dataset.week;
+                    analizarSemanaConIA(week);
                 } else if (button.matches('.btn-confirmar-persona')) {
                     const personId = button.dataset.personId;
                     const persona = state.personal.find(p => p.id === personId);
@@ -1790,6 +1861,7 @@
                         Object.entries(state.asignaciones[week] || {}).forEach(([slotId, pId]) => {
                             if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
                                 updates[`${slotId}-confirmed`] = true;
+                                updates[`${slotId}-changeTimestamp`] = deleteField();
                             }
                         });
 
@@ -1897,6 +1969,7 @@
                                     updates[slotId] = deleteField();
                                     updates[`${slotId}-vestimenta`] = deleteField();
                                     updates[`${slotId}-confirmed`] = deleteField();
+                                    updates[`${slotId}-changeTimestamp`] = deleteField();
                                 }
                             }
                         });
@@ -1992,10 +2065,10 @@
                     }
                 } else if (button.matches('#btn-descargar-excel')) {
                     descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
-                } else if (button.matches('#btn-importar-personal')) {
+                } else if (button.matches('#btn-reemplazar-personal')) {
                     importPersonalInput.click();
-                } else if (button.matches('#btn-exportar-personal')) {
-                    exportarPersonalExcel();
+                } else if (button.matches('#btn-exportar-bd-personal')) {
+                    exportarBaseDatosPersonal();
                 } else if (button.matches('#btn-exportar-planilla')) {
                     exportarPlanillaExcel();
                 }
@@ -2057,11 +2130,12 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
                 } else if (target.matches('.mapeo-select')) {
+                    // --- INICIO: Lógica de Notificación Inteligente ---
                     const week = state.selectedWeek;
                     const slotId = target.dataset.slotId;
                     const newPersonaId = target.value;
@@ -2070,15 +2144,54 @@
                     if (oldPersonaId === newPersonaId) return;
 
                     saveUndoState();
-                    await setDoc(doc(db, asignacionesCol.path, week), { [slotId]: newPersonaId }, { merge: true });
+
+                    const updates = {
+                        [slotId]: newPersonaId,
+                        [`${slotId}-confirmed`]: false 
+                    };
+
+                    let isSignificantChange = false;
+
+                    if (newPersonaId) { // Solo evaluar si se está asignando a alguien.
+                        const [currentLocal, currentDia, currentTipo] = slotId.split('-');
+                        const otherAssignmentsToday = Object.entries(state.asignaciones[week] || {})
+                            .filter(([sId, pId]) => pId === newPersonaId && sId.includes(`-${currentDia}-`) && sId !== slotId);
+
+                        if (otherAssignmentsToday.length === 0) {
+                            // Es significativo porque es el primer turno del día para esta persona.
+                            isSignificantChange = true;
+                        } else {
+                            // Es significativo si cambia de local o de tipo de rol (puesto vs cacheo).
+                            isSignificantChange = otherAssignmentsToday.some(([sId, pId]) => {
+                                const [otherLocal, , otherTipo] = sId.split('-');
+                                if (currentLocal !== otherLocal) return true;
+                                const isCurrentRoleCacheo = currentTipo.toLowerCase().includes('cacheo');
+                                const isOtherRoleCacheo = otherTipo.toLowerCase().includes('cacheo');
+                                return isCurrentRoleCacheo !== isOtherRoleCacheo;
+                            });
+                        }
+                    }
+
+                    if (isSignificantChange) {
+                        updates[`${slotId}-changeTimestamp`] = serverTimestamp();
+                    } else {
+                        updates[`${slotId}-changeTimestamp`] = deleteField();
+                    }
+
+                    await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                     // --- FIN: Lógica de Notificación Inteligente ---
                     
                 } else if (target.matches('.confirmation-checkbox')) {
                     const week = state.selectedWeek;
                     const slotId = target.dataset.slotId;
                     const isChecked = target.checked;
                     
+                    const updates = { [`${slotId}-confirmed`]: isChecked };
+                    if (isChecked) {
+                        updates[`${slotId}-changeTimestamp`] = deleteField();
+                    }
                     saveUndoState();
-                    await setDoc(doc(db, asignacionesCol.path, week), { [`${slotId}-confirmed`]: isChecked }, { merge: true });
+                    await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                 }
             } catch (error) {
                 console.error("Change event error:", error);
@@ -2088,38 +2201,7 @@
         
         importPersonalInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const workbook = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
-                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                    
-                    let importados = 0;
-                    const addPromises = [];
-                    for (const p of jsonData) {
-                        if(p.nombre && p.apellido) {
-                            addPromises.push(addDoc(personalCol, {
-                                numero_empleado: p.numero_empleado || '', fecha_ingreso: p.fecha_ingreso || '',
-                                nombre: p.nombre, apellido: p.apellido,
-                                fecha_nacimiento: p.fecha_nacimiento || '', seguridad_social: p.seguridad_social || '',
-                                direccion: p.direccion || '', email: p.email || '', telefono: p.telefono || '',
-                                contacto_emergencia: p.contacto_emergencia || '', disponibilidad: p.disponibilidad || 'disponible',
-                                local1: p.local1 || '', local2: p.local2 || '', local3: p.local3 || '',
-                            }));
-                            importados++;
-                        }
-                    }
-                    await Promise.all(addPromises);
-                    showStatusMessage(`${importados} personas importadas.`);
-                } catch (error) {
-                    showStatusMessage('Error al importar el archivo.', 'error');
-                    console.error("Error de importación:", error);
-                } finally {
-                    e.target.value = '';
-                }
-            };
-            reader.readAsArrayBuffer(file);
+            reemplazarBaseDatosDesdeExcel(file);
         });
 
         document.getElementById('close-personal-modal').onclick = () => personalModal.style.display = 'none';
@@ -2127,6 +2209,22 @@
         document.getElementById('close-local-modal').onclick = () => editLocalModal.style.display = 'none';
         document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
         document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
+        document.getElementById('close-ai-analysis-modal').onclick = () => document.getElementById('ai-analysis-modal').style.display = 'none';
+        
+        document.getElementById('copy-ai-analysis').onclick = () => {
+            const content = document.getElementById('ai-analysis-content');
+            const textArea = document.createElement("textarea");
+            textArea.value = content.innerText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showStatusMessage('Análisis copiado al portapapeles.');
+            } catch (err) {
+                showStatusMessage('No se pudo copiar el análisis.', 'error');
+            }
+            document.body.removeChild(textArea);
+        };
         
         semanaInputMapeo.addEventListener('change', (e) => { 
             const week = e.target.value;
@@ -2259,12 +2357,77 @@
             personalModal.style.display = 'block';
         }
 
-        function exportarPersonalExcel() {
+        function exportarBaseDatosPersonal() {
             if (state.personal.length === 0) return showStatusMessage('No hay personal para exportar.', 'error');
-            const worksheet = XLSX.utils.json_to_sheet(state.personal.map(({ id, ...rest }) => rest));
+            const worksheet = XLSX.utils.json_to_sheet(state.personal);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Personal');
-            XLSX.writeFile(workbook, `Personal_SwattMapee.xlsx`);
+            XLSX.writeFile(workbook, `Base_Datos_Personal_SwattMapee.xlsx`);
+        }
+
+        async function reemplazarBaseDatosDesdeExcel(file) {
+            if (!file) return;
+
+            const confirmed = await showConfirmationModal(
+                "¿Estás seguro de que deseas reemplazar TODA la base de datos del personal con este archivo? El personal que no esté en el Excel será eliminado. Esta acción no se puede deshacer."
+            );
+            if (!confirmed) {
+                importPersonalInput.value = ''; 
+                return;
+            }
+            
+            loader.style.display = 'flex';
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                try {
+                    const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                    if (jsonData.length > 0 && jsonData[0].id === undefined) {
+                        throw new Error("El archivo Excel no es válido. Debe ser uno exportado desde esta aplicación y contener la columna 'id'.");
+                    }
+                    
+                    const newPersonalData = jsonData;
+                    const oldPersonalData = state.personal;
+
+                    const newIds = new Set(newPersonalData.map(p => p.id).filter(Boolean));
+                    const oldIds = new Set(oldPersonalData.map(p => p.id));
+
+                    const toAdd = newPersonalData.filter(p => !p.id);
+                    const toUpdate = newPersonalData.filter(p => p.id && oldIds.has(p.id));
+                    const toDelete = oldPersonalData.filter(p => !newIds.has(p.id));
+
+                    const batch = writeBatch(db);
+
+                    toDelete.forEach(p => {
+                        batch.delete(doc(personalCol, p.id));
+                    });
+
+                    toUpdate.forEach(p => {
+                        const { id, ...data } = p;
+                        batch.set(doc(personalCol, id), data);
+                    });
+
+                    toAdd.forEach(p => {
+                        const { id, ...data } = p;
+                        const newDocRef = doc(personalCol);
+                        batch.set(newDocRef, data);
+                    });
+
+                    await batch.commit();
+
+                    showStatusMessage(`Base de datos actualizada: ${toUpdate.length} actualizados, ${toAdd.length} agregados, ${toDelete.length} eliminados.`, 'success');
+
+                } catch (error) {
+                    console.error("Error al reemplazar la base de datos:", error);
+                    showStatusMessage(error.message || 'Error al procesar el archivo Excel.', 'error');
+                } finally {
+                    loader.style.display = 'none';
+                    importPersonalInput.value = '';
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         const debouncedRender = debounce(renderCurrentView, 100);
@@ -2313,6 +2476,12 @@
             semanaInputPlanillas.value = state.selectedWeek;
             cambiarVista('mapeo');
             loader.style.display = 'none';
+            // Inicia el actualizador periódico para las alertas de tiempo
+            setInterval(() => {
+                if ((state.currentView === 'mapeo' || state.currentView === 'programacion') && listenersAreActive) {
+                    renderCurrentView();
+                }
+            }, 30 * 1000); // Se actualiza cada 30 segundos
         }
 
         function cambiarVista(vista) {
@@ -2367,48 +2536,16 @@
         });
 
         // --- SISTEMA DE NOTIFICACIONES Y CONFLICTOS ---
-        function checkUpcomingShiftNotifications() {
-            const now = new Date();
-            const notifications = new Set();
-            const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
-
-            Object.keys(asignacionesSemana).forEach(slotId => {
-                if (!slotId.includes('-') || !asignacionesSemana[slotId] || asignacionesSemana[`${slotId}-confirmed`]) return;
-                
-                const [local, dia, tipo] = slotId.split('-');
-                if (!tipo) return;
-                const horaEntrada = state.mapeoConfig[local]?.[dia]?.[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
-
-                if(horaEntrada) {
-                    const shiftDate = getShiftDateTime(state.selectedWeek, dia, horaEntrada);
-                    const hoursUntilShift = (shiftDate - now) / 3600000;
-                    if (hoursUntilShift > 0 && hoursUntilShift < 24) {
-                        notifications.add(`${state.selectedWeek}-${slotId}`);
-                    }
-                }
-            });
-            state.pendingNotifications = notifications;
-        }
-
-        function getShiftDateTime(weekString, dayName, timeString) {
-            const [year, weekNum] = weekString.split('-W').map(Number);
-            const firstDayOfYear = new Date(year, 0, 1);
-            const dayOfWeek = (firstDayOfYear.getDay() + 6) % 7; // Monday is 0
-            const date = new Date(year, 0, 1 + (weekNum - 1) * 7 - dayOfWeek);
+        function triggerDelayedNotificationAlert(slotId, week) {
+            const notificationKey = `${week}-${slotId}`;
+            if (state.notifiedChanges.has(notificationKey)) {
+                return;
+            }
             
-            const dayIndex = diasSemana.indexOf(dayName);
-            const shiftDate = new Date(date);
-            shiftDate.setDate(date.getDate() + dayIndex);
-            
-            const match = timeString.match(/(\d+):(\d+) (AM|PM)/);
-            if(!match) return shiftDate;
-            let [_, hours, minutes, ampm] = match;
-            hours = parseInt(hours, 10);
-            if (ampm === 'PM' && hours !== 12) hours += 12;
-            if (ampm === 'AM' && hours === 12) hours = 0;
-            
-            shiftDate.setHours(hours, parseInt(minutes, 10), 0, 0);
-            return shiftDate;
+            const [local] = slotId.split('-');
+            showStatusMessage(`Alerta: Cambio en ${local.toUpperCase()} no ha sido confirmado.`, 'error');
+
+            state.notifiedChanges.add(notificationKey);
         }
 
         function recalculateConflicts() {
@@ -2496,10 +2633,159 @@
             state.celesteConflicts.forEach(id => state.yellowConflicts.delete(id));
         }
         
-        // --- FUNCIONES DE COPIADO ---
-        function copyPersonalSchedule(personId) {
+        // --- FUNCIONES DE COPIADO, MENSAJERÍA E IA ---
+        async function callGeminiAPI(systemPrompt, userQuery) {
+            const apiKey = ""; // Dejar como está, manejado por el entorno
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            let response;
+            let retries = 3;
+            let delay = 1000;
+
+            while (retries > 0) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                            return result.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error('Respuesta inesperada de la API de Gemini.');
+                        }
+                    } else {
+                        throw new Error(`Error de red: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) {
+                        console.error("Error al llamar a la API de Gemini después de varios intentos:", error);
+                        return `Error: No se pudo obtener el análisis de la IA. Por favor, inténtelo de nuevo más tarde. Detalles: ${error.message}`;
+                    }
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // Backoff exponencial
+                }
+            }
+        }
+        
+        async function analizarSemanaConIA(week) {
+            const data = state.historial[week];
+            if (!data || !data.asignaciones) {
+                showStatusMessage('No hay suficientes datos históricos para analizar esta semana.', 'error');
+                return;
+            }
+
+            loader.style.display = 'flex';
+            document.getElementById('ai-analysis-content').innerHTML = '<p>Analizando datos con IA, por favor espere...</p>';
+            document.getElementById('ai-analysis-modal').style.display = 'block';
+
+            const asignaciones = data.asignaciones;
+            const personalCount = {};
+            const localCount = {};
+            let totalAsignaciones = 0;
+
+            Object.keys(asignaciones).forEach(slotId => {
+                if (slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
+                const personaId = asignaciones[slotId];
+                if (personaId && typeof personaId === 'string') {
+                    totalAsignaciones++;
+                    const [localNombre] = slotId.split('-');
+                    personalCount[personaId] = (personalCount[personaId] || 0) + 1;
+                    localCount[localNombre] = (localCount[localNombre] || 0) + 1;
+                }
+            });
+            
+            const uniquePersonal = Object.keys(personalCount).length;
+
+            const topPersonal = Object.entries(personalCount)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3)
+                .map(([id, count]) => {
+                    const p = state.personal.find(p => p.id === id);
+                    return `${p ? p.nombre + ' ' + p.apellido : 'Desconocido'} (${count} turnos)`;
+                }).join(', ');
+
+            const topLocales = Object.entries(localCount)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3)
+                .map(([nombre, count]) => `${nombre.toUpperCase()} (${count} turnos)`).join(', ');
+                
+            const pagoNetoTotal = data.payrollSummary?.pagoNetoTotal || 0;
+
+            const promptData = `
+                - Semana: ${week}
+                - Total de asignaciones (turnos cubiertos): ${totalAsignaciones}
+                - Total de personal único involucrado: ${uniquePersonal}
+                - Personal más activo: ${topPersonal}
+                - Locales con mayor actividad: ${topLocales}
+                - Costo total de planilla (pago neto): S/ ${pagoNetoTotal.toFixed(2)}
+            `;
+
+            const systemPrompt = `Eres un analista de operaciones para una empresa de seguridad llamada SWAT. Tu tarea es analizar el resumen de la programación semanal y proporcionar un informe conciso y profesional en español.`;
+
+            const userQuery = `Basado en los siguientes datos, genera un resumen de 3 a 4 párrafos que incluya:
+                1. Una visión general del volumen de trabajo de la semana.
+                2. Un reconocimiento especial al personal más activo.
+                3. Identifica los locales con mayor demanda.
+                4. Menciona el costo total de la planilla como un indicador de la operación.
+                5. Proporciona una conclusión breve sobre la eficiencia operativa de la semana.
+                El tono debe ser profesional pero alentador.
+                Aquí están los datos:
+                ${promptData}
+            `;
+            
+            const analysisResult = await callGeminiAPI(systemPrompt, userQuery);
+
+            loader.style.display = 'none';
+            
+            let formattedResult = analysisResult
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\* (.*?)(<br>|$)/g, '<li>$1</li>');
+            if(formattedResult.includes('<li>')){
+                formattedResult = `<ul>${formattedResult.replace(/<br><li>/g, '<li>')}</ul>`.replace(/<\/li><br>/g, '</li>');
+            }
+            
+            document.getElementById('ai-analysis-content').innerHTML = formattedResult;
+        }
+
+        async function clearPendingNotificationsForPerson(personId) {
+            const week = state.selectedWeek;
+            if (!week || !personId) return;
+
+            const updates = {};
+            const asignacionesSemana = state.asignaciones[week] || {};
+
+            Object.keys(asignacionesSemana).forEach(slotId => {
+                // Clear timestamp if the person matches and a timestamp exists
+                if (asignacionesSemana[slotId] === personId && asignacionesSemana[`${slotId}-changeTimestamp`]) {
+                    updates[`${slotId}-changeTimestamp`] = deleteField();
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                try {
+                    await updateDoc(doc(db, asignacionesCol.path, week), updates);
+                    showStatusMessage('Recordatorios de notificación limpiados para este trabajador.');
+                } catch (error) {
+                    console.error("Error clearing pending notifications:", error);
+                }
+            }
+        }
+
+
+        function getPersonalScheduleMessage(personId) {
             const persona = state.personal.find(p => p.id === personId);
-            if (!persona) return;
+            if (!persona) return { error: 'Persona no encontrada.' };
+            
             const week = state.selectedWeek;
             const asignacionesSemana = state.asignaciones[week] || {};
 
@@ -2509,72 +2795,56 @@
                     const [local, dia, tipo] = slotId.split('-');
                     const config = state.mapeoConfig[local]?.[dia] || {};
                     const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
-                    return { 
-                        dia, 
-                        local, 
-                        raw_tipo: tipo, 
-                        vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], 
-                        hora: horaEntrada || 'N/A'
-                    };
+                    return { dia, local, raw_tipo: tipo, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], hora: horaEntrada || 'N/A' };
                 });
 
             if (assignments.length === 0) {
-                showStatusMessage('Esta persona no tiene asignaciones para copiar.', 'error');
-                return;
+                return { error: 'Esta persona no tiene asignaciones para esta semana.' };
             }
 
-            // Group assignments by day
             const groupedByDay = assignments.reduce((acc, a) => {
-                if (!acc[a.dia]) {
-                    acc[a.dia] = [];
-                }
+                if (!acc[a.dia]) acc[a.dia] = [];
                 acc[a.dia].push(a);
                 return acc;
             }, {});
             
             let message = `¡Hola ${persona.nombre}! Tu programación es la siguiente:\n\n`;
-            
             const sortedDays = Object.keys(groupedByDay).sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b));
 
             sortedDays.forEach(dia => {
                 const dailyAssignments = groupedByDay[dia];
-
-                // Find a main assignment (puesto or turno) to get base info
                 let mainAssignment = dailyAssignments.find(a => a.raw_tipo.includes('puesto') || a.raw_tipo.includes('turno'));
-                // If no main assignment, pick the earliest one as a fallback
                 if (!mainAssignment) {
                     dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
                     mainAssignment = dailyAssignments[0];
                 }
-
-                // Specifically find the cacheo de ingreso for its time
                 const ingresoCacheo = dailyAssignments.find(a => a.raw_tipo === 'cacheoIngreso');
-
-                // The time to display is from cacheoIngreso if it exists, otherwise from the main assignment
                 const displayTime = ingresoCacheo ? ingresoCacheo.hora : mainAssignment.hora;
-
-                // Collect all cacheo roles for the day
                 const allCacheos = dailyAssignments.filter(a => a.raw_tipo.toLowerCase().includes('cacheo'));
-
                 const local = mainAssignment.local.toUpperCase();
                 const diaSemana = diasSemanaFull[diasSemana.indexOf(dia)];
                 const vestimenta = mainAssignment.vestimenta;
 
                 let cacheoInfo = '';
                 if (allCacheos.length > 0) {
-                    // Sort cacheos for consistent display order
                     allCacheos.sort((a, b) => {
                         const order = { 'cacheoIngreso': 1, 'cacheos': 2, 'cacheoSalida': 3 };
                         return (order[a.raw_tipo] || 99) - (order[b.raw_tipo] || 99);
                     });
                     cacheoInfo = ` + (${allCacheos.map(c => tipoPuestoNombres[c.raw_tipo] || c.raw_tipo).join(', ')})`;
                 }
-
                 message += `• ${diaSemana} en ${local}: ${displayTime} Vestimenta: ${vestimenta}.${cacheoInfo}\n`;
             });
-
             message += `\nMANDAME TU CONFIRMACIÓN ✅`;
+            return { message };
+        }
 
+        function copyPersonalSchedule(personId) {
+            const { message, error } = getPersonalScheduleMessage(personId);
+            if (error) {
+                showStatusMessage(error, 'error');
+                return;
+            }
             const textArea = document.createElement("textarea");
             textArea.value = message.trim();
             document.body.appendChild(textArea);
@@ -2582,10 +2852,31 @@
             try {
                 document.execCommand('copy');
                 showStatusMessage('Programación copiada');
+                clearPendingNotificationsForPerson(personId);
             } catch (err) {
                 showStatusMessage('No se pudo copiar el texto.', 'error');
             }
             document.body.removeChild(textArea);
+        }
+        
+        function sendWhatsappMessage(personId) {
+            const persona = state.personal.find(p => p.id === personId);
+            if (!persona || !persona.telefono) {
+                showStatusMessage('Esta persona no tiene un número de teléfono guardado.', 'error');
+                return;
+            }
+            const { message, error } = getPersonalScheduleMessage(personId);
+            if (error) {
+                showStatusMessage(error, 'error');
+                return;
+            }
+            let phone = String(persona.telefono).replace(/\D/g, '');
+            if (!phone.startsWith('51')) {
+                phone = '51' + phone;
+            }
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            clearPendingNotificationsForPerson(personId);
         }
 
         function copyLocalSchedule(localNombre) {
@@ -3223,4 +3514,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
+
 
