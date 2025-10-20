@@ -196,7 +196,7 @@
              background-color: #f8fafc;
              border-left-width: 4px;
              border-color: transparent;
-             transition: background-color 0.2s ease;
+             transition: background-color: 0.2s ease;
         }
         .mapeo-select { min-width: 0; }
         html.dark .asignacion-fila {
@@ -3604,10 +3604,10 @@
         function updateSystemStatus(latency) {
             const icon = document.getElementById('system-status-icon');
             icon.classList.remove('status-green', 'status-yellow', 'status-red');
-            if (latency < 800) {
+            if (latency < 1200) { // <-- Umbral aumentado
                 icon.classList.add('status-green');
                 icon.parentElement.title = `Sistema fluido (latencia: ${latency}ms)`;
-            } else if (latency < 2000) {
+            } else if (latency < 3000) { // <-- Umbral aumentado
                 icon.classList.add('status-yellow');
                 icon.parentElement.title = `Sistema con lentitud (latencia: ${latency}ms)`;
             } else {
