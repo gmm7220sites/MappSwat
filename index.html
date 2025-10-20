@@ -450,6 +450,7 @@
                         <label for="semana-mapeo" class="font-semibold">Semana:</label>
                         <input type="week" id="semana-mapeo" class="p-2 border rounded-md">
                         <div class="flex-grow"></div>
+                        <button id="btn-copy-previous-week" class="bg-sky-500 text-white font-semibold text-sm py-2 px-3 rounded-md hover:bg-sky-600">Copiar Semana Ant.</button>
                         <button id="btn-guardar-programacion" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600">Guardar</button>
                         <button id="btn-limpiar-mapeo" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600">Limpiar</button>
                         <button id="btn-descargar-excel" class="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600">Excel</button>
@@ -1284,6 +1285,14 @@
             let optionsHTML = '';
             const sugerencias = obtenerSugerenciaInteligente(local, dia);
 
+            // Mejora de Disponibilidad
+            const busyToday = new Set();
+            Object.entries(state.asignaciones[week] || {}).forEach(([sId, personId]) => {
+                if(personId && sId.includes(`-${dia}-`) && sId !== slotId) {
+                    busyToday.add(personId);
+                }
+            });
+
             if (!asignacionActual && sugerencias.length > 0) {
                 const suggestionText = sugerencias.map(p => `${p.nombre || ''} ${p.apellido ? p.apellido.charAt(0) : ''}`.trim()).join(', ');
                 optionsHTML += `<option value="" disabled selected style="color: #9ca3af;">Sugerencia: ${suggestionText}</option>`;
@@ -1293,7 +1302,9 @@
             }
 
             state.personal.filter(p => p.disponibilidad === 'disponible').forEach(p => {
-                optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${getFullName(p)}</option>`;
+                const isBusy = busyToday.has(p.id);
+                const busyIcon = isBusy ? '🗓️ ' : '';
+                optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${busyIcon}${getFullName(p)}</option>`;
             });
             select.innerHTML = optionsHTML;
             
@@ -1837,7 +1848,10 @@
             if (!button) return;
 
             try {
-                if (button.matches('.btn-pago-apoyo')) {
+                if (button.matches('#btn-copy-previous-week')) {
+                    copyPreviousWeekSchedule();
+                }
+                else if (button.matches('.btn-pago-apoyo')) {
                     const personId = button.dataset.personId;
                     const type = button.dataset.type;
                     const week = state.selectedWeek;
@@ -1849,10 +1863,8 @@
 
                     await setDoc(doc(db, planillaConfigCol.path, week), { [key]: newState }, { merge: true });
                     
-                    // OPTIMIZACIÓN: Actualización directa de la UI
                     state.planillaConfig[key] = newState;
                     button.classList.toggle('active', newState);
-                    // Podríamos recalcular y actualizar solo la fila afectada si fuera necesario para mayor fluidez
                     
                 }
                 else if (button.matches('.btn-ver-detalle')) {
@@ -1876,7 +1888,6 @@
                     
                     await setDoc(doc(db, asignacionesCol.path, week), { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
 
-                    // OPTIMIZACIÓN: Actualización directa de la UI sin re-renderizar
                     state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
                     button.textContent = vestimentaEmojis[nextVestimenta];
                     button.title = `Vestimenta: ${nextVestimenta}`;
@@ -1907,7 +1918,6 @@
                         if (Object.keys(updates).length > 0) {
                             await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                             
-                            // OPTIMIZACIÓN: Actualización local y de UI
                             slotsToUpdate.forEach(slotId => {
                                 state.asignaciones[week][`${slotId}-confirmed`] = true;
                                 if (state.asignaciones[week][`${slotId}-changeTimestamp`]) {
@@ -1943,7 +1953,6 @@
                         if(confirmed) {
                             await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                             
-                            // OPTIMIZACIÓN: Actualización local y de UI
                             slotsToUpdate.forEach(slotId => {
                                 state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
                                 const vestimentaBtn = document.querySelector(`.vestimenta-btn[data-slot-id="${slotId}"]`);
@@ -2239,7 +2248,6 @@
                     updateConflictsForPerson(oldPersonaId);
                     updateConflictsForPerson(newPersonaId);
                     
-                    // OPTIMIZACIÓN: En lugar de un render completo, actualizamos solo las filas afectadas
                     const affectedSlots = new Set();
                     Object.keys(state.asignaciones[week]).forEach(sId => {
                         if (state.asignaciones[week][sId] === oldPersonaId || state.asignaciones[week][sId] === newPersonaId) {
@@ -2259,7 +2267,6 @@
                     }
                     await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
                     
-                    // OPTIMIZACIÓN: Actualización local y de UI
                     state.asignaciones[week][`${slotId}-confirmed`] = isChecked;
                      if (isChecked && state.asignaciones[week][`${slotId}-changeTimestamp`]) {
                         delete state.asignaciones[week][`${slotId}-changeTimestamp`];
@@ -2350,7 +2357,6 @@
             setInterval(() => {
                 if ((state.currentView === 'mapeo' || state.currentView === 'programacion') && listenersAreActive) {
                     checkUpcomingShiftNotifications();
-                    // OPTIMIZACIÓN: Solo actualizar filas afectadas por notificaciones
                     state.pendingNotifications.forEach(weekSlotId => {
                         updateRowAppearance(weekSlotId.split('-').slice(1).join('-'));
                     });
@@ -2650,11 +2656,89 @@
             const apellido = person.apellido || '';
             return `${nombre} ${apellido}`.trim();
         }
+
+        /** Obtiene el string de la semana anterior a la dada. */
+        function getPreviousWeekString(weekString) {
+            const [year, weekNum] = weekString.split('-W').map(Number);
+            const date = new Date(year, 0, 1 + (weekNum - 1) * 7);
+            date.setDate(date.getDate() - 7); // Retroceder 7 días
+            const prevYear = date.getFullYear();
+            const prevWeekNum = date.getWeek();
+            return `${prevYear}-W${String(prevWeekNum).padStart(2, '0')}`;
+        }
         
         // ===================================================================================
-        // --- SECCIÓN 9: LÓGICA DE EXPORTACIÓN Y MANEJO DE ARCHIVOS (EXCEL, PDF) ---
+        // --- SECCIÓN 9: ACCIONES DE MAPEO Y EXPORTACIÓN ---
         // ===================================================================================
         
+        /**
+         * Copia la programación de la semana anterior a la semana actual.
+         */
+        async function copyPreviousWeekSchedule() {
+            const currentWeek = state.selectedWeek;
+            if (!currentWeek) {
+                showStatusMessage('Por favor, selecciona una semana primero.', 'error');
+                return;
+            }
+
+            const previousWeek = getPreviousWeekString(currentWeek);
+
+            const confirmed = await showConfirmationModal(`¿Desea copiar la programación de la semana ${previousWeek} a la semana actual (${currentWeek})? Se sobreescribirán las asignaciones actuales.`);
+            if (!confirmed) return;
+            
+            loader.style.display = 'flex';
+
+            try {
+                const prevWeekDocRef = doc(db, asignacionesCol.path, previousWeek);
+                const prevWeekDocSnap = await getDoc(prevWeekDocRef);
+
+                if (!prevWeekDocSnap.exists()) {
+                    showStatusMessage(`No se encontró programación para la semana anterior (${previousWeek}).`, 'error');
+                    return;
+                }
+
+                const prevAssignments = prevWeekDocSnap.data();
+                const newAssignments = {};
+                const personalDisponibleIds = new Set(state.personal.filter(p => p.disponibilidad === 'disponible').map(p => p.id));
+                let copiedCount = 0;
+
+                for (const slotId in prevAssignments) {
+                    if (slotId.includes('-vestimenta') || slotId.includes('-confirmed') || slotId.includes('-changeTimestamp')) {
+                        continue;
+                    }
+
+                    const personaId = prevAssignments[slotId];
+                    if (!personaId || typeof personaId !== 'string') continue;
+
+                    const [local, dia, tipo, i] = slotId.split('-');
+                    
+                    const currentSlotExists = state.mapeoConfig[local]?.[dia]?.[tipo] >= i;
+                    const personIsAvailable = personalDisponibleIds.has(personaId);
+
+                    if (currentSlotExists && personIsAvailable) {
+                        newAssignments[slotId] = personaId;
+                        if (prevAssignments[`${slotId}-vestimenta`]) {
+                            newAssignments[`${slotId}-vestimenta`] = prevAssignments[`${slotId}-vestimenta`];
+                        }
+                        copiedCount++;
+                    }
+                }
+
+                if (copiedCount > 0) {
+                    await setDoc(doc(db, asignacionesCol.path, currentWeek), newAssignments);
+                    showStatusMessage(`Se copiaron ${copiedCount} asignaciones de la semana anterior.`, 'success');
+                } else {
+                    showStatusMessage('No se encontraron asignaciones válidas para copiar.', 'info');
+                }
+
+            } catch (error) {
+                console.error("Error al copiar la programación:", error);
+                showStatusMessage('No se pudo copiar la programación.', 'error');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
         /** Exporta la base de datos de personal a un archivo Excel. */
         function exportarBaseDatosPersonal() {
             if (state.personal.length === 0) return showStatusMessage('No hay personal para exportar.', 'error');
