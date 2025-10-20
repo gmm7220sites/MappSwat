@@ -196,7 +196,7 @@
              background-color: #f8fafc;
              border-left-width: 4px;
              border-color: transparent;
-             transition: background-color: 0.2s ease;
+             transition: background-color 0.2s ease;
         }
         .mapeo-select { min-width: 0; }
         html.dark .asignacion-fila {
@@ -551,7 +551,7 @@
                 <div><label for="numero_empleado" class="block text-sm font-medium">Nº de Empleado</label><input type="text" id="numero_empleado" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
                 <div><label for="fecha_ingreso" class="block text-sm font-medium">Fecha de Ingreso</label><input type="date" id="fecha_ingreso" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
                 <div><label for="nombre" class="block text-sm font-medium">Nombre</label><input type="text" id="nombre" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
-                <div><label for="apellido" class="block text-sm font-medium">Apellidos</label><input type="text" id="apellido" class="mt-1 block w-full p-2 border border-slate-300 rounded-md" required></div>
+                <div><label for="apellido" class="block text-sm font-medium">Apellidos</label><input type="text" id="apellido" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
                 <div><label for="fecha_nacimiento" class="block text-sm font-medium">Fecha de Nacimiento</label><input type="date" id="fecha_nacimiento" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
                 <div><label for="seguridad_social" class="block text-sm font-medium">Nº Seguridad Social</label><input type="text" id="seguridad_social" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
                 <div class="md:col-span-2"><label for="direccion" class="block text-sm font-medium">Dirección</label><input type="text" id="direccion" class="mt-1 block w-full p-2 border border-slate-300 rounded-md"></div>
@@ -919,7 +919,7 @@
                 const seenNumbers = new Set();
 
                 allPersonal.forEach(p => {
-                    const fullName = `${(p.nombre || '').trim().toLowerCase()} ${(p.apellido || '').trim().toLowerCase()}`;
+                    const fullName = getFullName(p).toLowerCase();
                     const employeeNumber = p.numero_empleado ? String(p.numero_empleado).trim() : null;
                     let isDuplicate = seenNames.has(fullName) || (employeeNumber && seenNumbers.has(employeeNumber));
 
@@ -946,7 +946,7 @@
                 state.mapeoConfig = {};
                 snapshot.docs.forEach(doc => { state.mapeoConfig[doc.id] = doc.data(); });
                 if (!initialDataLoaded.mapeoConfig) initialDataLoaded.mapeoConfig = true;
-                recalculateConflicts();
+                recalculateAllConflicts();
                 debouncedRender();
             }, error => console.error("Error al obtener config de mapeo:", error));
             
@@ -991,13 +991,11 @@
             
             const weekDocRef = doc(db, asignacionesCol.path, week);
             asignacionesListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
-                const weekData = docSnap.exists() ? docSnap.data() : {};
-                state.asignaciones[week] = weekData;
+                state.asignaciones[week] = docSnap.exists() ? docSnap.data() : {};
 
                 if (!initialDataLoaded.asignaciones) initialDataLoaded.asignaciones = true;
                 
-                recalculateConflicts();
-                checkUpcomingShiftNotifications();
+                recalculateAllConflicts();
                 debouncedRender();
             }, error => console.error("Error al obtener asignaciones:", error));
         }
@@ -1016,7 +1014,9 @@
             planillaConfigListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
                 state.planillaConfig = docSnap.exists() ? docSnap.data() : {};
                 if (!initialDataLoaded.planillaConfig) initialDataLoaded.planillaConfig = true;
-                debouncedRender();
+                if(state.currentView === 'planillas') {
+                    renderizarPlanillas(); // Solo renderizar si la vista es planillas
+                }
             }, error => console.error("Error al obtener config de planilla:", error));
         }
 
@@ -1073,12 +1073,12 @@
         function renderizarTablaPersonal() {
             const tabla = document.getElementById('tabla-personal');
             tabla.innerHTML = '';
-            state.personal.sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(p => {
+            state.personal.sort((a, b) => getFullName(a).localeCompare(getFullName(b))).forEach(p => {
                 const row = tabla.insertRow();
                 row.dataset.id = p.id;
                 row.innerHTML = `
                     <td class="p-3">${p.numero_empleado || 'N/A'}</td>
-                    <td class="p-3">${p.nombre} ${p.apellido}</td>
+                    <td class="p-3">${getFullName(p)}</td>
                     <td class="p-3">${p.telefono}</td>
                 `;
             });
@@ -1168,7 +1168,7 @@
                 if (assignedPersonnelIds.length > 0) {
                     return [...new Set(assignedPersonnelIds)].some(personaId => {
                         const persona = state.personal.find(p => p.id === personaId);
-                        return persona && `${persona.nombre} ${persona.apellido}`.toLowerCase().includes(searchTerm);
+                        return persona && getFullName(persona).toLowerCase().includes(searchTerm);
                     });
                 }
                 return false;
@@ -1270,6 +1270,7 @@
             const asignacionActual = state.asignaciones[week]?.[slotId] || '';
             const div = document.createElement('div');
             div.className = 'asignacion-fila';
+            div.dataset.slotId = slotId; // ID para encontrar la fila fácilmente
             
             const weekSlotId = `${week}-${slotId}`;
             if (state.redConflicts.has(weekSlotId)) div.classList.add('conflict-highlight');
@@ -1284,7 +1285,7 @@
             const sugerencias = obtenerSugerenciaInteligente(local, dia);
 
             if (!asignacionActual && sugerencias.length > 0) {
-                const suggestionText = sugerencias.map(p => `${p.nombre} ${p.apellido.charAt(0)}`).join(', ');
+                const suggestionText = sugerencias.map(p => `${p.nombre || ''} ${p.apellido ? p.apellido.charAt(0) : ''}`.trim()).join(', ');
                 optionsHTML += `<option value="" disabled selected style="color: #9ca3af;">Sugerencia: ${suggestionText}</option>`;
                 optionsHTML += `<option value="">-- Limpiar --</option>`;
             } else {
@@ -1292,7 +1293,7 @@
             }
 
             state.personal.filter(p => p.disponibilidad === 'disponible').forEach(p => {
-                optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${p.nombre} ${p.apellido}</option>`;
+                optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${getFullName(p)}</option>`;
             });
             select.innerHTML = optionsHTML;
             
@@ -1311,8 +1312,8 @@
             
             const horaText = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : (horaEntrada || 'N/A');
 
+            let notificationHTML = '';
             const changeTimestamp = state.asignaciones[week]?.[`${slotId}-changeTimestamp`];
-            let pendingIconHTML = '';
             const isUpcoming = state.pendingNotifications.has(weekSlotId);
 
             if (!isConfirmed) {
@@ -1322,19 +1323,18 @@
                     const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
                     if (minutesSinceChange > 15) {
-                        pendingIconHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
-                        triggerDelayedNotificationAlert(slotId, week);
+                        notificationHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
                     } else {
-                        pendingIconHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
                     }
                 } else if (isUpcoming) {
-                    pendingIconHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
+                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
                 }
             }
 
             div.innerHTML = `<span class="font-bold text-slate-600 dark:text-slate-400 w-8 text-center">${i}.</span><span class="font-medium text-xs text-slate-500 w-40">${horaText}</span>`;
             div.appendChild(select);
-            div.innerHTML += pendingIconHTML;
+            div.innerHTML += `<span class="notification-container">${notificationHTML}</span>`;
             div.appendChild(vestimentaBtn);
             div.appendChild(confirmationSwitch);
             return div;
@@ -1359,7 +1359,7 @@
             const personalFiltrado = state.personal.filter(p => {
                 const searchTerm = state.searchTermProgramacion;
                 if (!searchTerm) return true;
-                if (`${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm)) return true;
+                if (getFullName(p).toLowerCase().includes(searchTerm)) return true;
 
                 const asignacionesSemana = state.asignaciones[state.selectedWeek] || {};
                 const assignedLocals = Object.entries(asignacionesSemana)
@@ -1439,7 +1439,7 @@
 
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <h4 class="text-lg font-bold">${persona.nombre} ${persona.apellido}</h4>
+                        <h4 class="text-lg font-bold">${getFullName(persona)}</h4>
                         <div class="flex items-center gap-2">
                              <button data-person-id="${persona.id}" title="Enviar por WhatsApp" class="btn-send-whatsapp icon-btn !bg-green-100 hover:!bg-green-200 dark:!bg-green-800 dark:hover:!bg-green-700">
                                 <svg class="!text-green-600 dark:!text-green-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.433-9.89-9.889-9.89-5.452 0-9.887 4.428-9.888 9.89 .001 2.225.651 4.315 1.731 6.086l-.579 2.168 2.223-.58zM12.072 6.78c-.24-.003-.48.09-.662.271l-1.933 1.933c-.021.021-.035.05-.043.081-.006.021-.006.041 0 .062.086.324.239.636.444.939.22.326.477.63.785.908.347.312.721.573 1.129.773.348.174.71.296 1.077.362.016.004.033.004.049 0 .03-.003.059-.013.081-.03l1.832-1.832c.205-.183.498-.246.761-.154a3.179 3.179 0 0 1 1.59 1.59c.092.262.029.555-.154.761l-1.448 1.447c-.426.426-1.01.66-1.611.66-.566 0-1.114-.21-1.554-.582-1.359-1.144-2.429-2.58-3.138-4.119-.245-.536-.358-1.111-.341-1.691.017-.579.208-1.142.55-1.611l1.37-1.37c.24-.24.576-.375.926-.375.213 0 .423.053.618.154a3.179 3.179 0 0 1 1.59 1.59c.101.196.153.406.153.618z"/></svg>
@@ -1560,15 +1560,15 @@
             const personalFiltrado = state.personal.filter(p => {
                 const searchTerm = state.searchTermTarifario;
                 if (!searchTerm) return true;
-                return `${p.nombre} ${p.apellido}`.toLowerCase().includes(searchTerm);
+                return getFullName(p).toLowerCase().includes(searchTerm);
             });
 
-            personalFiltrado.sort((a,b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(persona => {
+            personalFiltrado.sort((a,b) => getFullName(a).localeCompare(getFullName(b))).forEach(persona => {
                 const tarifas = state.tarifarios[persona.id] || {};
                 const row = tabla.insertRow();
                 row.className = "border-b dark:border-slate-700";
                 row.innerHTML = `
-                    <td class="p-3 font-medium">${persona.nombre} ${persona.apellido}</td>
+                    <td class="p-3 font-medium">${getFullName(persona)}</td>
                     <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Terno || 50}" data-person-id="${persona.id}" data-rate-key="Terno"></td>
                     <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Tactica || 50}" data-person-id="${persona.id}" data-rate-key="Tactica"></td>
                     <td class="p-2"><input type="number" min="0" class="w-full p-1 border rounded text-center" value="${tarifas.Apoyo || 0}" data-person-id="${persona.id}" data-rate-key="Apoyo"></td>
@@ -1624,7 +1624,7 @@
                             </thead>
                             <tbody>`;
                 
-                Object.values(localData).sort((a,b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`)).forEach(data => {
+                Object.values(localData).sort((a,b) => getFullName(a).localeCompare(getFullName(b))).forEach(data => {
                     const { pagoBruto, extra, descuento, pagoNeto } = calculatePagos(data);
                     
                     granTotalBruto += pagoBruto;
@@ -1639,7 +1639,7 @@
                         <tr class="border-b">
                             <td class="p-3">
                                 <div class="flex items-center gap-2">
-                                    <span>${data.nombre} ${data.apellido}</span>
+                                    <span>${getFullName(data)}</span>
                                     ${cacheoIcon} ${turnoLargoIcon}
                                     <button title="Pago de Apoyo" class="pago-btn btn-pago-apoyo ${apoyoActivo ? 'active' : ''}" data-person-id="${data.id}" data-type="Apoyo">🤝</button>
                                 </div>
@@ -1743,7 +1743,7 @@
 
             const isDuplicate = state.personal.some(p => {
                 if(id && p.id === id) return false;
-                const fullNameMatch = p.nombre.trim().toLowerCase() === newNombre.toLowerCase() && p.apellido.trim().toLowerCase() === newApellido.toLowerCase();
+                const fullNameMatch = getFullName({nombre: newNombre, apellido: newApellido}).toLowerCase() === getFullName(p).toLowerCase();
                 const employeeNumberMatch = p.numero_empleado && String(p.numero_empleado).trim() === newNumEmpleado;
                 return fullNameMatch || employeeNumberMatch;
             });
@@ -1845,7 +1845,15 @@
 
                     const key = `${type.toLowerCase()}_${personId}`;
                     const currentState = !!state.planillaConfig[key];
-                    await setDoc(doc(db, planillaConfigCol.path, week), { [key]: !currentState }, { merge: true });
+                    const newState = !currentState;
+
+                    await setDoc(doc(db, planillaConfigCol.path, week), { [key]: newState }, { merge: true });
+                    
+                    // OPTIMIZACIÓN: Actualización directa de la UI
+                    state.planillaConfig[key] = newState;
+                    button.classList.toggle('active', newState);
+                    // Podríamos recalcular y actualizar solo la fila afectada si fuera necesario para mayor fluidez
+                    
                 }
                 else if (button.matches('.btn-ver-detalle')) {
                     const detailDiv = button.closest('tr').nextElementSibling.querySelector('.planilla-detalle');
@@ -1862,12 +1870,16 @@
                     const personaId = state.asignaciones[week]?.[slotId];
                     if (!personaId) return;
 
-                    saveUndoState();
-                    const docRef = doc(db, asignacionesCol.path, week);
                     const currentVestimenta = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
                     const nextIndex = (vestimentaOptions.indexOf(currentVestimenta) + 1) % vestimentaOptions.length;
                     const nextVestimenta = vestimentaOptions[nextIndex];
-                    await setDoc(docRef, { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
+                    
+                    await setDoc(doc(db, asignacionesCol.path, week), { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
+
+                    // OPTIMIZACIÓN: Actualización directa de la UI sin re-renderizar
+                    state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
+                    button.textContent = vestimentaEmojis[nextVestimenta];
+                    button.title = `Vestimenta: ${nextVestimenta}`;
 
                 } else if (button.matches('.btn-send-whatsapp')) {
                     sendWhatsappMessage(button.dataset.personId);
@@ -1880,22 +1892,32 @@
                     const week = state.selectedWeek;
                     if (!persona || !week) return;
 
-                    const confirmed = await showConfirmationModal(`¿Confirmar la asistencia de ${persona.nombre} ${persona.apellido} para toda la semana?`);
+                    const confirmed = await showConfirmationModal(`¿Confirmar la asistencia de ${getFullName(persona)} para toda la semana?`);
                     if (confirmed) {
                         const updates = {};
+                        const slotsToUpdate = [];
                         Object.entries(state.asignaciones[week] || {}).forEach(([slotId, pId]) => {
                             if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
                                 updates[`${slotId}-confirmed`] = true;
                                 updates[`${slotId}-changeTimestamp`] = deleteField();
+                                slotsToUpdate.push(slotId);
                             }
                         });
 
                         if (Object.keys(updates).length > 0) {
-                            saveUndoState();
                             await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                            showStatusMessage(`Asistencia confirmada para ${persona.nombre} ${persona.apellido}`);
+                            
+                            // OPTIMIZACIÓN: Actualización local y de UI
+                            slotsToUpdate.forEach(slotId => {
+                                state.asignaciones[week][`${slotId}-confirmed`] = true;
+                                if (state.asignaciones[week][`${slotId}-changeTimestamp`]) {
+                                    delete state.asignaciones[week][`${slotId}-changeTimestamp`];
+                                }
+                                updateRowAppearance(slotId);
+                            });
+                            showStatusMessage(`Asistencia confirmada para ${getFullName(persona)}`);
                         } else {
-                            showStatusMessage(`${persona.nombre} no tiene asignaciones para confirmar.`, 'error');
+                            showStatusMessage(`${getFullName(persona)} no tiene asignaciones para confirmar.`, 'error');
                         }
                     }
                 } else if (button.matches('.btn-cambiar-vestimenta-local')) {
@@ -1908,22 +1930,31 @@
                     const currentVestimenta = (firstSlotId && asignacionesSemana[`${firstSlotId}-vestimenta`]) || vestimentaOptions[0];
                     const nextVestimenta = currentVestimenta === vestimentaOptions[0] ? vestimentaOptions[1] : vestimentaOptions[0];
                     const updates = {};
-                    let hasAssignments = false;
+                    let slotsToUpdate = [];
                     Object.keys(asignacionesSemana).forEach(slotId => {
                         if (slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]) {
                             updates[`${slotId}-vestimenta`] = nextVestimenta;
-                            hasAssignments = true;
+                            slotsToUpdate.push(slotId);
                         }
                     });
 
-                    if (hasAssignments) {
+                    if (slotsToUpdate.length > 0) {
                         const confirmed = await showConfirmationModal(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`);
                         if(confirmed) {
-                            saveUndoState();
                             await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                            
+                            // OPTIMIZACIÓN: Actualización local y de UI
+                            slotsToUpdate.forEach(slotId => {
+                                state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
+                                const vestimentaBtn = document.querySelector(`.vestimenta-btn[data-slot-id="${slotId}"]`);
+                                if (vestimentaBtn) {
+                                    vestimentaBtn.textContent = vestimentaEmojis[nextVestimenta];
+                                    vestimentaBtn.title = `Vestimenta: ${nextVestimenta}`;
+                                }
+                            });
                             showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
                         }
-                    } else if (!hasAssignments) {
+                    } else {
                         showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
                     }
                 } else if (button.matches('#btn-editar-personal-view')) {
@@ -2153,7 +2184,7 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
+                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
@@ -2197,8 +2228,25 @@
                     } else {
                         updates[`${slotId}-changeTimestamp`] = deleteField();
                     }
-
+                    
                     await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                    
+                    state.asignaciones[week] = { ...state.asignaciones[week], ...updates };
+                    if (!newPersonaId) {
+                        delete state.asignaciones[week][slotId];
+                    }
+
+                    updateConflictsForPerson(oldPersonaId);
+                    updateConflictsForPerson(newPersonaId);
+                    
+                    // OPTIMIZACIÓN: En lugar de un render completo, actualizamos solo las filas afectadas
+                    const affectedSlots = new Set();
+                    Object.keys(state.asignaciones[week]).forEach(sId => {
+                        if (state.asignaciones[week][sId] === oldPersonaId || state.asignaciones[week][sId] === newPersonaId) {
+                            affectedSlots.add(sId.split('-').slice(0, 4).join('-'));
+                        }
+                    });
+                    affectedSlots.forEach(sId => updateRowAppearance(sId));
                     
                 } else if (target.matches('.confirmation-checkbox')) {
                     const week = state.selectedWeek;
@@ -2209,8 +2257,14 @@
                     if (isChecked) {
                         updates[`${slotId}-changeTimestamp`] = deleteField();
                     }
-                    saveUndoState();
                     await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
+                    
+                    // OPTIMIZACIÓN: Actualización local y de UI
+                    state.asignaciones[week][`${slotId}-confirmed`] = isChecked;
+                     if (isChecked && state.asignaciones[week][`${slotId}-changeTimestamp`]) {
+                        delete state.asignaciones[week][`${slotId}-changeTimestamp`];
+                    }
+                    updateRowAppearance(slotId);
                 }
             } catch (error) {
                 console.error("Error en evento de cambio:", error);
@@ -2296,7 +2350,10 @@
             setInterval(() => {
                 if ((state.currentView === 'mapeo' || state.currentView === 'programacion') && listenersAreActive) {
                     checkUpcomingShiftNotifications();
-                    renderCurrentView();
+                    // OPTIMIZACIÓN: Solo actualizar filas afectadas por notificaciones
+                    state.pendingNotifications.forEach(weekSlotId => {
+                        updateRowAppearance(weekSlotId.split('-').slice(1).join('-'));
+                    });
                 }
             }, 30 * 1000);
         }
@@ -2353,8 +2410,57 @@
         });
         
         // ===================================================================================
-        // --- SECCIÓN 8: FUNCIONES DE UTILIDAD ---
+        // --- SECCIÓN 8: FUNCIONES DE UTILIDAD Y RENDERIZADO PARCIAL ---
         // ===================================================================================
+
+        /**
+         * OPTIMIZACIÓN: Actualiza la apariencia de una sola fila de asignación en el DOM
+         * en lugar de renderizar toda la sección.
+         * @param {string} slotId - El ID del slot a actualizar.
+         */
+        function updateRowAppearance(slotId) {
+            const row = document.querySelector(`.asignacion-fila[data-slot-id="${slotId}"]`);
+            if (!row) return;
+
+            const week = state.selectedWeek;
+            const weekSlotId = `${week}-${slotId}`;
+            
+            // 1. Actualizar clases de conflicto
+            row.classList.remove('conflict-highlight', 'schedule-conflict-highlight', 'role-conflict-highlight');
+            if (state.redConflicts.has(weekSlotId)) {
+                row.classList.add('conflict-highlight');
+            } else if (state.celesteConflicts.has(weekSlotId)) {
+                row.classList.add('role-conflict-highlight');
+            } else if (state.yellowConflicts.has(weekSlotId)) {
+                row.classList.add('schedule-conflict-highlight');
+            }
+
+            // 2. Actualizar íconos de notificación
+            const notificationContainer = row.querySelector('.notification-container');
+            if (!notificationContainer) return;
+
+            let notificationHTML = '';
+            const isConfirmed = state.asignaciones[week]?.[`${slotId}-confirmed`] || false;
+            const changeTimestamp = state.asignaciones[week]?.[`${slotId}-changeTimestamp`];
+            const isUpcoming = state.pendingNotifications.has(weekSlotId);
+
+            if (!isConfirmed) {
+                if (changeTimestamp && typeof changeTimestamp.toDate === 'function') {
+                    const changeTime = changeTimestamp.toDate();
+                    const now = new Date();
+                    const minutesSinceChange = (now - changeTime) / (1000 * 60);
+
+                    if (minutesSinceChange > 15) {
+                        notificationHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
+                    } else {
+                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                    }
+                } else if (isUpcoming) {
+                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
+                }
+            }
+            notificationContainer.innerHTML = notificationHTML;
+        }
 
         /** Muestra un modal de confirmación y devuelve una promesa. */
         function showConfirmationModal(message) {
@@ -2428,7 +2534,7 @@
         function populateViewPersonalModal(id) {
             const p = state.personal.find(p => p.id === id);
             if (!p) return;
-            document.getElementById('view-personal-name').textContent = `${p.nombre} ${p.apellido}`;
+            document.getElementById('view-personal-name').textContent = getFullName(p);
             document.getElementById('view-personal-details').innerHTML = `
                 <span class="detail-label">Nº Empleado:</span><span>${p.numero_empleado || 'N/A'}</span>
                 <span class="detail-label">F. Ingreso:</span><span>${p.fecha_ingreso || 'N/A'}</span>
@@ -2465,7 +2571,7 @@
         }
         
         /** Limita la frecuencia de ejecución de una función. */
-        const debouncedRender = debounce(renderCurrentView, 100);
+        const debouncedRender = debounce(renderCurrentView, 250); // Aumentado ligeramente para evitar renders innecesarios
 
         function debounce(func, delay = 250) {
             let timeout;
@@ -2535,6 +2641,14 @@
                 endMinutes += 1440;
             }
             return (endMinutes - startMinutes) / 60;
+        }
+
+        /** Obtiene el nombre completo de una persona, manejando valores nulos. */
+        function getFullName(person) {
+            if (!person) return 'N/A';
+            const nombre = person.nombre || '';
+            const apellido = person.apellido || '';
+            return `${nombre} ${apellido}`.trim();
         }
         
         // ===================================================================================
@@ -2630,7 +2744,7 @@
                     return {
                         'Fecha': getWeekDates(week)[dia] || 'N/A', 'Día': diasSemanaFull[diasSemana.indexOf(dia)],
                         'Local': local.toUpperCase(), 'Puesto': tipoPuestoNombres[tipo] || tipo,
-                        'Nombre': persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
+                        'Nombre': persona ? getFullName(persona) : 'N/A',
                         'Hora Entrada': horaEntrada,
                         'Hora Salida': horaSalida,
                         'Vestimenta': scheduleData.asignaciones[`${slotId}-vestimenta`] || vestimentaOptions[0]
@@ -2665,7 +2779,7 @@
                     const { pagoBruto, extra, descuento, pagoNeto } = calculatePagos(data);
                     resumenData.push({
                         'Local': localNombre.toUpperCase(),
-                        'Nombre Completo': `${data.nombre} ${data.apellido}`,
+                        'Nombre Completo': getFullName(data),
                         'Turnos': data.turnosDetalle.length,
                         'Pago Bruto (S/)': pagoBruto,
                         'Extras (S/)': extra,
@@ -2676,7 +2790,7 @@
                     data.turnosDetalle.forEach(detalle => {
                         detalleData.push({
                             'Local': localNombre.toUpperCase(),
-                            'Nombre Completo': `${data.nombre} ${data.apellido}`,
+                            'Nombre Completo': getFullName(data),
                             'Día': detalle.dia,
                             'Puesto': detalle.tipo,
                         });
@@ -2761,7 +2875,7 @@
                         const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
                         return {
                             puesto: tipoPuestoNombres[tipo] || tipo,
-                            nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
+                            nombre: persona ? getFullName(persona) : 'N/A',
                             hora: horario || 'N/A'
                         };
                     }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
@@ -2908,7 +3022,7 @@
                                 const horario = (horaEntrada && horaSalida) ? `${horaEntrada} - ${horaSalida}` : horaEntrada;
                                 return {
                                     puesto: tipoPuestoNombres[tipo] || tipo,
-                                    nombre: persona ? `${persona.nombre} ${persona.apellido}` : 'N/A',
+                                    nombre: persona ? getFullName(persona) : 'N/A',
                                     hora: horario || 'N/A'
                                 };
                             }).sort((a,b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
@@ -3037,20 +3151,25 @@
             state.notifiedChanges.add(notificationKey);
         }
 
-        /** Recalcula todos los conflictos de programación en la semana actual. */
-        function recalculateConflicts() {
+        /**
+         * Recalcula todos los conflictos para toda la semana. Es más lento y debe
+         * usarse solo cuando hay cambios masivos (ej. al cargar datos).
+         */
+        function recalculateAllConflicts() {
             const week = state.selectedWeek;
             if (!week || !state.asignaciones[week]) return;
-            const asignacionesSemana = state.asignaciones[week];
-
+            
             state.redConflicts.clear();
             state.yellowConflicts.clear();
             state.celesteConflicts.clear();
             
             const assignmentsByPerson = {};
+            const asignacionesSemana = state.asignaciones[week];
+            
             Object.entries(asignacionesSemana).forEach(([slotId, personaId]) => {
                 if (!personaId || typeof personaId !== 'string' || !slotId.includes('-') || slotId.includes('-vestimenta') || slotId.includes('-confirmed')) return;
                 if (!assignmentsByPerson[personaId]) assignmentsByPerson[personaId] = [];
+                
                 const [local, dia, tipo] = slotId.split('-');
                 if(!tipo) return;
                 const config = state.mapeoConfig[local]?.[dia];
@@ -3062,56 +3181,97 @@
                 const startMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaEntrada);
                 let endMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaSalida);
 
-                if (endMinutes < startMinutes) {
-                    endMinutes += 1440;
-                }
+                if (endMinutes < startMinutes) { endMinutes += 1440; }
 
                 assignmentsByPerson[personaId].push({
                     weekSlotId: `${week}-${slotId}`, dia, local, tipo,
-                    startMinutes,
-                    endMinutes
+                    startMinutes, endMinutes
                 });
             });
 
             for (const personaId in assignmentsByPerson) {
-                const personAssignments = assignmentsByPerson[personaId].sort((a, b) => a.startMinutes - b.startMinutes);
+                updateConflictsForPerson(personaId, assignmentsByPerson[personaId]);
+            }
+        }
+        
+        /**
+         * Recalcula los conflictos solo para una persona específica. Es mucho más rápido.
+         * @param {string} personaId - El ID de la persona a verificar.
+         * @param {Array} [personAssignments] - Opcional, lista pre-calculada de las asignaciones de la persona.
+         */
+        function updateConflictsForPerson(personaId, personAssignments) {
+            if (!personaId) return;
 
-                for (let i = 0; i < personAssignments.length; i++) {
-                     for (let j = i + 1; j < personAssignments.length; j++) {
-                        const first = personAssignments[i];
-                        const second = personAssignments[j];
+            const week = state.selectedWeek;
+            const asignacionesSemana = state.asignaciones[week] || {};
 
-                        if (first.startMinutes < second.endMinutes && second.startMinutes < first.endMinutes) {
-                            state.redConflicts.add(first.weekSlotId);
-                            state.redConflicts.add(second.weekSlotId);
-                        }
-                        else if (second.startMinutes - first.endMinutes < 480 && second.startMinutes > first.endMinutes) {
-                            state.yellowConflicts.add(first.weekSlotId);
-                            state.yellowConflicts.add(second.weekSlotId);
-                        }
-                     }
-                }
-                
-                const assignmentsByDayAndLocal = personAssignments.reduce((acc, a) => {
-                    const key = `${a.dia}|${a.local}`;
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(a);
-                    return acc;
-                }, {});
+            // Limpiar conflictos existentes para esta persona
+            const slotsToRemove = Object.keys(asignacionesSemana).filter(slotId => asignacionesSemana[slotId] === personaId);
+            slotsToRemove.forEach(slotId => {
+                const weekSlotId = `${week}-${slotId}`;
+                state.redConflicts.delete(weekSlotId);
+                state.yellowConflicts.delete(weekSlotId);
+                state.celesteConflicts.delete(weekSlotId);
+            });
 
-                Object.values(assignmentsByDayAndLocal).forEach(group => {
-                    if (group.length < 2) return;
+            // Si no se proporcionaron asignaciones, las calculamos
+            if (!personAssignments) {
+                 personAssignments = Object.entries(asignacionesSemana)
+                    .filter(([slotId, pId]) => pId === personaId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                    .map(([slotId, _]) => {
+                        const [local, dia, tipo] = slotId.split('-');
+                        const config = state.mapeoConfig[local]?.[dia] || {};
+                        const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
+                        const horaSalida = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Salida`];
+                        const startMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaEntrada);
+                        let endMinutes = diasSemana.indexOf(dia) * 1440 + timeToMinutes(horaSalida);
+                        if (endMinutes < startMinutes) { endMinutes += 1440; }
+                        return { weekSlotId: `${week}-${slotId}`, dia, local, tipo, startMinutes, endMinutes };
+                    });
+            }
 
-                    const rolesInGroup = new Set(group.map(a => a.tipo));
-                    const hasPuesto = rolesInGroup.has('puestos');
-                    const hasCacheo = rolesInGroup.has('cacheos') || rolesInGroup.has('cacheoIngreso') || rolesInGroup.has('cacheoSalida');
-                    
-                    if (hasPuesto && hasCacheo) {
-                        group.forEach(assignment => state.celesteConflicts.add(assignment.weekSlotId));
+            if (personAssignments.length < 2) return; // No puede haber conflicto con menos de 2 turnos.
+
+            personAssignments.sort((a, b) => a.startMinutes - b.startMinutes);
+
+            // Verificar conflictos de solapamiento y descanso
+            for (let i = 0; i < personAssignments.length; i++) {
+                 for (let j = i + 1; j < personAssignments.length; j++) {
+                    const first = personAssignments[i];
+                    const second = personAssignments[j];
+
+                    if (first.startMinutes < second.endMinutes && second.startMinutes < first.endMinutes) {
+                        state.redConflicts.add(first.weekSlotId);
+                        state.redConflicts.add(second.weekSlotId);
                     }
-                });
+                    else if (second.startMinutes - first.endMinutes < 480 && second.startMinutes > first.endMinutes) {
+                        state.yellowConflicts.add(first.weekSlotId);
+                        state.yellowConflicts.add(second.weekSlotId);
+                    }
+                 }
             }
             
+            // Verificar conflictos de rol
+            const assignmentsByDayAndLocal = personAssignments.reduce((acc, a) => {
+                const key = `${a.dia}|${a.local}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(a);
+                return acc;
+            }, {});
+
+            Object.values(assignmentsByDayAndLocal).forEach(group => {
+                if (group.length < 2) return;
+
+                const rolesInGroup = new Set(group.map(a => a.tipo));
+                const hasPuesto = rolesInGroup.has('puestos');
+                const hasCacheo = rolesInGroup.has('cacheos') || rolesInGroup.has('cacheoIngreso') || rolesInGroup.has('cacheoSalida');
+                
+                if (hasPuesto && hasCacheo) {
+                    group.forEach(assignment => state.celesteConflicts.add(assignment.weekSlotId));
+                }
+            });
+            
+            // Prioridad de conflictos
             state.redConflicts.forEach(id => { state.yellowConflicts.delete(id); state.celesteConflicts.delete(id); });
             state.celesteConflicts.forEach(id => state.yellowConflicts.delete(id));
         }
@@ -3198,7 +3358,7 @@
                 .slice(0, 3)
                 .map(([id, count]) => {
                     const p = state.personal.find(p => p.id === id);
-                    return `${p ? p.nombre + ' ' + p.apellido : 'Desconocido'} (${count} turnos)`;
+                    return `${p ? getFullName(p) : 'Desconocido'} (${count} turnos)`;
                 }).join(', ');
 
             const topLocales = Object.entries(localCount)
@@ -3407,7 +3567,7 @@
                 if (personnel && personnel.length > 0) {
                     message += `${diasSemanaFull[index]}\n`;
                     personnel.forEach(p => {
-                         message += `- ${p.persona.nombre} ${p.persona.apellido}\n`;
+                         message += `- ${getFullName(p.persona)}\n`;
                     });
                     message += '\n'; 
                 }
@@ -3504,7 +3664,7 @@
         /** Calcula los pagos (bruto, extra, descuento, neto) para un trabajador. */
         function calculatePagos(data) {
             const tarifasPersona = state.tarifarios[data.id] || {};
-            const isReserva = data.nombre.toLowerCase().includes('reserva');
+            const isReserva = (data.nombre || '').toLowerCase().includes('reserva');
             
             let pagoBruto = isReserva ? 0 : data.turnos.reduce((acc, turno) => {
                 const rateKey = `${turno.vestimenta}`;
