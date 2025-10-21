@@ -985,7 +985,7 @@
             if (asignacionesListenerUnsubscribe) asignacionesListenerUnsubscribe();
             
             if (!week) {
-                state.asignaciones = {};
+                state.asignaciones[week] = {};
                 debouncedRender();
                 return;
             }
@@ -1295,13 +1295,16 @@
 
             if (!asignacionActual && sugerencias.length > 0) {
                 const suggestionText = sugerencias.map(p => `${p.nombre || ''} ${p.apellido ? p.apellido.charAt(0) : ''}`.trim()).join(', ');
-                optionsHTML += `<option value="" disabled selected style="color: #9ca3af;">Sugerencia: ${suggestionText}</option>`;
+                optionsHTML += `<option value="" disabled selected style="color: #722F37 !important;">Sugerencia: ${suggestionText}</option>`;
                 optionsHTML += `<option value="">-- Limpiar --</option>`;
             } else {
                 optionsHTML += `<option value="">-- Seleccionar --</option>`;
             }
 
-            state.personal.filter(p => p.disponibilidad === 'disponible').forEach(p => {
+            const personalDisponible = state.personal.filter(p => p.disponibilidad === 'disponible');
+            personalDisponible.sort((a, b) => getFullName(a).localeCompare(getFullName(b)));
+            
+            personalDisponible.forEach(p => {
                 const isBusy = busyToday.has(p.id);
                 const busyIcon = isBusy ? '🗓️ ' : '';
                 optionsHTML += `<option value="${p.id}" ${p.id === asignacionActual ? 'selected' : ''}>${busyIcon}${getFullName(p)}</option>`;
@@ -1334,12 +1337,12 @@
                     const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
                     if (minutesSinceChange > 15) {
-                        notificationHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
+                        notificationHTML = `<span class="notification-bell" title="Llamada pendiente por cambio no confirmado.">📞</span>`;
                     } else {
-                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar por llamada.">📞</span>`;
                     }
                 } else if (isUpcoming) {
-                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
+                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar, llamar.">📞</span>`;
                 }
             }
 
@@ -1429,12 +1432,12 @@
                             const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
                             if (minutesSinceChange > 15) {
-                                notificationHTML = `<span class="notification-bell" title="Cambio no confirmado (+15 min)">🔔</span>`;
+                                notificationHTML = `<span class="notification-bell" title="Llamada pendiente por cambio no confirmado.">📞</span>`;
                             } else {
-                                notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente">❗</span>`;
+                                notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar por llamada.">📞</span>`;
                             }
                         } else if (isUpcoming) {
-                            notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
+                            notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar, llamar.">📞</span>`;
                         }
                     }
 
@@ -2193,7 +2196,7 @@
                     if (part === 'count') {
                         config[dia][type] = parseInt(target.value, 10) || 0;
                     } else {
-                        const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}${sufijo}`;
+                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
                         const parent = target.closest('div');
                         config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
                     }
@@ -2457,12 +2460,12 @@
                     const minutesSinceChange = (now - changeTime) / (1000 * 60);
 
                     if (minutesSinceChange > 15) {
-                        notificationHTML = `<span class="notification-bell" title="Cambio no confirmado hace más de 15 minutos.">🔔</span>`;
+                        notificationHTML = `<span class="notification-bell" title="Llamada pendiente por cambio no confirmado.">📞</span>`;
                     } else {
-                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar.">❗</span>`;
+                        notificationHTML = `<span class="text-xl pending-change-indicator" title="Cambio pendiente de notificar por llamada.">📞</span>`;
                     }
                 } else if (isUpcoming) {
-                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar.">🔔</span>`;
+                    notificationHTML = `<span class="notification-bell" title="Turno próximo (<24h) sin confirmar, llamar.">📞</span>`;
                 }
             }
             notificationContainer.innerHTML = notificationHTML;
@@ -2694,6 +2697,7 @@
 
                 if (!prevWeekDocSnap.exists()) {
                     showStatusMessage(`No se encontró programación para la semana anterior (${previousWeek}).`, 'error');
+                    loader.style.display = 'none'; // Hide loader here
                     return;
                 }
 
@@ -3324,36 +3328,25 @@
                     const first = personAssignments[i];
                     const second = personAssignments[j];
 
+                    // 1. Verificar solapamiento de horario (conflicto rojo o azul)
                     if (first.startMinutes < second.endMinutes && second.startMinutes < first.endMinutes) {
-                        state.redConflicts.add(first.weekSlotId);
-                        state.redConflicts.add(second.weekSlotId);
-                    }
+                        // Si el solapamiento es en locales DIFERENTES, es un conflicto grave (rojo)
+                        if (first.local !== second.local) {
+                            state.redConflicts.add(first.weekSlotId);
+                            state.redConflicts.add(second.weekSlotId);
+                        } else {
+                            // Si el solapamiento es en el MISMO local, es una advertencia (azul)
+                            state.celesteConflicts.add(first.weekSlotId);
+                            state.celesteConflicts.add(second.weekSlotId);
+                        }
+                    } 
+                    // 2. Verificar período de descanso insuficiente (conflicto amarillo)
                     else if (second.startMinutes - first.endMinutes < 480 && second.startMinutes > first.endMinutes) {
                         state.yellowConflicts.add(first.weekSlotId);
                         state.yellowConflicts.add(second.weekSlotId);
                     }
                  }
             }
-            
-            // Verificar conflictos de rol
-            const assignmentsByDayAndLocal = personAssignments.reduce((acc, a) => {
-                const key = `${a.dia}|${a.local}`;
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(a);
-                return acc;
-            }, {});
-
-            Object.values(assignmentsByDayAndLocal).forEach(group => {
-                if (group.length < 2) return;
-
-                const rolesInGroup = new Set(group.map(a => a.tipo));
-                const hasPuesto = rolesInGroup.has('puestos');
-                const hasCacheo = rolesInGroup.has('cacheos') || rolesInGroup.has('cacheoIngreso') || rolesInGroup.has('cacheoSalida');
-                
-                if (hasPuesto && hasCacheo) {
-                    group.forEach(assignment => state.celesteConflicts.add(assignment.weekSlotId));
-                }
-            });
             
             // Prioridad de conflictos
             state.redConflicts.forEach(id => { state.yellowConflicts.delete(id); state.celesteConflicts.delete(id); });
