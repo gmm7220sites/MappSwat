@@ -490,6 +490,11 @@
                             <h2 class="text-2xl font-bold">Tarifario Individual por Turno (S/)</h2>
                             <p class="text-sm text-slate-500 mt-1">Los cambios se guardan automáticamente.</p>
                         </div>
+                         <div class="flex items-center gap-2">
+                            <button id="btn-importar-tarifario" class="bg-sky-500 text-white font-bold py-2 px-4 rounded-md hover:bg-sky-600">Importar</button>
+                            <button id="btn-exportar-tarifario" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Exportar</button>
+                            <input type="file" id="import-tarifario-input" class="hidden" accept=".xlsx, .xls">
+                        </div>
                         <div class="relative">
                             <input type="text" id="busqueda-tarifario" placeholder="Buscar por nombre..." class="w-full md:w-64 p-2 pl-10 border rounded-md">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
@@ -766,6 +771,7 @@
         const editLocalModal = document.getElementById('edit-local-modal');
         const scheduleConfigModal = document.getElementById('schedule-config-modal');
         const importPersonalInput = document.getElementById('import-personal-input');
+        const importTarifarioInput = document.getElementById('import-tarifario-input');
         const themeToggleBtn = document.getElementById('theme-toggle');
         const darkIcon = document.getElementById('theme-toggle-dark-icon');
         const lightIcon = document.getElementById('theme-toggle-light-icon');
@@ -2135,10 +2141,21 @@
                     exportarBaseDatosPersonal();
                 } else if (button.matches('#btn-exportar-planilla')) {
                     exportarPlanillaExcel();
+                } else if (button.matches('#btn-exportar-tarifario')) {
+                    exportarTarifario();
+                } else if (button.matches('#btn-importar-tarifario')) {
+                    importTarifarioInput.click();
                 }
             } catch (error) {
                 console.error("Error en clic de botón:", error);
                 showStatusMessage("La operación falló. Revisa la consola para más detalles.", "error");
+            }
+        });
+
+        importTarifarioInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                importarTarifario(file);
             }
         });
 
@@ -2724,6 +2741,10 @@
                         if (prevAssignments[`${slotId}-vestimenta`]) {
                             newAssignments[`${slotId}-vestimenta`] = prevAssignments[`${slotId}-vestimenta`];
                         }
+                        // Mantener notificaciones
+                        if (!prevAssignments[`${slotId}-confirmed`]) {
+                            newAssignments[`${slotId}-changeTimestamp`] = serverTimestamp();
+                        }
                         copiedCount++;
                     }
                 }
@@ -2908,6 +2929,99 @@
 
             XLSX.writeFile(wb, `Planilla_Semana_${week}.xlsx`);
             showStatusMessage('Planilla exportada a Excel.', 'success');
+        }
+
+        /**
+         * Exporta el tarifario completo a un archivo Excel.
+         */
+        function exportarTarifario() {
+            if (state.personal.length === 0) {
+                showStatusMessage('No hay personal para exportar tarifario.', 'error');
+                return;
+            }
+            const dataToExport = state.personal.map(p => {
+                const tarifas = state.tarifarios[p.id] || {};
+                return {
+                    'Nº Empleado': p.numero_empleado,
+                    'Nombre Completo': getFullName(p),
+                    'Terno': tarifas.Terno || 0,
+                    'Tactica': tarifas.Tactica || 0,
+                    'Apoyo': tarifas.Apoyo || 0
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Tarifario');
+            XLSX.writeFile(workbook, `Tarifario_SwattMapee_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        /**
+         * Importa y actualiza el tarifario desde un archivo Excel.
+         * @param {File} file - El archivo Excel a importar.
+         */
+        async function importarTarifario(file) {
+            const confirmed = await showConfirmationModal('¿Está seguro de que desea importar este archivo? Se sobrescribirán las tarifas existentes para los empleados encontrados en el archivo.');
+            if (!confirmed) {
+                importTarifarioInput.value = ''; // Reset input
+                return;
+            }
+
+            loader.style.display = 'flex';
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                try {
+                    const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+                    if (jsonData.length === 0 || !jsonData[0]['Nº Empleado']) {
+                        throw new Error("El archivo Excel no es válido o está vacío. Asegúrese de que contenga la columna 'Nº Empleado'.");
+                    }
+                    
+                    const batch = writeBatch(db);
+                    let updatedCount = 0;
+                    const personalMap = new Map(state.personal.map(p => [String(p.numero_empleado), p.id]));
+
+                    jsonData.forEach(row => {
+                        const employeeNumber = String(row['Nº Empleado']);
+                        const personId = personalMap.get(employeeNumber);
+
+                        if (personId) {
+                            const newRates = {
+                                Terno: parseFloat(row['Terno']) || 0,
+                                Tactica: parseFloat(row['Tactica']) || 0,
+                                Apoyo: parseFloat(row['Apoyo']) || 0
+                            };
+                            const tarifarioDocRef = doc(db, tarifariosCol.path, personId);
+                            batch.set(tarifarioDocRef, newRates);
+                            updatedCount++;
+                        }
+                    });
+
+                    if (updatedCount > 0) {
+                        await batch.commit();
+                        showStatusMessage(`${updatedCount} tarifarios actualizados correctamente.`, 'success');
+                    } else {
+                        showStatusMessage('No se encontraron empleados coincidentes en el archivo para actualizar.', 'info');
+                    }
+
+                } catch (error) {
+                    console.error("Error al importar tarifario:", error);
+                    showStatusMessage(error.message || 'Error al procesar el archivo Excel.', 'error');
+                } finally {
+                    loader.style.display = 'none';
+                    importTarifarioInput.value = ''; // Reset input
+                }
+            };
+
+            reader.onerror = () => {
+                showStatusMessage('Error al leer el archivo.', 'error');
+                loader.style.display = 'none';
+                importTarifarioInput.value = ''; // Reset input
+            };
+            
+            reader.readAsArrayBuffer(file);
         }
 
         // --- Lógica de Generación de PDF ---
@@ -3328,25 +3442,36 @@
                     const first = personAssignments[i];
                     const second = personAssignments[j];
 
-                    // 1. Verificar solapamiento de horario (conflicto rojo o azul)
                     if (first.startMinutes < second.endMinutes && second.startMinutes < first.endMinutes) {
-                        // Si el solapamiento es en locales DIFERENTES, es un conflicto grave (rojo)
-                        if (first.local !== second.local) {
-                            state.redConflicts.add(first.weekSlotId);
-                            state.redConflicts.add(second.weekSlotId);
-                        } else {
-                            // Si el solapamiento es en el MISMO local, es una advertencia (azul)
-                            state.celesteConflicts.add(first.weekSlotId);
-                            state.celesteConflicts.add(second.weekSlotId);
-                        }
-                    } 
-                    // 2. Verificar período de descanso insuficiente (conflicto amarillo)
+                        state.redConflicts.add(first.weekSlotId);
+                        state.redConflicts.add(second.weekSlotId);
+                    }
                     else if (second.startMinutes - first.endMinutes < 480 && second.startMinutes > first.endMinutes) {
                         state.yellowConflicts.add(first.weekSlotId);
                         state.yellowConflicts.add(second.weekSlotId);
                     }
                  }
             }
+            
+            // Verificar conflictos de rol
+            const assignmentsByDayAndLocal = personAssignments.reduce((acc, a) => {
+                const key = `${a.dia}|${a.local}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(a);
+                return acc;
+            }, {});
+
+            Object.values(assignmentsByDayAndLocal).forEach(group => {
+                if (group.length < 2) return;
+
+                const rolesInGroup = new Set(group.map(a => a.tipo));
+                const hasPuesto = rolesInGroup.has('puestos');
+                const hasCacheo = rolesInGroup.has('cacheos') || rolesInGroup.has('cacheoIngreso') || rolesInGroup.has('cacheoSalida');
+                
+                if (hasPuesto && hasCacheo) {
+                    group.forEach(assignment => state.celesteConflicts.add(assignment.weekSlotId));
+                }
+            });
             
             // Prioridad de conflictos
             state.redConflicts.forEach(id => { state.yellowConflicts.delete(id); state.celesteConflicts.delete(id); });
@@ -3515,9 +3640,11 @@
             const asignacionesSemana = state.asignaciones[week] || {};
 
             const assignments = Object.entries(asignacionesSemana)
-                .filter(([slotId, pId]) => pId === personId && slotId.includes('-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed'))
+                .filter(([slotId, pId]) => pId === personId) // CORRECCIÓN: Se eliminó el filtro incorrecto que excluía turnos confirmados.
                 .map(([slotId, _]) => {
                     const [local, dia, tipo] = slotId.split('-');
+                    if (!tipo) return null; // Ignorar entradas inválidas
+                    // FIX: Definir config obteniéndolo del estado global
                     const config = state.mapeoConfig[local]?.[dia] || {};
                     const horaEntrada = config[`hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`];
                     return { dia, local, raw_tipo: tipo, vestimenta: asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0], hora: horaEntrada || 'N/A' };
@@ -3527,26 +3654,48 @@
                 return { error: 'Esta persona no tiene asignaciones para esta semana.' };
             }
 
-            const groupedByDay = assignments.reduce((acc, a) => {
-                if (!acc[a.dia]) acc[a.dia] = [];
-                acc[a.dia].push(a);
+            const groupedByDayAndLocal = assignments.reduce((acc, a) => {
+                if (!a) return acc; // Ignorar nulos
+                const key = `${a.dia}-${a.local}`;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(a);
                 return acc;
             }, {});
             
             let message = `¡Hola ${persona.nombre}! Tu programación es la siguiente:\n\n`;
-            const sortedDays = Object.keys(groupedByDay).sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b));
+            
+            const sortedKeys = Object.keys(groupedByDayAndLocal).sort((a, b) => {
+                const [diaA, localA] = a.split('-');
+                const [diaB, localB] = b.split('-');
+                const diaIndexA = diasSemana.indexOf(diaA);
+                const diaIndexB = diasSemana.indexOf(diaB);
 
-            sortedDays.forEach(dia => {
-                const dailyAssignments = groupedByDay[dia];
+                if (diaIndexA !== diaIndexB) {
+                    return diaIndexA - diaIndexB;
+                }
+                
+                // Si es el mismo día, ordenar por hora del primer turno
+                const firstAssignmentA = groupedByDayAndLocal[a].sort((x, y) => timeToMinutes(x.hora) - timeToMinutes(y.hora))[0];
+                const firstAssignmentB = groupedByDayAndLocal[b].sort((x, y) => timeToMinutes(x.hora) - timeToMinutes(y.hora))[0];
+                
+                return timeToMinutes(firstAssignmentA?.hora) - timeToMinutes(firstAssignmentB?.hora);
+            });
+
+            sortedKeys.forEach(key => {
+                const dailyAssignments = groupedByDayAndLocal[key]; // Asignaciones por día y local
+                const [dia, localNombre] = key.split('-');
+
                 let mainAssignment = dailyAssignments.find(a => a.raw_tipo.includes('puesto') || a.raw_tipo.includes('turno'));
                 if (!mainAssignment) {
                     dailyAssignments.sort((a, b) => timeToMinutes(a.hora) - timeToMinutes(b.hora));
                     mainAssignment = dailyAssignments[0];
                 }
+                if (!mainAssignment) return; // Si no hay asignación principal, saltar
+
                 const ingresoCacheo = dailyAssignments.find(a => a.raw_tipo === 'cacheoIngreso');
                 const displayTime = ingresoCacheo ? ingresoCacheo.hora : mainAssignment.hora;
                 const allCacheos = dailyAssignments.filter(a => a.raw_tipo.toLowerCase().includes('cacheo'));
-                const local = mainAssignment.local.toUpperCase();
+                const local = localNombre.toUpperCase();
                 const diaSemana = diasSemanaFull[diasSemana.indexOf(dia)];
                 const vestimenta = mainAssignment.vestimenta;
 
@@ -3622,7 +3771,7 @@
                     }
                     const persona = state.personal.find(p => p.id === pId);
                     const config = state.mapeoConfig[local]?.[dia] || {};
-                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`;
+                    const horaKey = `hora${tipo.charAt(0).toUpperCase() + tipo.slice(1)}Entrada`;
                     if (persona) {
                         assignedPersonnelByDay[dia].push({
                             persona,
@@ -3643,8 +3792,13 @@
                 const personnel = assignedPersonnelByDay[dia];
                 if (personnel && personnel.length > 0) {
                     message += `${diasSemanaFull[index]}\n`;
-                    personnel.forEach(p => {
-                         message += `- ${getFullName(p.persona)}\n`;
+                    
+                    // Ordenar alfabéticamente
+                    personnel.sort((a, b) => getFullName(a.persona).localeCompare(getFullName(b.persona)));
+
+                    // Añadir numeración
+                    personnel.forEach((p, i) => {
+                         message += `${i + 1}. ${getFullName(p.persona)}\n`;
                     });
                     message += '\n'; 
                 }
@@ -3682,6 +3836,7 @@
                 const [local, dia, tipo] = slotId.split('-');
                 
                 const isReserva = personaId.toLowerCase().includes('paucar reserva');
+                const esCacheo = tipo.toLowerCase().includes('cacheo');
 
                 if (!isReserva) {
                     const persona = state.personal.find(p => p.id === personaId);
@@ -3705,20 +3860,22 @@
                     const isLongShift = duracionHoras >= 12;
                     const vestimenta = asignacionesSemana[`${slotId}-vestimenta`] || vestimentaOptions[0];
                     const vestimentaKey = vestimenta === 'Terno' ? 'Terno' : 'Tactica';
-                    const hizoCacheo = tipo.toLowerCase().includes('cacheo');
                     
-                    data.turnos.push({ 
-                        vestimenta: vestimentaKey, 
-                        isLong: isLongShift
-                    });
+                    if (!esCacheo) {
+                        data.turnos.push({ 
+                            vestimenta: vestimentaKey, 
+                            isLong: isLongShift
+                        });
+                    }
+
                     data.turnosDetalle.push({
                         dia: diasSemanaFull[diasSemana.indexOf(dia)],
                         local: local.toUpperCase(),
                         tipo: `${tipoPuestoNombres[tipo] || tipo} (${duracionHoras.toFixed(1)}h)`
                     });
                     data.workedDays.add(diasSemana.indexOf(dia));
-                    if(hizoCacheo) data.hizoCacheo = true;
-                    if(isLongShift) data.tuvoTurnoLargo = true;
+                    if(esCacheo) data.hizoCacheo = true;
+                    if(isLongShift && !esCacheo) data.tuvoTurnoLargo = true;
 
                 } else { 
                      if (!paucarReservasData[personaId]) {
@@ -3864,4 +4021,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
+
+
+
 
