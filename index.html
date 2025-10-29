@@ -368,6 +368,7 @@
         <svg class="w-6 h-6 text-slate-800 dark:text-white" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16m-7 6h7"></path></svg>
     </button>
     <nav id="side-nav">
+        <button id="btn-dashboard" class="nav-button">Dashboard</button>
         <button id="btn-mapeo" class="nav-button">Mapeo Semanal</button>
         <button id="btn-gestion" class="nav-button">Gestión</button>
         <button id="btn-programacion" class="nav-button">Programación</button>
@@ -397,6 +398,75 @@
         <div id="status-message-container" class="fixed top-4 right-4 z-50"></div>
 
         <main>
+            <!-- SECCIÓN NUEVA: DASHBOARD -->
+            <section id="section-dashboard" class="hidden relative">
+                <!-- Dashboard Loader -->
+                <div id="dashboard-loader" class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 rounded-xl">
+                    <p class="text-center p-8 text-slate-500">Cargando datos del dashboard...</p>
+                </div>
+
+                <div class="mb-6">
+                    <label for="semana-dashboard" class="font-semibold text-lg mr-2">Semana:</label>
+                    <input type="week" id="semana-dashboard" class="p-2 border rounded-md">
+                </div>
+
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex items-center gap-4">
+                        <div class="p-4 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Puestos Cubiertos</p>
+                            <p id="stat-puestos-cubiertos" class="text-3xl font-bold text-slate-900 dark:text-slate-100">0 / 0</p>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex items-center gap-4">
+                        <div class="p-4 rounded-full bg-green-100 dark:bg-green-800 text-green-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Personal Activo</p>
+                            <p id="stat-personal-activo" class="text-3xl font-bold text-slate-900 dark:text-slate-100">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex items-center gap-4">
+                        <div class="p-4 rounded-full bg-red-100 dark:bg-red-800 text-red-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Conflictos</p>
+                            <p id="stat-conflictos" class="text-3xl font-bold text-slate-900 dark:text-slate-100">0</p>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex items-center gap-4">
+                        <div class="p-4 rounded-full bg-amber-100 dark:bg-amber-800 text-amber-500">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Sin Confirmar</p>
+                            <p id="stat-sin-confirmar" class="text-3xl font-bold text-slate-900 dark:text-slate-100">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area (Chart + List) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">Ocupación Semanal</h3>
+                        <div class="h-80 relative">
+                            <canvas id="dashboard-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">Notificaciones y Conflictos Pendientes</h3>
+                        <div id="dashboard-notifications-list" class="max-h-80 overflow-y-auto space-y-3">
+                            <!-- Contenido generado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- SECCIONES (GESTION, MAPEO, ETC.) -->
             <section id="section-gestion" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -730,6 +800,7 @@
         let listenersAreActive = false; // Flag para saber si los listeners están activos
         let asignacionesListenerUnsubscribe = () => {}; // Función para desuscribirse del listener de asignaciones
         let planillaConfigListenerUnsubscribe = () => {}; // Función para desuscribirse del listener de planilla
+        let dashboardChartInstance; // Instancia para el gráfico del dashboard
         let inactivityTimer; // Temporizador de inactividad
 
         // Constantes
@@ -763,6 +834,7 @@
         const semanaInputMapeo = document.getElementById('semana-mapeo');
         const semanaInputProgramacion = document.getElementById('semana-programacion');
         const semanaInputPlanillas = document.getElementById('semana-planillas');
+        const semanaInputDashboard = document.getElementById('semana-dashboard');
         const busquedaProgramacionInput = document.getElementById('busqueda-programacion');
         const busquedaTarifarioInput = document.getElementById('busqueda-tarifario');
         const filtroLocalBusquedaInput = document.getElementById('filtro-local-busqueda');
@@ -1020,7 +1092,11 @@
             const weekDocRef = doc(db, planillaConfigCol.path, week);
             planillaConfigListenerUnsubscribe = onSnapshot(weekDocRef, (docSnap) => {
                 state.planillaConfig = docSnap.exists() ? docSnap.data() : {};
-                if (!initialDataLoaded.planillaConfig) initialDataLoaded.planillaConfig = true;
+                if (!initialDataLoaded.planillaConfig) {
+                    initialDataLoaded.planillaConfig = true;
+                    // Llamar a checkInitialLoadComplete aquí, ya que este listener no usa debouncedRender
+                    checkInitialLoadComplete();
+                }
                 if(state.currentView === 'planillas') {
                     renderizarPlanillas(); // Solo renderizar si la vista es planillas
                 }
@@ -1034,6 +1110,9 @@
         /** Llama a la función de renderizado correspondiente a la vista actual. */
         function renderCurrentView() {
             switch(state.currentView) {
+                case 'dashboard':
+                    renderizarDashboard();
+                    break;
                 case 'gestion':
                     if (initialDataLoaded.locales) renderizarTablaLocales();
                     if (initialDataLoaded.personal) renderizarTablaPersonal();
@@ -1056,9 +1135,192 @@
             }
         }
         
+        /** Renderiza la vista principal del Dashboard. */
+        function renderizarDashboard() {
+            const week = state.selectedWeek;
+            const loader = document.getElementById('dashboard-loader');
+            if (!loader) return; // La sección no está visible o disponible
+
+            if (!week) {
+                loader.innerHTML = '<p class="text-center p-8 text-slate-500">Por favor, selecciona una semana.</p>';
+                loader.style.display = 'flex';
+                return;
+            }
+
+            // MODIFICADO: Añadido chequeo para initialDataLoaded.personal
+            if (!initialDataLoaded.mapeoConfig || !initialDataLoaded.asignaciones || !initialDataLoaded.personal) {
+                loader.innerHTML = '<p class="text-center p-8 text-slate-500">Cargando datos del dashboard...</p>';
+                loader.style.display = 'flex';
+                return;
+            }
+
+            // Datos cargados, ocultar loader y renderizar
+            loader.style.display = 'none';
+
+            // --- 1. Calculate Stats ---
+            const asignacionesSemana = state.asignaciones[week] || {};
+            let totalPuestos = 0;
+
+            Object.values(state.mapeoConfig).forEach(localConfig => {
+                diasSemana.forEach(dia => {
+                    const config = localConfig[dia] || {};
+                    ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
+                        totalPuestos += parseInt(config[tipo] || 0);
+                    });
+                });
+            });
+
+            const personalActivoSet = new Set();
+            let puestosAsignados = 0;
+            let turnosSinConfirmar = 0;
+
+            Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
+                if (pId && typeof pId === 'string' && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
+                    puestosAsignados++;
+                    personalActivoSet.add(pId);
+                    if (!asignacionesSemana[`${slotId}-confirmed`]) {
+                        turnosSinConfirmar++;
+                    }
+                }
+            });
+
+            const personalActivo = personalActivoSet.size;
+            const uniqueConflictSlots = new Set([...state.redConflicts, ...state.yellowConflicts, ...state.celesteConflicts]);
+            const totalConflictos = uniqueConflictSlots.size;
+
+            // --- 2. Render Stat Cards ---
+            const statPuestos = document.getElementById('stat-puestos-cubiertos');
+            if (statPuestos) {
+                statPuestos.textContent = `${puestosAsignados} / ${totalPuestos}`;
+                document.getElementById('stat-personal-activo').textContent = personalActivo;
+                document.getElementById('stat-conflictos').textContent = totalConflictos;
+                document.getElementById('stat-sin-confirmar').textContent = turnosSinConfirmar;
+
+                document.getElementById('stat-conflictos').className = `text-3xl font-bold ${totalConflictos > 0 ? 'text-red-500' : 'text-slate-900 dark:text-slate-100'}`;
+                document.getElementById('stat-sin-confirmar').className = `text-3xl font-bold ${turnosSinConfirmar > 0 ? 'text-amber-500' : 'text-slate-900 dark:text-slate-100'}`;
+            }
+
+            // --- 3. Render Chart ---
+            const ctx = document.getElementById('dashboard-chart')?.getContext('2d');
+            if (!ctx) return; 
+
+            if (dashboardChartInstance) {
+                dashboardChartInstance.destroy();
+            }
+
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const labelColor = isDarkMode ? '#cbd5e1' : '#475569';
+            const vacantesColor = isDarkMode ? '#334155' : '#e2e8f0';
+            const bgColor = isDarkMode ? '#0f172a' : '#ffffff';
+
+            dashboardChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Puestos Cubiertos', 'Puestos Vacantes'],
+                    datasets: [{
+                        data: [puestosAsignados, Math.max(0, totalPuestos - puestosAsignados)],
+                        backgroundColor: ['#22c55e', vacantesColor],
+                        borderColor: [bgColor, bgColor],
+                        borderWidth: 4,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: labelColor, padding: 20 }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                    }
+                }
+            });
+
+            // --- 4. Render Notification List ---
+            const listContainer = document.getElementById('dashboard-notifications-list');
+            if (!listContainer) return;
+
+            listContainer.innerHTML = '';
+            let notificationsFound = false;
+
+            const createListItem = (icon, color, text, personName, local, dia) => {
+                notificationsFound = true;
+                listContainer.innerHTML += `
+                    <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                        <span class="text-xl ${color}">${icon}</span>
+                        <div>
+                            <p class="font-semibold text-sm text-slate-800 dark:text-slate-200">${text}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">${personName} - ${local.toUpperCase()} (${dia})</p>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const getSlotInfo = (weekSlotId) => {
+                const [week, local, dia, tipo, i] = weekSlotId.split('-');
+                const slotId = `${local}-${dia}-${tipo}-${i}`;
+                const pId = state.asignaciones[week]?.[slotId];
+                const person = state.personal.find(p => p.id === pId);
+                return {
+                    personName: person ? getFullName(person) : 'N/A',
+                    local,
+                    dia: diasSemanaFull[diasSemana.indexOf(dia)]
+                };
+            };
+            
+            uniqueConflictSlots.forEach(weekSlotId => {
+                const { personName, local, dia } = getSlotInfo(weekSlotId);
+                if (state.redConflicts.has(weekSlotId)) {
+                    createListItem('⛔', 'text-red-500', 'Conflicto Grave: Solapamiento de turno.', personName, local, dia);
+                } else if (state.celesteConflicts.has(weekSlotId)) {
+                    createListItem('🚻', 'text-blue-500', 'Advertencia: Conflicto de Rol (Puesto y Cacheo).', personName, local, dia);
+                } else if (state.yellowConflicts.has(weekSlotId)) {
+                    createListItem('⚠️', 'text-yellow-500', 'Advertencia: Menos de 8h de descanso.', personName, local, dia);
+                }
+            });
+
+            state.pendingNotifications.forEach(weekSlotId => {
+                const { personName, local, dia } = getSlotInfo(weekSlotId);
+                createListItem('📞', 'text-amber-600', 'Turno próximo (<24h) sin confirmar.', personName, local, dia);
+            });
+
+            Object.entries(asignacionesSemana).forEach(([slotId, pId]) => {
+                if (pId && typeof pId === 'string' && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
+                    const weekSlotId = `${week}-${slotId}`;
+                    if (!uniqueConflictSlots.has(weekSlotId) && !state.pendingNotifications.has(weekSlotId)) {
+                        const changeTimestamp = asignacionesSemana[`${slotId}-changeTimestamp`];
+                        if (changeTimestamp) {
+                            const { personName, local, dia } = getSlotInfo(weekSlotId);
+                            createListItem('🔔', 'text-gray-500', 'Cambio pendiente de notificar.', personName, local, dia);
+                        }
+                    }
+                }
+            });
+
+            if (!notificationsFound) {
+                listContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-slate-500 p-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <p class="mt-4 text-lg font-medium">¡Todo en orden!</p>
+                        <p class="text-sm">No hay conflictos ni notificaciones pendientes.</p>
+                    </div>
+                `;
+            }
+        }
+
         /** Renderiza la tabla de locales en la vista de gestión. */
         function renderizarTablaLocales() {
             const tabla = document.getElementById('tabla-locales');
+            if (!initialDataLoaded.locales) {
+                tabla.innerHTML = '<tr><td class="p-3 text-slate-500">Cargando locales...</td></tr>';
+                return;
+            }
             tabla.innerHTML = '';
             state.locales.sort((a, b) => a.nombre.localeCompare(b.nombre)).forEach(local => {
                 const row = tabla.insertRow();
@@ -1079,6 +1341,10 @@
         /** Renderiza la tabla de personal en la vista de gestión. */
         function renderizarTablaPersonal() {
             const tabla = document.getElementById('tabla-personal');
+            if (!initialDataLoaded.personal) {
+                tabla.innerHTML = '<tr><td colspan="3" class="p-3 text-slate-500">Cargando personal...</td></tr>';
+                return;
+            }
             tabla.innerHTML = '';
             state.personal.sort((a, b) => getFullName(a).localeCompare(getFullName(b))).forEach(p => {
                 const row = tabla.insertRow();
@@ -1160,6 +1426,11 @@
             container.innerHTML = '';
             const week = state.selectedWeek;
             if (!week) return;
+
+            if (!initialDataLoaded.locales || !initialDataLoaded.mapeoConfig || !initialDataLoaded.asignaciones || !initialDataLoaded.personal) {
+                container.innerHTML = '<p class="text-center p-8 text-slate-500">Cargando datos de mapeo...</p>';
+                return;
+            }
 
             const dates = getWeekDates(week);
             const localesFiltrados = state.locales.filter(local => {
@@ -1575,6 +1846,10 @@
         /** Renderiza la vista de Tarifario. */
         function renderizarTarifario() {
             const tabla = document.getElementById('tabla-tarifario');
+            if (!initialDataLoaded.personal || !initialDataLoaded.tarifarios) {
+                tabla.innerHTML = '<tr><td colspan="4" class="p-3 text-slate-500">Cargando tarifario...</td></tr>';
+                return;
+            }
             tabla.innerHTML = '';
             
             const personalFiltrado = state.personal.filter(p => {
@@ -1607,7 +1882,7 @@
                 return;
             }
 
-            if (!state.asignaciones[week]) {
+            if (!state.asignaciones[week] || !initialDataLoaded.tarifarios || !initialDataLoaded.mapeoConfig || !initialDataLoaded.personal) {
                 container.innerHTML = '<p class="text-center p-8 text-slate-500">Cargando datos de la semana...</p>';
                 return;
             }
@@ -1804,540 +2079,12 @@
                 showStatusMessage('Error al guardar datos.', 'error');
             }
         });
-
-        /** Maneja el envío del formulario para agregar un nuevo local. */
-        formLocales.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nombre = e.target['nuevo-local'].value.trim().toLowerCase();
-            const colorPalette = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
-            const randomColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            if (nombre && !state.locales.some(l => l.nombre === nombre)) {
-                try {
-                    await addDoc(localesCol, { nombre, color: randomColor });
-                    showStatusMessage('Local agregado');
-                    formLocales.reset();
-                } catch (error) {
-                    console.error("Error al agregar local:", error);
-                    showStatusMessage('No se pudo agregar el local.', 'error');
-                }
-            } else {
-                showStatusMessage('El local ya existe o el nombre es inválido.', 'error');
-            }
-        });
-
-        /** Maneja el envío del formulario para editar un local. */
-        formEditLocal.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = e.target['edit-local-id'].value;
-            const nombre = e.target['edit-local-name'].value.trim().toLowerCase();
-            const color = e.target['edit-local-color'].value;
-            if (nombre) {
-                try {
-                    await setDoc(doc(db, localesCol.path, id), { nombre, color }, { merge: true });
-                    showStatusMessage('Local actualizado');
-                    editLocalModal.style.display = 'none';
-                } catch (error) {
-                    console.error("Error al actualizar local:", error);
-                    showStatusMessage('No se pudo actualizar el local.', 'error');
-                }
-            }
-        });
-        
-        /** Abre el modal de vista de personal al hacer clic en una fila. */
-        document.getElementById('tabla-personal').addEventListener('click', (e) => {
-            const row = e.target.closest('tr');
-            if (row && row.dataset.id) {
-                populateViewPersonalModal(row.dataset.id);
-            }
-        });
-
-        /** Delegación de eventos para todos los botones en el body. */
-        document.body.addEventListener('click', async (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-
-            try {
-                if (button.matches('#btn-copy-previous-week')) {
-                    copyPreviousWeekSchedule();
-                }
-                else if (button.matches('.btn-pago-apoyo')) {
-                    const personId = button.dataset.personId;
-                    const type = button.dataset.type;
-                    const week = state.selectedWeek;
-                    if (!personId || !type || !week) return;
-
-                    const key = `${type.toLowerCase()}_${personId}`;
-                    const currentState = !!state.planillaConfig[key];
-                    const newState = !currentState;
-
-                    await setDoc(doc(db, planillaConfigCol.path, week), { [key]: newState }, { merge: true });
-                    
-                    state.planillaConfig[key] = newState;
-                    button.classList.toggle('active', newState);
-                    
-                }
-                else if (button.matches('.btn-ver-detalle')) {
-                    const detailDiv = button.closest('tr').nextElementSibling.querySelector('.planilla-detalle');
-                    detailDiv.classList.toggle('open');
-                }
-                else if (button.matches('.btn-download-pdf')) {
-                    downloadLocalAsPDF(button.dataset.localNombre);
-                } else if (button.matches('#btn-download-all-pdf')) {
-                    downloadAllLocalsAsPDF();
-                }
-                else if (button.matches('.vestimenta-btn')) {
-                    const week = state.selectedWeek;
-                    const slotId = button.dataset.slotId;
-                    const personaId = state.asignaciones[week]?.[slotId];
-                    if (!personaId) return;
-
-                    const currentVestimenta = state.asignaciones[week]?.[`${slotId}-vestimenta`] || vestimentaOptions[0];
-                    const nextIndex = (vestimentaOptions.indexOf(currentVestimenta) + 1) % vestimentaOptions.length;
-                    const nextVestimenta = vestimentaOptions[nextIndex];
-                    
-                    await setDoc(doc(db, asignacionesCol.path, week), { [`${slotId}-vestimenta`]: nextVestimenta }, { merge: true });
-
-                    state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
-                    button.textContent = vestimentaEmojis[nextVestimenta];
-                    button.title = `Vestimenta: ${nextVestimenta}`;
-
-                } else if (button.matches('.btn-send-whatsapp')) {
-                    sendWhatsappMessage(button.dataset.personId);
-                } else if (button.matches('.btn-analizar-historial')) {
-                    const week = button.dataset.week;
-                    analizarSemanaConIA(week);
-                } else if (button.matches('.btn-confirmar-persona')) {
-                    const personId = button.dataset.personId;
-                    const persona = state.personal.find(p => p.id === personId);
-                    const week = state.selectedWeek;
-                    if (!persona || !week) return;
-
-                    const confirmed = await showConfirmationModal(`¿Confirmar la asistencia de ${getFullName(persona)} para toda la semana?`);
-                    if (confirmed) {
-                        const updates = {};
-                        const slotsToUpdate = [];
-                        Object.entries(state.asignaciones[week] || {}).forEach(([slotId, pId]) => {
-                            if (pId === personId && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed')) {
-                                updates[`${slotId}-confirmed`] = true;
-                                updates[`${slotId}-changeTimestamp`] = deleteField();
-                                slotsToUpdate.push(slotId);
-                            }
-                        });
-
-                        if (Object.keys(updates).length > 0) {
-                            await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                            
-                            slotsToUpdate.forEach(slotId => {
-                                state.asignaciones[week][`${slotId}-confirmed`] = true;
-                                if (state.asignaciones[week][`${slotId}-changeTimestamp`]) {
-                                    delete state.asignaciones[week][`${slotId}-changeTimestamp`];
-                                }
-                                updateRowAppearance(slotId);
-                            });
-                            showStatusMessage(`Asistencia confirmada para ${getFullName(persona)}`);
-                        } else {
-                            showStatusMessage(`${getFullName(persona)} no tiene asignaciones para confirmar.`, 'error');
-                        }
-                    }
-                } else if (button.matches('.btn-cambiar-vestimenta-local')) {
-                    const localNombre = button.dataset.localNombre;
-                    const week = state.selectedWeek;
-                    if (!week || !localNombre) return;
-                    
-                    const asignacionesSemana = state.asignaciones[week] || {};
-                    const firstSlotId = Object.keys(asignacionesSemana).find(slotId => slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]);
-                    const currentVestimenta = (firstSlotId && asignacionesSemana[`${firstSlotId}-vestimenta`]) || vestimentaOptions[0];
-                    const nextVestimenta = currentVestimenta === vestimentaOptions[0] ? vestimentaOptions[1] : vestimentaOptions[0];
-                    const updates = {};
-                    let slotsToUpdate = [];
-                    Object.keys(asignacionesSemana).forEach(slotId => {
-                        if (slotId.startsWith(localNombre + '-') && !slotId.includes('-vestimenta') && !slotId.includes('-confirmed') && asignacionesSemana[slotId]) {
-                            updates[`${slotId}-vestimenta`] = nextVestimenta;
-                            slotsToUpdate.push(slotId);
-                        }
-                    });
-
-                    if (slotsToUpdate.length > 0) {
-                        const confirmed = await showConfirmationModal(`¿Cambiar vestimenta a ${nextVestimenta} para TODO el personal de ${localNombre.toUpperCase()}?`);
-                        if(confirmed) {
-                            await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                            
-                            slotsToUpdate.forEach(slotId => {
-                                state.asignaciones[week][`${slotId}-vestimenta`] = nextVestimenta;
-                                const vestimentaBtn = document.querySelector(`.vestimenta-btn[data-slot-id="${slotId}"]`);
-                                if (vestimentaBtn) {
-                                    vestimentaBtn.textContent = vestimentaEmojis[nextVestimenta];
-                                    vestimentaBtn.title = `Vestimenta: ${nextVestimenta}`;
-                                }
-                            });
-                            showStatusMessage(`Vestimenta cambiada para ${localNombre.toUpperCase()}`);
-                        }
-                    } else {
-                        showStatusMessage(`No hay personal asignado en ${localNombre.toUpperCase()} para cambiar vestimenta.`, 'error');
-                    }
-                } else if (button.matches('#btn-editar-personal-view')) {
-                    populateEditPersonalModal(button.dataset.id);
-                } else if (button.matches('#btn-eliminar-personal-view')) {
-                    const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar a esta persona?');
-                    if (confirmed) {
-                        await deleteDoc(doc(db, personalCol.path, button.dataset.id));
-                        viewPersonalModal.style.display = 'none';
-                        showStatusMessage('Personal eliminado');
-                    }
-                } else if (button.matches('.btn-editar-local')) {
-                    formEditLocal['edit-local-id'].value = button.dataset.id;
-                    formEditLocal['edit-local-name'].value = button.dataset.nombre;
-                    formEditLocal['edit-local-color'].value = button.dataset.color;
-                    editLocalModal.style.display = 'block';
-                } else if (button.matches('.btn-configurar-horarios')) {
-                    currentlyEditingLocal = button.dataset.nombre;
-                    tempScheduleConfig = JSON.parse(JSON.stringify(state.mapeoConfig[currentlyEditingLocal] || {}));
-                    document.getElementById('schedule-config-local-name').textContent = currentlyEditingLocal.toUpperCase();
-                    document.getElementById('btn-limpiar-horarios-local').dataset.localNombre = currentlyEditingLocal;
-                    renderizarMapeoConfig(currentlyEditingLocal, document.getElementById('schedule-config-container'));
-                    scheduleConfigModal.style.display = 'block';
-                } else if (button.matches('#btn-limpiar-horarios-local')) {
-                    const localNombre = button.dataset.localNombre;
-                    const confirmed = await showConfirmationModal(`¿Estás seguro de que quieres poner en 0 todos los puestos para ${localNombre.toUpperCase()}? Esta acción no se guardará hasta que hagas clic en "Guardar Cambios".`);
-                    if (localNombre && confirmed) {
-                        diasSemana.forEach(dia => {
-                            if (!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
-                            ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => tempScheduleConfig[dia][tipo] = 0);
-                        });
-                        renderizarMapeoConfig(localNombre, document.getElementById('schedule-config-container'));
-                        showStatusMessage(`Puestos limpiados para ${localNombre.toUpperCase()}. Haz clic en Guardar para confirmar.`);
-                    }
-                } else if (button.matches('#btn-guardar-horarios')) {
-                    const localNombre = currentlyEditingLocal;
-                    const originalConfig = state.mapeoConfig[localNombre] || {};
-                    const newConfig = tempScheduleConfig;
-                    let hasReductions = false;
-                    diasSemana.forEach(dia => {
-                        ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
-                            const oldCount = originalConfig[dia]?.[tipo] || 0;
-                            const newCount = newConfig[dia]?.[tipo] || 0;
-                            if (newCount < oldCount) hasReductions = true;
-                        });
-                    });
-
-                    if (hasReductions) {
-                        const confirmed = await showConfirmationModal('Reducir el número de puestos eliminará las asignaciones existentes para los puestos eliminados. ¿Desea continuar?');
-                        if (!confirmed) return;
-                    }
-
-                    saveUndoState();
-                    await setDoc(doc(db, mapeoConfigCol.path, localNombre), newConfig);
-
-                    const updates = {};
-                    diasSemana.forEach(dia => {
-                         ['puestos', 'cacheos', 'cacheoIngreso', 'cacheoSalida', 'turno1', 'turno2', 'turno3'].forEach(tipo => {
-                            const oldCount = originalConfig[dia]?.[tipo] || 0;
-                            const newCount = newConfig[dia]?.[tipo] || 0;
-                            if (newCount < oldCount) {
-                                for (let i = newCount + 1; i <= oldCount; i++) {
-                                    const slotId = `${localNombre}-${dia}-${tipo}-${i}`;
-                                    updates[slotId] = deleteField();
-                                    updates[`${slotId}-vestimenta`] = deleteField();
-                                    updates[`${slotId}-confirmed`] = deleteField();
-                                    updates[`${slotId}-changeTimestamp`] = deleteField();
-                                }
-                            }
-                        });
-                    });
-
-                    if (Object.keys(updates).length > 0 && state.selectedWeek) {
-                         const weekDocRef = doc(db, asignacionesCol.path, state.selectedWeek);
-                         await setDoc(weekDocRef, updates, { merge: true });
-                    }
-                    showStatusMessage('Horarios guardados correctamente.');
-                    scheduleConfigModal.style.display = 'none';
-                } else if (button.matches('.btn-eliminar-local')) {
-                    const confirmed = await showConfirmationModal('¿Seguro que quieres eliminar este local?');
-                    if (confirmed) {
-                        await deleteDoc(doc(db, localesCol.path, button.dataset.id));
-                        showStatusMessage('Local eliminado');
-                    }
-                } else if (button.matches('.btn-copy-schedule')) {
-                    copyPersonalSchedule(button.dataset.personId);
-                } else if (button.matches('.btn-copy-local-schedule')) {
-                    copyLocalSchedule(button.dataset.localNombre);
-                } else if (button.matches('.btn-cargar-historial')) {
-                    const week = button.dataset.week;
-                    const confirmed = await showConfirmationModal(`¿Cargar la programación de la semana ${week}? Esto sobreescribirá la configuración actual.`);
-                    if (confirmed) {
-                        const dataHistorial = state.historial[week];
-                        if (dataHistorial) {
-                            saveUndoState();
-                            if (dataHistorial.asignaciones) await setDoc(doc(db, asignacionesCol.path, week), dataHistorial.asignaciones);
-                            if (dataHistorial.mapeoConfig) {
-                                for (const local in dataHistorial.mapeoConfig) {
-                                    await setDoc(doc(db, mapeoConfigCol.path, local), dataHistorial.mapeoConfig[local]);
-                                }
-                            }
-                             if (dataHistorial.planillaConfig) {
-                                await setDoc(doc(db, planillaConfigCol.path, week), dataHistorial.planillaConfig);
-                            }
-                            state.selectedWeek = week;
-                            semanaInputMapeo.value = week;
-                            semanaInputProgramacion.value = week;
-                            semanaInputPlanillas.value = week;
-                            cambiarVista('mapeo');
-                            showStatusMessage(`Programación cargada.`);
-                        }
-                    }
-                } else if (button.matches('.btn-eliminar-historial')) {
-                    const week = button.dataset.week;
-                    const confirmed = await showConfirmationModal(`¿Eliminar el historial de la semana ${week}?`);
-                    if (confirmed) {
-                        await deleteDoc(doc(db, historialCol.path, week));
-                        showStatusMessage('Historial eliminado');
-                    }
-                } else if (button.matches('.btn-descargar-historial')) {
-                    const week = button.dataset.week;
-                    const scheduleData = state.historial[week];
-                    if (scheduleData) {
-                        descargarExcel(week, scheduleData);
-                    } else {
-                        showStatusMessage(`No se encontraron datos históricos para la semana ${week}.`, 'error');
-                    }
-                } else if (button.matches('#btn-guardar-programacion')) {
-                    const week = state.selectedWeek;
-                    if (week) {
-                        const { payrollByLocal, paucarReservas } = calculatePayrollData(week);
-                        let pagoNetoTotal = 0;
-                        Object.values(payrollByLocal).forEach(localData => {
-                            Object.values(localData).forEach(data => {
-                                const { pagoNeto } = calculatePagos(data);
-                                pagoNetoTotal += pagoNeto;
-                            });
-                        });
-                         paucarReservas.forEach(data => {
-                            const extra = parseFloat(state.planillaConfig[`extra_${data.id}`] || 0);
-                            pagoNetoTotal += extra;
-                        });
-
-                        await setDoc(doc(db, historialCol.path, week), {
-                            asignaciones: state.asignaciones[week] || {},
-                            mapeoConfig: state.mapeoConfig,
-                            planillaConfig: state.planillaConfig || {},
-                            payrollSummary: { pagoNetoTotal }
-                        });
-                        showStatusMessage('Programación y planilla guardada en el historial.');
-                    } else {
-                        showStatusMessage('Selecciona una semana para poder guardarla.', 'error');
-                    }
-                } else if (button.matches('#btn-limpiar-mapeo')) {
-                    const confirmed = await showConfirmationModal('¿Está seguro de que desea limpiar todas las asignaciones de la semana actual?');
-                    if (confirmed) {
-                        saveUndoState();
-                        await setDoc(doc(db, asignacionesCol.path, state.selectedWeek), {});
-                        showStatusMessage('Mapeo de la semana limpiado.');
-                    }
-                } else if (button.matches('#btn-descargar-excel')) {
-                    descargarExcel(state.selectedWeek, { asignaciones: state.asignaciones[state.selectedWeek], mapeoConfig: state.mapeoConfig });
-                } else if (button.matches('#btn-reemplazar-personal')) {
-                    importPersonalInput.click();
-                } else if (button.matches('#btn-exportar-bd-personal')) {
-                    exportarBaseDatosPersonal();
-                } else if (button.matches('#btn-exportar-planilla')) {
-                    exportarPlanillaExcel();
-                } else if (button.matches('#btn-exportar-tarifario')) {
-                    exportarTarifario();
-                } else if (button.matches('#btn-importar-tarifario')) {
-                    importTarifarioInput.click();
-                }
-            } catch (error) {
-                console.error("Error en clic de botón:", error);
-                showStatusMessage("La operación falló. Revisa la consola para más detalles.", "error");
-            }
-        });
-
-        importTarifarioInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                importarTarifario(file);
-            }
-        });
-
-        /** Maneja la entrada de datos en la tabla de tarifario. */
-        document.getElementById('section-tarifario').addEventListener('input', debounce(async (e) => {
-            const target = e.target;
-            if (target.matches('input[type="number"]')) {
-                const personId = target.dataset.personId;
-                const rateKey = target.dataset.rateKey;
-                const value = parseFloat(target.value) || 0;
-                if (personId && rateKey) {
-                    try {
-                        await setDoc(doc(db, tarifariosCol.path, personId), { [rateKey]: value }, { merge: true });
-                    } catch (error) {
-                         console.error("Error al actualizar tarifario: ", error);
-                         showStatusMessage("No se pudo guardar la tarifa.", "error");
-                    }
-                }
-            }
-        }, 500));
-
-        /** Maneja la entrada de datos en la sección de planillas. */
-        document.getElementById('section-planillas').addEventListener('input', debounce(async (e) => {
-            const target = e.target;
-            const week = semanaInputPlanillas.value;
-            if (!week) return;
-
-            const update = {};
-            if (target.matches('.extra-input, .descuento-input')) {
-                const key = target.dataset.planillaKey;
-                const value = parseFloat(target.value) || 0;
-                update[key] = value;
-            }
-
-            if (Object.keys(update).length > 0) {
-                try {
-                    await setDoc(doc(db, planillaConfigCol.path, week), update, { merge: true });
-                } catch (error) {
-                    console.error("Error al actualizar config de planilla: ", error);
-                    showStatusMessage("No se pudo guardar el cambio en la planilla.", "error");
-                }
-            }
-        }, 500));
-
-        /** Delegación de eventos para cambios en inputs y selects. */
-        document.body.addEventListener('change', async (e) => {
-            const target = e.target;
-            try {
-                if (target.matches('.mapeo-config-input')) {
-                    const { local, dia, type, part, sufijo } = target.dataset;
-                    
-                    const config = tempScheduleConfig;
-                    if (!config[dia]) config[dia] = {};
-                    
-                    if (part === 'count') {
-                        config[dia][type] = parseInt(target.value, 10) || 0;
-                    } else {
-                        const horaKey = `hora${type.charAt(0).toUpperCase() + type.slice(1)}${sufijo}`;
-                        const parent = target.closest('div');
-                        config[dia][horaKey] = `${parent.querySelector(`[data-part="hour"][data-sufijo="${sufijo}"]`).value}:${parent.querySelector(`[data-part="minute"][data-sufijo="${sufijo}"]`).value} ${parent.querySelector(`[data-part="ampm"][data-sufijo="${sufijo}"]`).value}`;
-                    }
-                } else if (target.matches('.mapeo-select')) {
-                    const week = state.selectedWeek;
-                    const slotId = target.dataset.slotId;
-                    const newPersonaId = target.value;
-                    const oldPersonaId = state.asignaciones[week]?.[slotId] || '';
-
-                    if (oldPersonaId === newPersonaId) return;
-
-                    saveUndoState();
-
-                    const updates = {
-                        [slotId]: newPersonaId,
-                        [`${slotId}-confirmed`]: false 
-                    };
-
-                    let isSignificantChange = false;
-
-                    if (newPersonaId) {
-                        const [currentLocal, currentDia, currentTipo] = slotId.split('-');
-                        const otherAssignmentsToday = Object.entries(state.asignaciones[week] || {})
-                            .filter(([sId, pId]) => pId === newPersonaId && sId.includes(`-${currentDia}-`) && sId !== slotId);
-
-                        if (otherAssignmentsToday.length === 0) {
-                            isSignificantChange = true;
-                        } else {
-                            isSignificantChange = otherAssignmentsToday.some(([sId, pId]) => {
-                                const [otherLocal, , otherTipo] = sId.split('-');
-                                if (currentLocal !== otherLocal) return true;
-                                const isCurrentRoleCacheo = currentTipo.toLowerCase().includes('cacheo');
-                                const isOtherRoleCacheo = otherTipo.toLowerCase().includes('cacheo');
-                                return isCurrentRoleCacheo !== isOtherRoleCacheo;
-                            });
-                        }
-                    }
-
-                    if (isSignificantChange) {
-                        updates[`${slotId}-changeTimestamp`] = serverTimestamp();
-                    } else {
-                        updates[`${slotId}-changeTimestamp`] = deleteField();
-                    }
-                    
-                    await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                    
-                    state.asignaciones[week] = { ...state.asignaciones[week], ...updates };
-                    if (!newPersonaId) {
-                        delete state.asignaciones[week][slotId];
-                    }
-
-                    updateConflictsForPerson(oldPersonaId);
-                    updateConflictsForPerson(newPersonaId);
-                    
-                    const affectedSlots = new Set();
-                    Object.keys(state.asignaciones[week]).forEach(sId => {
-                        if (state.asignaciones[week][sId] === oldPersonaId || state.asignaciones[week][sId] === newPersonaId) {
-                            affectedSlots.add(sId.split('-').slice(0, 4).join('-'));
-                        }
-                    });
-                    affectedSlots.forEach(sId => updateRowAppearance(sId));
-                    
-                } else if (target.matches('.confirmation-checkbox')) {
-                    const week = state.selectedWeek;
-                    const slotId = target.dataset.slotId;
-                    const isChecked = target.checked;
-                    
-                    const updates = { [`${slotId}-confirmed`]: isChecked };
-                    if (isChecked) {
-                        updates[`${slotId}-changeTimestamp`] = deleteField();
-                    }
-                    await setDoc(doc(db, asignacionesCol.path, week), updates, { merge: true });
-                    
-                    state.asignaciones[week][`${slotId}-confirmed`] = isChecked;
-                     if (isChecked && state.asignaciones[week][`${slotId}-changeTimestamp`]) {
-                        delete state.asignaciones[week][`${slotId}-changeTimestamp`];
-                    }
-                    updateRowAppearance(slotId);
-                }
-            } catch (error) {
-                console.error("Error en evento de cambio:", error);
-                showStatusMessage("No se pudo guardar el cambio.", "error");
-            }
-        });
-        
-        /** Maneja el cambio del archivo para importar personal. */
-        importPersonalInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            reemplazarBaseDatosDesdeExcel(file);
-        });
-
-        // ===================================================================================
-        // --- SECCIÓN 7: LÓGICA DE LA INTERFAZ DE USUARIO (MODALES, NAVEGACIÓN, TEMA) ---
-        // ===================================================================================
-
-        document.getElementById('close-personal-modal').onclick = () => personalModal.style.display = 'none';
-        document.getElementById('close-view-personal-modal').onclick = () => viewPersonalModal.style.display = 'none';
-        document.getElementById('close-local-modal').onclick = () => editLocalModal.style.display = 'none';
-        document.getElementById('close-schedule-config-modal').onclick = () => scheduleConfigModal.style.display = 'none';
-        document.getElementById('btn-cancelar-horarios').onclick = () => scheduleConfigModal.style.display = 'none';
-        document.getElementById('close-ai-analysis-modal').onclick = () => document.getElementById('ai-analysis-modal').style.display = 'none';
-        
-        /** Copia el análisis de la IA al portapapeles. */
-        document.getElementById('copy-ai-analysis').onclick = () => {
-            const content = document.getElementById('ai-analysis-content');
-            const textArea = document.createElement("textarea");
-            textArea.value = content.innerText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                showStatusMessage('Análisis copiado al portapapeles.');
-            } catch (err) {
-                showStatusMessage('No se pudo copiar el análisis.', 'error');
-            }
-            document.body.removeChild(textArea);
-        };
-        
-        /** Sincroniza los selectores de semana. */
         semanaInputMapeo.addEventListener('change', (e) => { 
             const week = e.target.value;
             state.selectedWeek = week;
             semanaInputProgramacion.value = week; 
             semanaInputPlanillas.value = week;
+            semanaInputDashboard.value = week;
             listenToWeekData(week);
         });
         semanaInputProgramacion.addEventListener('change', (e) => { 
@@ -2345,6 +2092,7 @@
             state.selectedWeek = week; 
             semanaInputMapeo.value = week; 
             semanaInputPlanillas.value = week;
+            semanaInputDashboard.value = week;
             listenToWeekData(week);
         });
         semanaInputPlanillas.addEventListener('change', (e) => { 
@@ -2352,6 +2100,15 @@
              state.selectedWeek = week;
              semanaInputMapeo.value = week;
              semanaInputProgramacion.value = week;
+             semanaInputDashboard.value = week;
+             listenToWeekData(week);
+        });
+        semanaInputDashboard.addEventListener('change', (e) => {
+             const week = e.target.value;
+             state.selectedWeek = week;
+             semanaInputMapeo.value = week;
+             semanaInputProgramacion.value = week;
+             semanaInputPlanillas.value = week;
              listenToWeekData(week);
         });
         
@@ -2372,8 +2129,9 @@
             semanaInputMapeo.value = state.selectedWeek;
             semanaInputProgramacion.value = state.selectedWeek;
             semanaInputPlanillas.value = state.selectedWeek;
-            cambiarVista('mapeo');
-            loader.style.display = 'none';
+            semanaInputDashboard.value = state.selectedWeek;
+            cambiarVista('dashboard');
+            // loader.style.display = 'none'; // <-- LÍNEA ELIMINADA
             setInterval(() => {
                 if ((state.currentView === 'mapeo' || state.currentView === 'programacion') && listenersAreActive) {
                     checkUpcomingShiftNotifications();
@@ -2597,7 +2355,22 @@
         }
         
         /** Limita la frecuencia de ejecución de una función. */
-        const debouncedRender = debounce(renderCurrentView, 250); // Aumentado ligeramente para evitar renders innecesarios
+        const debouncedRender = debounce(renderCurrentViewAndCheckLoad, 250); // Aumentado ligeramente para evitar renders innecesarios
+
+        function renderCurrentViewAndCheckLoad() {
+            renderCurrentView();
+            checkInitialLoadComplete();
+        }
+
+        /** Comprueba si todos los datos iniciales se han cargado y oculta el loader. */
+        function checkInitialLoadComplete() {
+            // Comprueba si todos los valores en initialDataLoaded son true
+            const allLoaded = Object.values(initialDataLoaded).every(status => status === true);
+
+            if (allLoaded && loader.style.display !== 'none') {
+                loader.style.display = 'none';
+            }
+        }
 
         function debounce(func, delay = 250) {
             let timeout;
@@ -4021,6 +3794,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
+
+
+
 
 
 
