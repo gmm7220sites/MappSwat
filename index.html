@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V4 - Gestión Inteligente)</title>
+    <title>Control de Personal SWAT (V5 - Con Icono)</title>
+    
+    <!-- IMPLEMENTACIÓN DEL ICONO -->
+    <link rel="icon" href="logo swat.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="logo swat.ico" type="image/x-icon">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -123,7 +128,7 @@
         html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
         /* --- MENÚ LATERAL --- */
-        #menu-toggle { position: fixed; top: 20px; left: 20px; z-index: 2000; width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        #menu-toggle { position: fixed; top: 20px; left: 20px; z-index: 2000; width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; }
         html.dark #menu-toggle { background-color: rgba(30, 41, 59, 0.8); }
         #menu-toggle:hover { transform: scale(1.1); }
 
@@ -546,9 +551,9 @@
         
         // Estado de conflictos
         let conflictMap = {
-            overlap: new Set(), // Amarillo
-            repeat: new Set(),  // Rojo
-            role: new Set()     // Azul
+            overlap: new Set(), // Amarillo: Cruce horarios
+            repeat: new Set(),  // Rojo: Repetición sin cruce
+            role: new Set()     // Azul: Puesto vs Cacheo
         };
 
         // 4. FUNCIONES DE UTILIDAD
@@ -565,6 +570,7 @@
         const getFullName = (p) => p ? `${p.nombre || ''} ${p.apellido || ''}`.trim() : 'N/A';
         const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
         
+        // Función para convertir hora AM/PM a minutos (para cálculos)
         const timeToMin = (timeStr) => {
             if(!timeStr) return -1;
             const [time, period] = timeStr.split(' ');
@@ -607,15 +613,23 @@
             const pid = state.asignaciones[week]?.[slotId];
             const div = document.createElement('div');
             
+            // Mapas de nombres para los nuevos turnos
             const tipoLabelMap = {
-                'puestos':'Puesto', 'cacheos':'Cacheo', 'cacheoIngreso':'Ingreso', 'cacheoSalida':'Salida',
-                'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería'
+                'puestos':'Puesto',
+                'cacheos':'Cacheo',
+                'cacheoIngreso':'Ingreso',
+                'cacheoSalida':'Salida',
+                'turno1': '1er Turno',
+                'turno2': '2do Turno',
+                'turno3': '3er Turno',
+                'porteria': 'Portería'
             };
             const tipoLabel = tipoLabelMap[tipo] || tipo;
             
+            // Determinar clase base
             let baseClass = "slot-empty-row";
             let content = "";
-            let bgClass = ""; 
+            let bgClass = ""; // Override para conflictos
 
             if (pid) {
                 baseClass = "slot-filled-row";
@@ -643,7 +657,9 @@
                         <button class="conf-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Confirmar">${conf ? '✅' : '⬜'}</button>
                     </div>`;
             } else {
+                // Vacío
                 if (['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
+                
                 content = `
                     <div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2 opacity-50">
                         <span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span>
@@ -661,13 +677,16 @@
         }
 
         function calculateConflicts() {
+            // Reset Maps
             conflictMap.overlap.clear();
             conflictMap.repeat.clear();
             conflictMap.role.clear();
 
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
-            const shiftsByPerson = {};
+            
+            // Agrupar turnos por Persona
+            const shiftsByPerson = {}; // { pid: [ {slotId, dia, local, tipo, startMin, endMin} ] }
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
                 if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
@@ -675,7 +694,7 @@
                 const [local, dia, tipo] = slotId.split('-');
                 const conf = state.mapeoConfig[local]?.[dia];
                 
-                if(!conf) return;
+                if(!conf) return; // Sin config no hay horario que cruzar
                 
                 const hIn = conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
                 const hOut = conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`];
@@ -684,8 +703,9 @@
 
                 const start = timeToMin(hIn);
                 let end = timeToMin(hOut);
-                if (end < start) end += 24*60; 
+                if (end < start) end += 24*60; // Cruzó medianoche
 
+                // Offset por día para comparación global (Lunes=0, Martes=1440...)
                 const dayOffset = diasSemana.indexOf(dia) * 1440;
                 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
@@ -698,7 +718,9 @@
                 });
             });
 
+            // Analizar conflictos por persona
             Object.values(shiftsByPerson).forEach(shifts => {
+                // 1. Check Roles (Azul) - Puesto Y Cacheo en el mismo día
                 const shiftsByDay = {};
                 shifts.forEach(s => {
                     if(!shiftsByDay[s.dia]) shiftsByDay[s.dia] = [];
@@ -712,18 +734,26 @@
                     if(hasPuesto && hasCacheo) {
                         dayShifts.forEach(s => conflictMap.role.add(s.slotId));
                     }
+                    
+                    // 2. Check Repetición Diaria (Rojo)
                     if(dayShifts.length > 1) {
                         dayShifts.forEach(s => conflictMap.repeat.add(s.slotId));
                     }
                 });
 
+                // 3. Check Cruce Horarios (Amarillo)
+                // Comparar todos contra todos
                 for(let i=0; i<shifts.length; i++) {
                     for(let j=i+1; j<shifts.length; j++) {
                         const s1 = shifts[i];
                         const s2 = shifts[j];
+                        
+                        // Si hay superposición
                         if(s1.globalStart < s2.globalEnd && s2.globalStart < s1.globalEnd) {
                             conflictMap.overlap.add(s1.slotId);
                             conflictMap.overlap.add(s2.slotId);
+                            // Remover de repeat si es overlap (para priorizar color amarillo)
+                            // Aunque CSS puede manejarlo por orden, es mejor limpiar logica
                             conflictMap.repeat.delete(s1.slotId);
                             conflictMap.repeat.delete(s2.slotId);
                         }
@@ -733,6 +763,7 @@
         }
 
         function renderMapeo() {
+            // Calcular conflictos antes de renderizar
             calculateConflicts();
 
             const container = getEl('mapeo-container');
@@ -749,6 +780,7 @@
                 let totalSlots = 0;
                 let filledSlots = 0;
                 
+                // Lista extendida de tipos
                 const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
 
                 diasSemana.forEach(d => {
@@ -789,6 +821,7 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
+                         <!-- Botón Vestimenta Masiva -->
                          <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta a Todos">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -851,7 +884,7 @@
                     const ent = localConf[dia][cKey+'Entrada'] || '08:00 AM';
                     const sal = localConf[dia][cKey+'Salida'] || '08:00 PM';
                     
-                    // Nombres amigables
+                    // Nombres amigables para la configuración
                     const labelMap = {
                         'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida',
                         'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería'
@@ -927,6 +960,7 @@
             setupUIListeners();
             setupSystemStatus();
             
+            // SIEMPRE MOSTRAR LOGIN AL INICIO (Eliminamos el auto-login)
             getEl('login-overlay').style.display = 'flex';
             getEl('loader').style.display = 'none';
         });
@@ -1003,6 +1037,7 @@
             getEl('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
+                    // No guardamos en localStorage para que pida siempre
                     getEl('login-overlay').style.display = 'none';
                     setupListeners();
                 } else {
@@ -1127,8 +1162,7 @@
                         .map(([k]) => {
                             const [local, dia, tipo] = k.split('-');
                             const conf = state.mapeoConfig[local]?.[dia];
-                            const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
-                            const hOut = conf?.[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`] || '';
+                            const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
                             return { 
                                 dia: capitalize(dia), 
                                 local, 
