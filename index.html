@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V3 - Indicadores)</title>
+    <title>Control de Personal SWAT (V4 - Gestión Inteligente)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -165,7 +165,7 @@
         @keyframes blink { 50% { opacity: 0.3; } }
         .notification-bell { animation: blink 1.5s infinite; cursor: help; color: #f59e0b; margin-left: 8px; }
         
-        /* Indicador Circular CSS */
+        /* Indicador Circular */
         .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 250px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
         html.dark .circle-bg { stroke: #334155; }
@@ -186,7 +186,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- LOGIN (Modificado: Siempre visible al inicio) -->
+    <!-- LOGIN -->
     <div id="login-overlay">
         <div class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg w-full max-w-sm border border-slate-200 dark:border-slate-700">
             <h2 class="text-3xl font-bold text-center text-slate-800 dark:text-white mb-6">Swat Security</h2>
@@ -199,7 +199,6 @@
                     <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-2">Contraseña</label>
                     <input type="password" id="password" class="w-full p-3 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white" required>
                 </div>
-                <!-- Eliminado el checkbox de "Recordar" para forzar login siempre -->
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition">Entrar</button>
                 <p id="login-error" class="text-red-500 text-center mt-4 text-sm"></p>
             </form>
@@ -735,6 +734,7 @@
 
         function renderMapeo() {
             calculateConflicts();
+
             const container = getEl('mapeo-container');
             container.innerHTML = '';
             const week = state.selectedWeek;
@@ -768,11 +768,10 @@
 
                 if (!hasSlots) return;
 
-                // Calculo Porcentaje
                 const percent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
-                let strokeColor = "#ef4444"; // Rojo
-                if(percent >= 50) strokeColor = "#f59e0b"; // Amarillo
-                if(percent >= 100) strokeColor = "#22c55e"; // Verde
+                let strokeColor = "#ef4444"; 
+                if(percent >= 50) strokeColor = "#f59e0b"; 
+                if(percent >= 100) strokeColor = "#22c55e"; 
 
                 const card = document.createElement('div');
                 card.className = "bg-white dark:bg-slate-850 rounded-xl shadow-md border-t-4 border-slate-200 flex flex-col h-full";
@@ -844,6 +843,8 @@
                 div.className = "p-4 bg-white dark:bg-slate-700 rounded border dark:border-slate-600";
                 
                 let html = `<h4 class="font-bold mb-2 capitalize dark:text-white">${dia}</h4>`;
+                
+                // Nuevos tipos incluidos aquí
                 ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
                     const cKey = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`;
                     const cant = localConf[dia][tipo] || 0;
@@ -926,14 +927,14 @@
             setupUIListeners();
             setupSystemStatus();
             
-            // SIEMPRE MOSTRAR LOGIN AL INICIO (Eliminamos el auto-login)
             getEl('login-overlay').style.display = 'flex';
             getEl('loader').style.display = 'none';
         });
 
         function setupListeners() {
             onSnapshot(query(collections.locales), snap => {
-                state.locales = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                state.locales = snap.docs.map(d => ({id:d.id, ...d.data()}))
+                    .sort((a,b) => a.nombre.localeCompare(b.nombre)); // ORDEN ALFABÉTICO
                 renderLocalesSelects();
                 renderTable('tabla-locales', state.locales, (l) => `
                     <td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td>
@@ -946,7 +947,14 @@
             });
 
             onSnapshot(query(collections.personal), snap => {
-                state.personal = snap.docs.map(d => ({id:d.id, ...d.data()}));
+                state.personal = snap.docs.map(d => ({id:d.id, ...d.data()}))
+                    .sort((a, b) => {
+                        // ORDEN NUMÉRICO (ID) o ALFABÉTICO (NOMBRE)
+                        const numA = parseInt(a.numero_empleado) || 999999;
+                        const numB = parseInt(b.numero_empleado) || 999999;
+                        if (numA !== numB) return numA - numB;
+                        return (a.nombre || '').localeCompare(b.nombre || '');
+                    });
                 renderTable('tabla-personal', state.personal, (p) => `
                     <td class="p-3">${p.numero_empleado||'-'}</td>
                     <td class="p-3 font-medium cursor-pointer text-blue-600 hover:underline" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td>
@@ -995,7 +1003,6 @@
             getEl('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
-                    // No guardamos en localStorage para que pida siempre
                     getEl('login-overlay').style.display = 'none';
                     setupListeners();
                 } else {
@@ -1242,6 +1249,11 @@
             getEl('btn-abrir-modal-personal').onclick = () => {
                 formP.reset();
                 getEl('personal-id').value = '';
+                
+                // AUTO-ASIGNAR Nº EMPLEADO
+                const maxId = state.personal.reduce((max, p) => Math.max(max, parseInt(p.numero_empleado) || 0), 0);
+                getEl('numero_empleado').value = maxId + 1;
+                
                 getEl('personal-modal').style.display = 'block';
             };
             formP.addEventListener('submit', async (e) => {
