@@ -112,12 +112,17 @@
         }
 
         /* --- CONFLICTOS --- */
+        /* Prioridad visual: Azul > Rojo > Amarillo */
+        
+        /* Amarillo (Doblete/Leve) */
         .conflict-overlap { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
         html.dark .conflict-overlap { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
 
+        /* Rojo (Grave/Mismo Local) */
         .conflict-repeat { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
         html.dark .conflict-repeat { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
 
+        /* Azul (Roles Especiales) */
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
         html.dark .conflict-role { background-color: #172554 !important; border-left-color: #3b82f6 !important; }
 
@@ -200,9 +205,14 @@
                     <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-2">Usuario</label>
                     <input type="text" id="username" class="w-full p-3 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white" required>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4">
                     <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-2">Contraseña</label>
                     <input type="password" id="password" class="w-full p-3 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white" required>
+                </div>
+                <!-- CHECKBOX RECORDAR USUARIO -->
+                <div class="mb-6 flex items-center">
+                    <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                    <label for="remember-me" class="text-slate-700 dark:text-slate-300 font-semibold text-sm">Recordar usuario</label>
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition">Entrar</button>
                 <p id="login-error" class="text-red-500 text-center mt-4 text-sm"></p>
@@ -391,13 +401,30 @@
             <!-- 5. SECCIÓN PLANILLAS -->
             <section id="section-planillas" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
-                    <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
-                        <label class="font-semibold dark:text-white">Semana:</label>
-                        <input type="week" id="semana-planillas" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white">
-                        <div class="flex-grow"></div>
-                        <button id="btn-exportar-planilla" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600">Descargar Planilla</button>
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                        <div class="flex items-center gap-2">
+                            <label class="font-semibold dark:text-white">Semana:</label>
+                            <input type="week" id="semana-planillas" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white">
+                        </div>
+                        <button id="btn-exportar-planilla" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Descargar Planilla
+                        </button>
                     </div>
-                    <div id="planillas-container" class="space-y-8"></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left bg-white dark:bg-slate-700 rounded-lg shadow-sm">
+                            <thead class="bg-slate-100 dark:bg-slate-600 border-b dark:border-slate-500">
+                                <tr>
+                                    <th class="p-4 font-semibold dark:text-white">Nombre</th>
+                                    <th class="p-4 font-semibold text-center dark:text-white">Turnos Terno</th>
+                                    <th class="p-4 font-semibold text-center dark:text-white">Turnos Táctica</th>
+                                    <th class="p-4 font-semibold text-center dark:text-white">Turnos Apoyo</th>
+                                    <th class="p-4 font-semibold text-right dark:text-white">Total a Pagar (S/)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-planillas"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
             
@@ -580,6 +607,22 @@
             return hours * 60 + minutes;
         };
 
+        // Función para obtener fecha de semana ISO
+        function getDateOfISOWeek(w, y) {
+            var simple = new Date(y, 0, 1 + (w - 1) * 7);
+            var dow = simple.getDay();
+            var ISOweekStart = simple;
+            if (dow <= 4)
+                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+            else
+                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+            return ISOweekStart;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
         // Copiado Seguro
         const copiarTextoSeguro = async (texto) => {
             try {
@@ -634,9 +677,10 @@
             if (pid) {
                 baseClass = "slot-filled-row";
                 
-                if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap";
-                else if (conflictMap.role.has(slotId)) bgClass = "conflict-role";
-                else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat";
+                // Prioridad Visual Estricta: Azul > Rojo > Amarillo
+                if (conflictMap.role.has(slotId)) bgClass = "conflict-role"; 
+                else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
+                else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
                 
                 if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) {
                     bgClass = "cacheo-row";
@@ -678,49 +722,59 @@
 
         function calculateConflicts() {
             // Reset Maps
-            conflictMap.overlap.clear();
-            conflictMap.repeat.clear();
-            conflictMap.role.clear();
+            conflictMap.overlap.clear(); // Yellow
+            conflictMap.repeat.clear();  // Red
+            conflictMap.role.clear();    // Blue
 
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
+            const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
             
             // Agrupar turnos por Persona
-            const shiftsByPerson = {}; // { pid: [ {slotId, dia, local, tipo, startMin, endMin} ] }
+            const shiftsByPerson = {}; 
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
                 if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
                 
-                const [local, dia, tipo] = slotId.split('-');
+                const parts = slotId.split('-');
+                const indexStr = parts.pop();
+                const tipo = parts.pop();
+                const dia = parts.pop();
+                const local = parts.join('-'); 
+
                 const conf = state.mapeoConfig[local]?.[dia];
                 
-                if(!conf) return; // Sin config no hay horario que cruzar
+                if(!conf) return; 
                 
-                const hIn = conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
-                const hOut = conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`];
+                const keyNameIn = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
+                const keyNameOut = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`;
+                
+                const hIn = conf[keyNameIn];
+                const hOut = conf[keyNameOut];
                 
                 if(!hIn || !hOut) return;
 
                 const start = timeToMin(hIn);
                 let end = timeToMin(hOut);
-                if (end < start) end += 24*60; // Cruzó medianoche
+                if (end < start) end += 24*60; 
 
-                // Offset por día para comparación global (Lunes=0, Martes=1440...)
-                const dayOffset = diasSemana.indexOf(dia) * 1440;
+                const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
                 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
                 shiftsByPerson[pid].push({
                     slotId,
                     dia,
+                    local,
                     tipo,
-                    globalStart: start + dayOffset,
-                    globalEnd: end + dayOffset
+                    start,
+                    end,
+                    absStart: start + dayOffset,
+                    absEnd: end + dayOffset
                 });
             });
 
-            // Analizar conflictos por persona
+            // Analizar conflictos
             Object.values(shiftsByPerson).forEach(shifts => {
-                // 1. Check Roles (Azul) - Puesto Y Cacheo en el mismo día
                 const shiftsByDay = {};
                 shifts.forEach(s => {
                     if(!shiftsByDay[s.dia]) shiftsByDay[s.dia] = [];
@@ -728,45 +782,49 @@
                 });
 
                 Object.values(shiftsByDay).forEach(dayShifts => {
-                    const hasPuesto = dayShifts.some(s => s.tipo === 'puestos');
-                    const hasCacheo = dayShifts.some(s => ['cacheos','cacheoIngreso','cacheoSalida'].includes(s.tipo));
-                    
-                    if(hasPuesto && hasCacheo) {
-                        dayShifts.forEach(s => conflictMap.role.add(s.slotId));
-                    }
-                    
-                    // 2. Check Repetición Diaria (Rojo)
-                    if(dayShifts.length > 1) {
-                        dayShifts.forEach(s => conflictMap.repeat.add(s.slotId));
-                    }
-                });
+                    if (dayShifts.length < 2) return; 
 
-                // 3. Check Cruce Horarios (Amarillo)
-                // Comparar todos contra todos
-                for(let i=0; i<shifts.length; i++) {
-                    for(let j=i+1; j<shifts.length; j++) {
-                        const s1 = shifts[i];
-                        const s2 = shifts[j];
-                        
-                        // Si hay superposición
-                        if(s1.globalStart < s2.globalEnd && s2.globalStart < s1.globalEnd) {
-                            conflictMap.overlap.add(s1.slotId);
-                            conflictMap.overlap.add(s2.slotId);
-                            // Remover de repeat si es overlap (para priorizar color amarillo)
-                            // Aunque CSS puede manejarlo por orden, es mejor limpiar logica
-                            conflictMap.repeat.delete(s1.slotId);
-                            conflictMap.repeat.delete(s2.slotId);
+                    for(let i=0; i<dayShifts.length; i++) {
+                        for(let j=i+1; j<dayShifts.length; j++) {
+                            const s1 = dayShifts[i];
+                            const s2 = dayShifts[j];
+
+                            // Overlap in minutes
+                            const overlap = Math.min(s1.end, s2.end) - Math.max(s1.start, s2.start);
+                            
+                            const isSpecial = specialRoles.includes(s1.tipo) || specialRoles.includes(s2.tipo);
+                            const sameLocal = s1.local === s2.local;
+
+                            // 1. AZUL (Prioridad Máxima)
+                            // Si participa un rol especial en CUALQUIER conflicto (cruce, mismo local, doblete)
+                            if (isSpecial) {
+                                conflictMap.role.add(s1.slotId);
+                                conflictMap.role.add(s2.slotId);
+                            } 
+                            // 2. ROJO (Grave)
+                            // Mismo Local OR Cruce > 2 horas (120 min)
+                            else if (sameLocal || overlap > 120) {
+                                conflictMap.repeat.add(s1.slotId);
+                                conflictMap.repeat.add(s2.slotId);
+                            } 
+                            // 3. AMARILLO (Advertencia)
+                            // Cruce <= 120 min OR Doblete (sin cruce importante)
+                            else {
+                                conflictMap.overlap.add(s1.slotId);
+                                conflictMap.overlap.add(s2.slotId);
+                            }
                         }
                     }
-                }
+                });
             });
         }
 
         function renderMapeo() {
-            // Calcular conflictos antes de renderizar
+            // Calcular conflictos SIEMPRE antes de renderizar para mantener estado actualizado
             calculateConflicts();
 
             const container = getEl('mapeo-container');
+            if(!container) return; // Safety check
             container.innerHTML = '';
             const week = state.selectedWeek;
             if (!week) return;
@@ -780,7 +838,6 @@
                 let totalSlots = 0;
                 let filledSlots = 0;
                 
-                // Lista extendida de tipos
                 const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
 
                 diasSemana.forEach(d => {
@@ -821,14 +878,13 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                         <!-- Botón Vestimenta Masiva -->
                          <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta a Todos">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                          </button>
                          <button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></button>
-                         <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 002.25 2.25h.588c.542 0 1.007.368 1.226.918l.165.441a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg></button>
+                         <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg></button>
                     </div>
                 </div><div class="p-2 space-y-2">`;
                 
@@ -867,6 +923,7 @@
 
         function renderConfigModal(localNombre) {
             const container = getEl('schedule-config-container');
+            if (!container) return;
             container.innerHTML = '';
             const localConf = tempScheduleConfig;
             
@@ -877,14 +934,12 @@
                 
                 let html = `<h4 class="font-bold mb-2 capitalize dark:text-white">${dia}</h4>`;
                 
-                // Nuevos tipos incluidos aquí
                 ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
                     const cKey = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`;
                     const cant = localConf[dia][tipo] || 0;
                     const ent = localConf[dia][cKey+'Entrada'] || '08:00 AM';
                     const sal = localConf[dia][cKey+'Salida'] || '08:00 PM';
                     
-                    // Nombres amigables para la configuración
                     const labelMap = {
                         'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida',
                         'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería'
@@ -960,15 +1015,20 @@
             setupUIListeners();
             setupSystemStatus();
             
-            // SIEMPRE MOSTRAR LOGIN AL INICIO (Eliminamos el auto-login)
-            getEl('login-overlay').style.display = 'flex';
+            const remembered = localStorage.getItem('swat_remember');
+            if(remembered === 'true') {
+                getEl('login-overlay').style.display = 'none';
+            } else {
+                getEl('login-overlay').style.display = 'flex';
+            }
+            
             getEl('loader').style.display = 'none';
         });
 
         function setupListeners() {
             onSnapshot(query(collections.locales), snap => {
                 state.locales = snap.docs.map(d => ({id:d.id, ...d.data()}))
-                    .sort((a,b) => a.nombre.localeCompare(b.nombre)); // ORDEN ALFABÉTICO
+                    .sort((a,b) => a.nombre.localeCompare(b.nombre)); 
                 renderLocalesSelects();
                 renderTable('tabla-locales', state.locales, (l) => `
                     <td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td>
@@ -983,7 +1043,6 @@
             onSnapshot(query(collections.personal), snap => {
                 state.personal = snap.docs.map(d => ({id:d.id, ...d.data()}))
                     .sort((a, b) => {
-                        // ORDEN NUMÉRICO (ID) o ALFABÉTICO (NOMBRE)
                         const numA = parseInt(a.numero_empleado) || 999999;
                         const numB = parseInt(b.numero_empleado) || 999999;
                         if (numA !== numB) return numA - numB;
@@ -1004,6 +1063,7 @@
 
             onSnapshot(query(collections.historial), snap => {
                 const hContainer = getEl('historial-container');
+                if (!hContainer) return;
                 hContainer.innerHTML = '';
                 snap.docs.forEach(d => {
                     const btn = document.createElement('div');
@@ -1017,6 +1077,7 @@
                 state.tarifarios = {};
                 snap.docs.forEach(d => state.tarifarios[d.id] = d.data());
                 renderTarifarioTable();
+                renderPlanillas();
             });
             
             watchWeek(state.selectedWeek);
@@ -1037,14 +1098,18 @@
             getEl('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
-                    // No guardamos en localStorage para que pida siempre
+                    if(getEl('remember-me').checked) {
+                        localStorage.setItem('swat_remember', 'true');
+                    } else {
+                        localStorage.removeItem('swat_remember');
+                    }
                     getEl('login-overlay').style.display = 'none';
-                    setupListeners();
                 } else {
                     getEl('login-error').textContent = "Credenciales incorrectas";
                 }
             });
             getEl('btn-logout').onclick = () => {
+                localStorage.removeItem('swat_remember');
                 location.reload();
             };
 
@@ -1157,27 +1222,93 @@
                     const pid = btnCopy.dataset.personId;
                     const p = state.personal.find(x => x.id === pid);
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
-                    const shifts = Object.entries(weekAsig)
+                    
+                    const friendlyLabels = {
+                        'puestos': '',
+                        'cacheos': 'Cacheo',
+                        'cacheoIngreso': 'C. Ingreso',
+                        'cacheoSalida': 'C. Salida',
+                        'turno1': '1er Turno',
+                        'turno2': '2do Turno',
+                        'turno3': '3er Turno',
+                        'porteria': 'Portería'
+                    };
+
+                    const rawShifts = Object.entries(weekAsig)
                         .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
                         .map(([k]) => {
-                            const [local, dia, tipo] = k.split('-');
+                            const parts = k.split('-');
+                            const indexStr = parts.pop();
+                            const tipo = parts.pop();
+                            const dia = parts.pop();
+                            const local = parts.join('-'); 
+
                             const conf = state.mapeoConfig[local]?.[dia];
-                            const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
+                            
+                            const keyName = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
+                            const horaEntrada = conf ? conf[keyName] : '??';
+                            
+                            const startMin = timeToMin(horaEntrada);
+                            
+                            const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
+                            const label = friendlyLabels[tipo] || '';
+
                             return { 
                                 dia: capitalize(dia), 
                                 local, 
-                                horaSalida: hOut,
+                                horaEntrada,
                                 vestimenta,
-                                order: diasSemana.indexOf(dia) 
+                                order: diasSemana.indexOf(dia),
+                                startMin: startMin,
+                                label
                             };
                         })
-                        .sort((a,b) => a.order - b.order);
+                        .sort((a,b) => {
+                            if (a.order !== b.order) return a.order - b.order; 
+                            return a.startMin - b.startMin; 
+                        });
 
-                    if(shifts.length === 0) return showToast("Sin turnos para copiar", "error");
+                    if(rawShifts.length === 0) return showToast("Sin turnos para copiar", "error");
+
+                    const groupedShifts = [];
+                    rawShifts.forEach(s => {
+                        const existing = groupedShifts.find(g => 
+                            g.dia === s.dia && 
+                            g.local === s.local
+                        );
+
+                        if (existing) {
+                            if (s.startMin < existing.startMin) {
+                                existing.startMin = s.startMin;
+                                existing.horaEntrada = s.horaEntrada;
+                                existing.vestimenta = s.vestimenta;
+                            }
+                            
+                            if (s.label && !existing.labels.includes(s.label)) {
+                                existing.labels.push(s.label);
+                            }
+                        } else {
+                            groupedShifts.push({
+                                dia: s.dia,
+                                local: s.local,
+                                horaEntrada: s.horaEntrada, 
+                                startMin: s.startMin,
+                                vestimenta: s.vestimenta,
+                                order: s.order, 
+                                labels: s.label ? [s.label] : []
+                            });
+                        }
+                    });
+                    
+                    groupedShifts.sort((a,b) => {
+                        if (a.order !== b.order) return a.order - b.order; 
+                        return a.startMin - b.startMin; 
+                    });
 
                     let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
-                    shifts.forEach(s => {
-                        text += `* ${s.dia} en ${s.local.toUpperCase()}: ${s.horaSalida} Vestimenta: ${s.vestimenta}.\n`;
+                    groupedShifts.forEach(s => {
+                        const extras = s.labels.map(l => ` + (${l})`).join('');
+                        text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`;
                     });
                     text += `\nMANDAME TU CONFIRMACIÓN ✅`;
                     
@@ -1229,8 +1360,43 @@
             getEl('btn-guardar-horarios').onclick = async () => {
                 if(currentlyEditingLocal) {
                     await setDoc(doc(collections.mapeoConfig, currentlyEditingLocal), tempScheduleConfig);
+                    
+                    const week = state.selectedWeek;
+                    const currentAssignments = state.asignaciones[week] || {};
+                    const updates = {};
+                    let hasUpdates = false;
+
+                    Object.keys(currentAssignments).forEach(key => {
+                        if (!key.startsWith(currentlyEditingLocal + '-')) return;
+                        if (key.endsWith('-vestimenta') || key.endsWith('-confirmed')) return;
+
+                        const parts = key.split('-');
+                        const indexStr = parts.pop();
+                        const type = parts.pop();
+                        const dia = parts.pop();
+                        const localNameFromKey = parts.join('-'); 
+
+                        if (localNameFromKey !== currentlyEditingLocal) return;
+
+                        const newCount = parseInt(tempScheduleConfig[dia]?.[type] || 0);
+                        const slotIndex = parseInt(indexStr);
+
+                        if (slotIndex > newCount) {
+                            updates[key] = deleteField();
+                            updates[`${key}-vestimenta`] = deleteField();
+                            updates[`${key}-confirmed`] = deleteField();
+                            hasUpdates = true;
+                        }
+                    });
+
+                    if (hasUpdates) {
+                         await updateDoc(doc(collections.asignaciones, week), updates);
+                         showToast("Horarios guardados y asignaciones limpiadas");
+                    } else {
+                         showToast("Horarios guardados");
+                    }
+
                     getEl('schedule-config-modal').style.display = 'none';
-                    showToast("Horarios guardados");
                 }
             };
             getEl('btn-limpiar-horarios-local').onclick = async () => {
@@ -1365,22 +1531,51 @@
             
             getEl('btn-descargar-excel').onclick = () => {
                 const rows = [];
-                rows.push(["Local", "Día", "Puesto", "Personal", "Entrada", "Salida"]);
+                rows.push(["Fecha", "Día", "Local", "Puesto", "Nombre", "Hora Entrada", "Hora Salida", "Vestimenta"]);
                 
                 const w = state.selectedWeek;
+                const [yearStr, weekNoStr] = w.split('-W');
+                const year = parseInt(yearStr);
+                const weekNo = parseInt(weekNoStr);
+                
                 const asig = state.asignaciones[w] || {};
                 
                 state.locales.forEach(l => {
-                    diasSemana.forEach(d => {
+                    diasSemana.forEach((d, dIndex) => {
+                        // Calcular fecha real
+                        // diasSemana: 0=lunes... 6=domingo. 
+                        // getDateOfISOWeek devuelve el Lunes de esa semana.
+                        const mondayDate = getDateOfISOWeek(weekNo, year);
+                        const currentDate = new Date(mondayDate);
+                        currentDate.setDate(mondayDate.getDate() + dIndex);
+                        const dateStr = formatDate(currentDate);
+
                         const conf = state.mapeoConfig[l.nombre]?.[d];
                         if(!conf) return;
-                        ['puestos','cacheos'].forEach(t => {
+                        
+                        const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
+                        
+                        allTypes.forEach(t => {
                             const cant = parseInt(conf[t] || 0);
                             for(let i=1; i<=cant; i++) {
                                 const sid = `${l.nombre}-${d}-${t}-${i}`;
                                 const pid = asig[sid];
                                 const pName = pid ? getFullName(state.personal.find(x=>x.id===pid)) : 'VACANTE';
-                                rows.push([l.nombre, d, `${t} ${i}`, pName, conf[`hora${t}Entrada`]||'', conf[`hora${t}Salida`]||'']);
+                                const vestimenta = asig[`${sid}-vestimenta`] || 'Ropa Táctica';
+                                
+                                const hIn = conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Entrada`] || '';
+                                const hOut = conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Salida`] || '';
+                                
+                                rows.push([
+                                    dateStr, 
+                                    capitalize(d), 
+                                    l.nombre, 
+                                    `${t} ${i}`, 
+                                    pName, 
+                                    hIn, 
+                                    hOut, 
+                                    vestimenta
+                                ]);
                             }
                         });
                     });
@@ -1388,8 +1583,8 @@
                 
                 const ws = XLSX.utils.aoa_to_sheet(rows);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Programacion");
-                XLSX.writeFile(wb, `Mapeo_${w}.xlsx`);
+                XLSX.utils.book_append_sheet(wb, ws, "Mapeo Semanal");
+                XLSX.writeFile(wb, `Mapeo_Completo_${w}.xlsx`);
             };
 
             getEl('tabla-tarifario').addEventListener('change', async (e) => {
@@ -1398,11 +1593,33 @@
                     const field = e.target.dataset.field;
                     const val = e.target.value;
                     await setDoc(doc(collections.tarifarios, uid), { [field]: val }, { merge: true });
+                    // No llamamos renderPlanillas aquí para no sobrecargar, se actualizará al cambiar de pestaña o recargar
                 }
             });
 
             getEl('busqueda-programacion').addEventListener('input', renderProgramacion);
             getEl('busqueda-tarifario').addEventListener('input', renderTarifarioTable);
+            
+            getEl('btn-exportar-planilla').onclick = () => {
+                const table = getEl('tabla-planillas');
+                const rows = [];
+                // Headers
+                const headers = [];
+                table.parentElement.querySelectorAll('thead th').forEach(th => headers.push(th.innerText));
+                rows.push(headers);
+                
+                // Data
+                table.querySelectorAll('tr').forEach(tr => {
+                    const rowData = [];
+                    tr.querySelectorAll('td').forEach(td => rowData.push(td.innerText));
+                    rows.push(rowData);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Planilla");
+                XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
+            };
         }
 
         function getWeekNumber(d) {
@@ -1415,6 +1632,7 @@
 
         function renderTable(id, data, rowFn) {
             const tbody = getEl(id);
+            if (!tbody) return;
             tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
         }
 
@@ -1444,6 +1662,7 @@
             calculateConflicts();
 
             const container = getEl('programacion-container');
+            if(!container) return;
             const term = getEl('busqueda-programacion').value.toLowerCase();
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
             
@@ -1453,18 +1672,40 @@
                 return term ? nameMatch : hasShift;
             });
             
+            // Mapas de roles especiales para mostrarlos en la UI
+            const specialRoleMap = {
+                'cacheos': 'Cacheo',
+                'cacheoIngreso': 'C. Ingreso',
+                'cacheoSalida': 'C. Salida',
+                'porteria': 'Portería'
+            };
+            
             container.innerHTML = relevantPersonal.map(p => {
                 const shifts = Object.entries(weekAsig)
                     .filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
                     .map(([k]) => {
-                        const [local, dia, tipo] = k.split('-');
+                        const parts = k.split('-');
+                        const indexStr = parts.pop();
+                        const tipo = parts.pop();
+                        const dia = parts.pop();
+                        const local = parts.join('-'); 
+
                         const conf = state.mapeoConfig[local]?.[dia];
                         const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
                         
+                        const startMin = timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
+
                         const isConfirmed = weekAsig[`${k}-confirmed`];
                         const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
                         
-                        return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k };
+                        // Detectar si es rol especial
+                        const specialLabel = specialRoleMap[tipo] || null;
+                        
+                        return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k, order: diasSemana.indexOf(dia), startMin, specialLabel };
+                    })
+                    .sort((a,b) => {
+                        if (a.order !== b.order) return a.order - b.order;
+                        return a.startMin - b.startMin;
                     });
                 
                 if(shifts.length === 0) return '';
@@ -1489,15 +1730,17 @@
                             let rowBg = "bg-slate-50 dark:bg-slate-700";
                             let borderL = "border-l-4 border-transparent";
                             
-                            if (conflictMap.overlap.has(s.slotId)) {
-                                rowBg = "conflict-overlap";
-                                borderL = "border-l-4 border-yellow-500";
-                            } else if (conflictMap.role.has(s.slotId)) {
+                            if (conflictMap.role.has(s.slotId)) {
                                 rowBg = "conflict-role";
                                 borderL = "border-l-4 border-blue-500";
-                            } else if (conflictMap.repeat.has(s.slotId)) {
+                            } 
+                            else if (conflictMap.repeat.has(s.slotId)) {
                                 rowBg = "conflict-repeat";
                                 borderL = "border-l-4 border-red-500";
+                            } 
+                            else if (conflictMap.overlap.has(s.slotId)) {
+                                rowBg = "conflict-overlap";
+                                borderL = "border-l-4 border-yellow-500";
                             }
 
                             return `
@@ -1506,6 +1749,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span>
                                         <span class="text-xs text-slate-400 font-mono">${s.horario}</span>
+                                        ${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}
                                     </div>
                                     <span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span>
                                 </div>
@@ -1542,6 +1786,7 @@
             const term = getEl('busqueda-tarifario').value.toLowerCase();
             const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
             const tbody = getEl('tabla-tarifario');
+            if(!tbody) return;
             
             tbody.innerHTML = filtered.map(p => {
                 const t = state.tarifarios[p.id] || {};
@@ -1556,8 +1801,59 @@
         }
 
         function renderPlanillas() {
-            const container = getEl('planillas-container');
-            container.innerHTML = `<div class="p-8 text-center text-slate-500">Módulo de Planillas activo. Seleccione Exportar para generar reporte detallado.</div>`;
+            const container = getEl('tabla-planillas');
+            if(!container) return; // FIX: Added safety check
+            const asig = state.asignaciones[state.selectedWeek] || {};
+            
+            // Estructura de datos: { personaId: { Terno: 0, Tactica: 0, Apoyo: 0, Total: 0, Nombre: '' } }
+            const report = {};
+            
+            // Inicializar reporte con todo el personal
+            state.personal.forEach(p => {
+                report[p.id] = { 
+                    Terno: 0, 
+                    Tactica: 0, 
+                    Apoyo: 0, 
+                    Nombre: getFullName(p),
+                    Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 }
+                };
+            });
+            
+            // Recorrer asignaciones
+            Object.entries(asig).forEach(([key, pid]) => {
+                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
+                
+                if (report[pid]) {
+                    const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica';
+                    // Asumimos mapeo: 'Terno' -> Terno, 'Ropa Táctica' -> Tactica. 
+                    // Si hubiera un rol de 'Apoyo' específico, habría que definir la lógica. Por ahora sumamos a Tactica si no es Terno.
+                    if (vest === 'Terno') {
+                        report[pid].Terno++;
+                    } else {
+                        report[pid].Tactica++;
+                    }
+                }
+            });
+            
+            // Renderizar tabla
+            const html = Object.values(report)
+                .filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0) // Mostrar solo los que trabajaron
+                .map(r => {
+                    const pagoTerno = r.Terno * (parseFloat(r.Tarifas.Terno) || 0);
+                    const pagoTactica = r.Tactica * (parseFloat(r.Tarifas.Tactica) || 0);
+                    const total = pagoTerno + pagoTactica;
+                    
+                    return `
+                    <tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600">
+                        <td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td>
+                        <td class="p-3 text-center dark:text-slate-300">${r.Terno}</td>
+                        <td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td>
+                        <td class="p-3 text-center dark:text-slate-300">-</td>
+                        <td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td>
+                    </tr>`;
+                }).join('');
+                
+            container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
         }
 
         function generateTextSchedule(filterLocal) {
