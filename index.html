@@ -126,6 +126,26 @@
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
         html.dark .conflict-role { background-color: #172554 !important; border-left-color: #3b82f6 !important; }
 
+        /* --- URGENCIAS Y ALARMAS --- */
+        @keyframes pulse-red {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pulse-red {
+            animation: pulse-red 1.5s infinite;
+            color: #ef4444;
+        }
+        
+        .urgent-card {
+            border: 2px solid #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        html.dark .urgent-card {
+            background-color: #450a0a !important;
+            border-color: #ef4444 !important;
+        }
+
         /* Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -257,8 +277,17 @@
     <div class="container mx-auto p-4 md:p-8 w-full main-content max-w-[1600px]"> 
         <header class="text-center mb-8 relative">
             <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Mapeo Semanal</h1>
-            <div class="absolute top-0 right-0 flex items-center gap-4">
-                <div id="system-status-container" title="Estado del sistema">
+            <div class="absolute top-0 right-0 flex items-center gap-3">
+                
+                <!-- BOTÓN DASHBOARD MINIMALISTA -->
+                <button id="btn-dashboard" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group" title="Ver Dashboard de Estado">
+                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 hidden sm:block">Estado</span>
+                </button>
+
+                <div id="system-status-container" title="Estado del sistema" class="p-2">
                     <svg id="system-status-icon" class="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
@@ -454,6 +483,23 @@
             <div id="modal-list-container" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1"></div>
         </div>
     </div>
+    
+    <!-- Modal Dashboard -->
+    <div id="dashboard-modal" class="modal">
+        <div class="modal-content !max-w-4xl max-h-[85vh] dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2">
+                    <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    Dashboard de Estado
+                </h3>
+                <button id="close-dashboard-modal" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
+            </div>
+            
+            <div id="dashboard-content" class="flex-grow overflow-hidden flex flex-col">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Agregar/Editar Personal -->
     <div id="personal-modal" class="modal">
@@ -578,9 +624,9 @@
         
         // Estado de conflictos
         let conflictMap = {
-            overlap: new Set(), // Amarillo: Cruce horarios
-            repeat: new Set(),  // Rojo: Repetición sin cruce
-            role: new Set()     // Azul: Puesto vs Cacheo
+            overlap: new Set(), // Amarillo
+            repeat: new Set(),  // Rojo
+            role: new Set()     // Azul
         };
 
         // 4. FUNCIONES DE UTILIDAD
@@ -617,6 +663,31 @@
             else
                 ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
             return ISOweekStart;
+        }
+
+        // Obtener fecha específica de un turno
+        function getShiftDate(weekStr, dayName, timeStr) {
+            if(!weekStr || !dayName || !timeStr) return null;
+            
+            const [yearStr, weekNoStr] = weekStr.split('-W');
+            const year = parseInt(yearStr);
+            const weekNo = parseInt(weekNoStr);
+            
+            // Monday of the week
+            const date = getDateOfISOWeek(weekNo, year);
+            
+            // Add days to get to target day
+            const dayIndex = diasSemana.indexOf(dayName.toLowerCase());
+            date.setDate(date.getDate() + dayIndex);
+            
+            // Parse Time
+            const [time, period] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+            if(period === 'PM' && hours !== 12) hours += 12;
+            if(period === 'AM' && hours === 12) hours = 0;
+            
+            date.setHours(hours, minutes, 0, 0);
+            return date;
         }
 
         function formatDate(date) {
@@ -803,6 +874,7 @@
                             } 
                             // 2. ROJO (Grave)
                             // Mismo Local OR Cruce > 2 horas (120 min)
+                            // "Cruce de 8 horas" es > 2 horas para simplificar y asegurar gravedad
                             else if (sameLocal || overlap > 120) {
                                 conflictMap.repeat.add(s1.slotId);
                                 conflictMap.repeat.add(s2.slotId);
@@ -817,6 +889,168 @@
                     }
                 });
             });
+        }
+
+        function calculateDashboardStats() {
+            const week = state.selectedWeek;
+            const weekAsig = state.asignaciones[week] || {};
+            const stats = {
+                totalSlots: 0,
+                filledSlots: 0,
+                byLocal: {},
+                urgent: [],
+                critical: []
+            };
+
+            const now = new Date();
+            const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
+            const specialLabels = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'Ingreso', 'cacheoSalida': 'Salida', 'porteria': 'Portería' };
+
+            state.locales.forEach(local => {
+                stats.byLocal[local.nombre] = { total: 0, filled: 0, missingTypes: {} };
+                const config = state.mapeoConfig[local.nombre] || {};
+
+                diasSemana.forEach(dia => {
+                    const dConf = config[dia] || {};
+                    const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
+                    
+                    allTypes.forEach(tipo => {
+                        const count = parseInt(dConf[tipo] || 0);
+                        if(count > 0) {
+                            stats.totalSlots += count;
+                            stats.byLocal[local.nombre].total += count;
+                            
+                            const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
+                            
+                            // Check valid date/time before calculating urgency
+                            let shiftDate = null;
+                            try {
+                                shiftDate = getShiftDate(week, dia, hIn);
+                            } catch(e) { console.warn("Invalid date params", e); }
+
+                            for(let i=1; i<=count; i++) {
+                                const sid = `${local.nombre}-${dia}-${tipo}-${i}`;
+                                if(weekAsig[sid]) {
+                                    stats.filledSlots++;
+                                    stats.byLocal[local.nombre].filled++;
+                                } else {
+                                    // Vacante
+                                    if(!stats.byLocal[local.nombre].missingTypes[tipo]) stats.byLocal[local.nombre].missingTypes[tipo] = 0;
+                                    stats.byLocal[local.nombre].missingTypes[tipo]++;
+
+                                    // Check Critical
+                                    if(specialRoles.includes(tipo)) {
+                                        stats.critical.push(`${local.nombre} - ${capitalize(dia)}: Falta ${specialLabels[tipo]}`);
+                                    }
+
+                                    // Check Urgent (< 24h)
+                                    if(shiftDate) {
+                                        const diffMs = shiftDate - now;
+                                        const diffHrs = diffMs / (1000 * 60 * 60);
+                                        if(diffHrs > 0 && diffHrs < 24) {
+                                            stats.urgent.push(`${local.nombre} (${capitalize(dia)} ${hIn}): Falta ${tipo === 'puestos' ? 'Puesto' : specialLabels[tipo] || tipo}`);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+            
+            return stats;
+        }
+
+        function updateDashboard() {
+            try {
+                const container = getEl('dashboard-content');
+                if(!container) {
+                    console.error("Dashboard content container not found");
+                    return;
+                }
+
+                // If data isn't loaded yet
+                if(!state.locales || state.locales.length === 0) {
+                    container.innerHTML = '<p class="text-center text-slate-500">Cargando datos...</p>';
+                    return;
+                }
+
+                const stats = calculateDashboardStats();
+                
+                const percentage = stats.totalSlots > 0 ? Math.round((stats.filledSlots / stats.totalSlots) * 100) : 0;
+                
+                let html = `
+                    <div class="mb-6 space-y-6">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
+                            <div class="flex justify-between items-end mb-2">
+                                <div>
+                                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Cobertura Semanal</p>
+                                    <h4 class="text-3xl font-black text-slate-800 dark:text-white">${percentage}%</h4>
+                                </div>
+                                <span class="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                    ${stats.filledSlots}/${stats.totalSlots} Turnos
+                                </span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-3 dark:bg-slate-700 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full shadow-lg transition-all duration-1000 ease-out" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+
+                        ${stats.urgent.length > 0 ? `
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg dark:bg-red-900/20">
+                            <h4 class="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">🔥</span> URGENTE (Próximas 24h)</h4>
+                            <ul class="list-none space-y-1 text-sm text-red-600 dark:text-red-300">
+                                ${stats.urgent.map(u => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>${u}</li>`).join('')}
+                            </ul>
+                        </div>` : ''}
+
+                        ${stats.critical.length > 0 ? `
+                        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg dark:bg-orange-900/20">
+                            <h4 class="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> Puestos Críticos</h4>
+                            <ul class="list-none space-y-1 text-sm text-orange-600 dark:text-orange-300">
+                                ${stats.critical.slice(0, 5).map(c => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>${c}</li>`).join('')}
+                                ${stats.critical.length > 5 ? `<li class="text-xs italic pl-4 opacity-75">... y ${stats.critical.length - 5} más</li>` : ''}
+                            </ul>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[400px]">
+                        <h4 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 sticky top-0 bg-white dark:bg-slate-800 z-10 py-2 border-b dark:border-slate-700">Estado por Local</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                `;
+                
+                Object.entries(stats.byLocal).forEach(([local, data]) => {
+                    const missing = data.total - data.filled;
+                    if(missing === 0 && data.total > 0) {
+                        html += `
+                        <div class="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-green-500">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-slate-700 dark:text-slate-200 group-hover:text-green-600 transition-colors">${local}</span>
+                                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">Completo</span>
+                            </div>
+                        </div>`;
+                    } else if (data.total > 0) {
+                        const details = Object.entries(data.missingTypes)
+                            .map(([type, count]) => `<span class="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30">${count} ${type === 'puestos' ? 'Puestos' : type}</span>`)
+                            .join(' ');
+                            
+                        html += `
+                        <div class="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-red-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-slate-700 dark:text-slate-200 group-hover:text-red-500 transition-colors">${local}</span>
+                                <span class="text-red-500 font-bold text-sm bg-red-50 px-2 py-1 rounded dark:bg-red-900/20">-${missing}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-1">${details}</div>
+                        </div>`;
+                    }
+                });
+                html += `</div></div>`;
+
+                container.innerHTML = html;
+            } catch (err) {
+                console.error("Error updating dashboard:", err);
+                alert("Error al cargar el dashboard. Ver consola.");
+            }
         }
 
         function renderMapeo() {
@@ -1038,6 +1272,7 @@
                         <button class="text-red-500 btn-del-local" data-id="${l.id}">Eliminar</button>
                     </td>`);
                 renderMapeo();
+                // updateDashboard se llama cuando se abre el modal
             });
 
             onSnapshot(query(collections.personal), snap => {
@@ -1215,6 +1450,19 @@
                     }
                 }
             });
+            
+            // Fix: Add listener safely after DOM load
+            const btnDashboard = getEl('btn-dashboard');
+            if (btnDashboard) {
+                btnDashboard.onclick = () => {
+                    updateDashboard();
+                    getEl('dashboard-modal').style.display = 'block';
+                };
+            }
+            const btnCloseDashboard = getEl('close-dashboard-modal');
+            if (btnCloseDashboard) {
+                btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
+            }
 
             getEl('programacion-container').addEventListener('click', async (e) => {
                 const btnCopy = e.target.closest('.btn-copy-individual');
@@ -1695,13 +1943,25 @@
                         
                         const startMin = timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
 
+                        // Calculate if this shift is "urgent"
+                        let isUrgent = false;
                         const isConfirmed = weekAsig[`${k}-confirmed`];
+                        if (!isConfirmed) {
+                             const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
+                             if (shiftDate) {
+                                 const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60);
+                                 if (diffHours > 0 && diffHours < 48) {
+                                     isUrgent = true;
+                                 }
+                             }
+                        }
+
                         const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
                         
                         // Detectar si es rol especial
                         const specialLabel = specialRoleMap[tipo] || null;
                         
-                        return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k, order: diasSemana.indexOf(dia), startMin, specialLabel };
+                        return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k, order: diasSemana.indexOf(dia), startMin, specialLabel, isUrgent };
                     })
                     .sort((a,b) => {
                         if (a.order !== b.order) return a.order - b.order;
@@ -1721,7 +1981,10 @@
                     ${allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : ''}
 
                     <div class="flex justify-between items-center mb-4 mt-1">
-                        <h4 class="font-bold text-lg dark:text-white truncate pr-2">${getFullName(p)}</h4>
+                        <h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">
+                            ${getFullName(p)}
+                            ${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}
+                        </h4>
                         ${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}
                     </div>
 
@@ -1730,7 +1993,12 @@
                             let rowBg = "bg-slate-50 dark:bg-slate-700";
                             let borderL = "border-l-4 border-transparent";
                             
-                            if (conflictMap.role.has(s.slotId)) {
+                            // Urgency Override for Card Visuals
+                            if (s.isUrgent) {
+                                rowBg = "urgent-card"; 
+                            } 
+                            // Conflict Logic
+                            else if (conflictMap.role.has(s.slotId)) {
                                 rowBg = "conflict-role";
                                 borderL = "border-l-4 border-blue-500";
                             } 
