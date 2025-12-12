@@ -287,7 +287,7 @@
             <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Mapeo Semanal</h1>
             <div class="absolute top-0 right-0 flex items-center gap-3">
                 
-                <!-- BOTÓN PERMISOS (Ajustado al mismo tamaño que Estado) -->
+                <!-- BOTÓN PERMISOS -->
                 <button id="btn-permisos" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 group" title="Gestión de Permisos">
                     <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -304,7 +304,7 @@
                 </button>
 
                 <div id="system-status-container" title="Estado del sistema" class="p-2">
-                    <svg id="system-status-icon" class="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg id="system-status-icon" class="h-6 w-6 text-slate-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
@@ -325,20 +325,39 @@
                             <input type="week" id="semana-mapeo" class="p-2 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                         </div>
                         <div class="flex-grow"></div>
-                        <div class="flex flex-wrap gap-2 justify-center">
-                            <button id="btn-copy-previous-week" class="bg-sky-500 text-white font-semibold py-2 px-3 rounded-md hover:bg-sky-600 shadow-sm text-sm">Copiar Sem. Ant.</button>
-                             <!-- NUEVO BOTÓN GUARDAR RESPALDO -->
-                            <button id="btn-save-history" class="bg-teal-500 text-white font-semibold py-2 px-3 rounded-md hover:bg-teal-600 shadow-sm text-sm flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                                Guardar Respaldo
-                            </button>
-                            <button id="btn-limpiar-mapeo" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600 shadow-sm text-sm">Limpiar</button>
-                            <button id="btn-descargar-excel" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 shadow-sm text-sm flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Excel
-                            </button>
+                        <div class="flex flex-wrap gap-2 justify-center items-center">
+                            
+                            <!-- BOTÓN COPIAR TEXTO (AHORA A LA IZQUIERDA) -->
                             <button id="btn-copy-all-schedule" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 shadow-sm text-sm flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar Texto
                             </button>
+
+                            <!-- MENÚ DESPLEGABLE HERRAMIENTAS (AHORA A LA DERECHA) -->
+                            <div class="relative">
+                                <!-- Se ajustó px-4 para igualar tamaño -->
+                                <button id="btn-tools-dropdown" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm flex items-center gap-2 border border-slate-300 dark:border-slate-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                                    </svg>
+                                    Herramientas
+                                </button>
+                                <!-- Contenido del Menú -->
+                                <div id="tools-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-600 overflow-hidden">
+                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
+                                        <span class="text-sky-500">📋</span> Copiar Sem. Ant.
+                                     </button>
+                                     <button id="btn-save-history" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
+                                        <span class="text-teal-500">💾</span> Guardar Respaldo
+                                     </button>
+                                     <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
+                                        <span class="text-green-600">📊</span> Excel
+                                     </button>
+                                     <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+                                     <button id="btn-limpiar-mapeo" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-semibold">
+                                        <span>🗑️</span> Limpiar
+                                     </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -745,7 +764,16 @@
             return hours * 60 + minutes;
         };
 
-        // Función para obtener fecha de semana ISO
+        // Función para obtener fecha de semana ISO (MOVIDA AQUÍ PARA EVITAR ERRORES)
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+            return weekNo;
+        }
+
+        // Función para obtener fecha de inicio de semana ISO
         function getDateOfISOWeek(w, y) {
             var simple = new Date(y, 0, 1 + (w - 1) * 7);
             var dow = simple.getDay();
@@ -1330,16 +1358,24 @@
                         updateStatusIcon(latency);
                     }
                 }
+            }, (error) => {
+                // Error en el snapshot (posible desconexión de Firestore)
+                handleConnectionChange(false);
             });
+
             setInterval(() => {
                 setDoc(statusRef, { timestamp: serverTimestamp() })
-                    .catch(err => console.warn("Ping fallido (offline)", err));
+                    .catch(err => {
+                        console.warn("Ping fallido (offline)", err);
+                        handleConnectionChange(false);
+                    });
             }, 10000);
         }
 
         function updateStatusIcon(latency) {
             const icon = getEl('system-status-icon');
-            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            
             if (latency < 800) {
                 icon.classList.add('text-green-500'); 
                 icon.parentElement.title = `Conexión: Excelente (${latency}ms)`;
@@ -1352,15 +1388,36 @@
             }
         }
 
+        function handleConnectionChange(online) {
+            const icon = getEl('system-status-icon');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            
+            if (online) {
+                // Al volver online, dejamos que el próximo ping determine el color real
+                // Ponemos amarillo temporalmente
+                icon.classList.add('text-yellow-500');
+                showToast("✅ Conexión restaurada");
+            } else {
+                icon.classList.add('text-red-500', 'animate-pulse'); // Rojo y parpadeando
+                icon.parentElement.title = "¡Sin conexión a internet!";
+                showToast("⚠️ Sin conexión a internet", "error");
+            }
+        }
+
         // 6. EVENT LISTENERS
         document.addEventListener('DOMContentLoaded', async () => {
             getEl('loader').style.display = 'flex';
             
+            // Listeners de red globales
+            window.addEventListener('online', () => handleConnectionChange(true));
+            window.addEventListener('offline', () => handleConnectionChange(false));
+
             try {
                 await signInAnonymously(auth);
             } catch (e) {
                 console.error("Error Auth", e);
                 showToast("Error de conexión", "error");
+                handleConnectionChange(false);
             }
 
             const now = new Date();
@@ -1601,6 +1658,21 @@
                 btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
             }
             
+            // -- LOGICA DEL MENU DE HERRAMIENTAS --
+            const toolsBtn = getEl('btn-tools-dropdown');
+            const toolsMenu = getEl('tools-dropdown-menu');
+            if(toolsBtn && toolsMenu) {
+                toolsBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    toolsMenu.classList.toggle('hidden');
+                };
+                document.addEventListener('click', (e) => {
+                    if(!toolsMenu.contains(e.target) && !toolsBtn.contains(e.target)) {
+                        toolsMenu.classList.add('hidden');
+                    }
+                });
+            }
+
             // Listener para Guardar Respaldo
             const btnSaveHistory = getEl('btn-save-history');
             if (btnSaveHistory) {
@@ -2044,14 +2116,7 @@
             };
         }
 
-        function getWeekNumber(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-            return weekNo;
-        }
-
+        // --- Render Functions (RESTORED) ---
         function renderTable(id, data, rowFn) {
             const tbody = getEl(id);
             if (!tbody) return;
