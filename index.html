@@ -311,6 +311,11 @@
                         <div class="flex-grow"></div>
                         <div class="flex flex-wrap gap-2 justify-center">
                             <button id="btn-copy-previous-week" class="bg-sky-500 text-white font-semibold py-2 px-3 rounded-md hover:bg-sky-600 shadow-sm text-sm">Copiar Sem. Ant.</button>
+                             <!-- NUEVO BOTÓN GUARDAR RESPALDO -->
+                            <button id="btn-save-history" class="bg-teal-500 text-white font-semibold py-2 px-3 rounded-md hover:bg-teal-600 shadow-sm text-sm flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                Guardar Respaldo
+                            </button>
                             <button id="btn-limpiar-mapeo" class="bg-red-500 text-white font-bold py-2 px-4 rounded-md hover:bg-red-600 shadow-sm text-sm">Limpiar</button>
                             <button id="btn-descargar-excel" class="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 shadow-sm text-sm flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Excel
@@ -874,7 +879,6 @@
                             } 
                             // 2. ROJO (Grave)
                             // Mismo Local OR Cruce > 2 horas (120 min)
-                            // "Cruce de 8 horas" es > 2 horas para simplificar y asegurar gravedad
                             else if (sameLocal || overlap > 120) {
                                 conflictMap.repeat.add(s1.slotId);
                                 conflictMap.repeat.add(s2.slotId);
@@ -897,6 +901,7 @@
             const stats = {
                 totalSlots: 0,
                 filledSlots: 0,
+                confirmedSlots: 0,
                 byLocal: {},
                 urgent: [],
                 critical: []
@@ -907,7 +912,7 @@
             const specialLabels = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'Ingreso', 'cacheoSalida': 'Salida', 'porteria': 'Portería' };
 
             state.locales.forEach(local => {
-                stats.byLocal[local.nombre] = { total: 0, filled: 0, missingTypes: {} };
+                stats.byLocal[local.nombre] = { total: 0, filled: 0, missingTypes: {}, unconfirmedCount: 0 };
                 const config = state.mapeoConfig[local.nombre] || {};
 
                 diasSemana.forEach(dia => {
@@ -921,8 +926,6 @@
                             stats.byLocal[local.nombre].total += count;
                             
                             const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
-                            
-                            // Check valid date/time before calculating urgency
                             let shiftDate = null;
                             try {
                                 shiftDate = getShiftDate(week, dia, hIn);
@@ -933,23 +936,28 @@
                                 if(weekAsig[sid]) {
                                     stats.filledSlots++;
                                     stats.byLocal[local.nombre].filled++;
+                                    
+                                    // Check confirmation
+                                    if(weekAsig[`${sid}-confirmed`]) {
+                                        stats.confirmedSlots++;
+                                    } else {
+                                        stats.byLocal[local.nombre].unconfirmedCount++;
+                                        // Check Urgent (< 48h) for unconfirmed
+                                        if(shiftDate) {
+                                            const diffMs = shiftDate - now;
+                                            const diffHrs = diffMs / (1000 * 60 * 60);
+                                            if(diffHrs > 0 && diffHrs < 48) {
+                                                stats.urgent.push(`${local.nombre} (${capitalize(dia)} ${hIn}): Falta confirmar ${tipo === 'puestos' ? 'Puesto' : specialLabels[tipo] || tipo}`);
+                                            }
+                                        }
+                                    }
                                 } else {
                                     // Vacante
                                     if(!stats.byLocal[local.nombre].missingTypes[tipo]) stats.byLocal[local.nombre].missingTypes[tipo] = 0;
                                     stats.byLocal[local.nombre].missingTypes[tipo]++;
 
-                                    // Check Critical
                                     if(specialRoles.includes(tipo)) {
                                         stats.critical.push(`${local.nombre} - ${capitalize(dia)}: Falta ${specialLabels[tipo]}`);
-                                    }
-
-                                    // Check Urgent (< 24h)
-                                    if(shiftDate) {
-                                        const diffMs = shiftDate - now;
-                                        const diffHrs = diffMs / (1000 * 60 * 60);
-                                        if(diffHrs > 0 && diffHrs < 24) {
-                                            stats.urgent.push(`${local.nombre} (${capitalize(dia)} ${hIn}): Falta ${tipo === 'puestos' ? 'Puesto' : specialLabels[tipo] || tipo}`);
-                                        }
                                     }
                                 }
                             }
@@ -964,12 +972,8 @@
         function updateDashboard() {
             try {
                 const container = getEl('dashboard-content');
-                if(!container) {
-                    console.error("Dashboard content container not found");
-                    return;
-                }
+                if(!container) return;
 
-                // If data isn't loaded yet
                 if(!state.locales || state.locales.length === 0) {
                     container.innerHTML = '<p class="text-center text-slate-500">Cargando datos...</p>';
                     return;
@@ -978,38 +982,49 @@
                 const stats = calculateDashboardStats();
                 
                 const percentage = stats.totalSlots > 0 ? Math.round((stats.filledSlots / stats.totalSlots) * 100) : 0;
+                const confirmedPercentage = stats.filledSlots > 0 ? Math.round((stats.confirmedSlots / stats.filledSlots) * 100) : 0;
                 
                 let html = `
                     <div class="mb-6 space-y-6">
-                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
-                            <div class="flex justify-between items-end mb-2">
-                                <div>
-                                    <p class="text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Cobertura Semanal</p>
-                                    <h4 class="text-3xl font-black text-slate-800 dark:text-white">${percentage}%</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Cobertura de Turnos -->
+                            <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
+                                <div class="flex justify-between items-end mb-2">
+                                    <div>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Cobertura de Turnos</p>
+                                        <h4 class="text-2xl font-black text-slate-800 dark:text-white">${percentage}%</h4>
+                                    </div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                        ${stats.filledSlots}/${stats.totalSlots}
+                                    </span>
                                 </div>
-                                <span class="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                    ${stats.filledSlots}/${stats.totalSlots} Turnos
-                                </span>
+                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                                </div>
                             </div>
-                            <div class="w-full bg-slate-200 rounded-full h-3 dark:bg-slate-700 overflow-hidden">
-                                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full shadow-lg transition-all duration-1000 ease-out" style="width: ${percentage}%"></div>
+                            
+                            <!-- Cobertura de Confirmaciones -->
+                            <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
+                                <div class="flex justify-between items-end mb-2">
+                                    <div>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Confirmaciones</p>
+                                        <h4 class="text-2xl font-black text-slate-800 dark:text-white">${confirmedPercentage}%</h4>
+                                    </div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                                        ${stats.confirmedSlots}/${stats.filledSlots}
+                                    </span>
+                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden">
+                                    <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${confirmedPercentage}%"></div>
+                                </div>
                             </div>
                         </div>
 
                         ${stats.urgent.length > 0 ? `
                         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg dark:bg-red-900/20">
-                            <h4 class="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">🔥</span> URGENTE (Próximas 24h)</h4>
-                            <ul class="list-none space-y-1 text-sm text-red-600 dark:text-red-300">
+                            <h4 class="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">🔥</span> URGENTE (Falta confirmar &lt; 48h)</h4>
+                            <ul class="list-none space-y-1 text-sm text-red-600 dark:text-red-300 max-h-32 overflow-y-auto custom-scrollbar">
                                 ${stats.urgent.map(u => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>${u}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
-
-                        ${stats.critical.length > 0 ? `
-                        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg dark:bg-orange-900/20">
-                            <h4 class="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> Puestos Críticos</h4>
-                            <ul class="list-none space-y-1 text-sm text-orange-600 dark:text-orange-300">
-                                ${stats.critical.slice(0, 5).map(c => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>${c}</li>`).join('')}
-                                ${stats.critical.length > 5 ? `<li class="text-xs italic pl-4 opacity-75">... y ${stats.critical.length - 5} más</li>` : ''}
                             </ul>
                         </div>` : ''}
                     </div>
@@ -1021,24 +1036,32 @@
                 
                 Object.entries(stats.byLocal).forEach(([local, data]) => {
                     const missing = data.total - data.filled;
-                    if(missing === 0 && data.total > 0) {
+                    let statusHtml = '';
+                    let borderClass = 'border-l-green-500';
+                    
+                    if (missing === 0 && data.unconfirmedCount === 0) {
+                        statusHtml = `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">Completo</span>`;
+                    } else {
+                        if (missing > 0) {
+                            borderClass = 'border-l-red-500';
+                            statusHtml += `<span class="text-red-500 font-bold text-xs bg-red-50 px-2 py-1 rounded dark:bg-red-900/20 mr-1">-${missing} Vacantes</span>`;
+                        }
+                        if (data.unconfirmedCount > 0) {
+                             if(borderClass === 'border-l-green-500') borderClass = 'border-l-yellow-500';
+                             statusHtml += `<span class="text-yellow-600 font-bold text-xs bg-yellow-50 px-2 py-1 rounded dark:bg-yellow-900/20">⚠ ${data.unconfirmedCount} sin confirmar</span>`;
+                        }
+                    }
+                    
+                    const details = Object.entries(data.missingTypes)
+                        .map(([type, count]) => `<span class="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30">${count} ${type === 'puestos' ? 'Puestos' : type}</span>`)
+                        .join(' ');
+                        
+                    if(data.total > 0) {
                         html += `
-                        <div class="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-green-500">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-slate-700 dark:text-slate-200 group-hover:text-green-600 transition-colors">${local}</span>
-                                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">Completo</span>
-                            </div>
-                        </div>`;
-                    } else if (data.total > 0) {
-                        const details = Object.entries(data.missingTypes)
-                            .map(([type, count]) => `<span class="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30">${count} ${type === 'puestos' ? 'Puestos' : type}</span>`)
-                            .join(' ');
-                            
-                        html += `
-                        <div class="group p-4 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 border-l-red-500">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="font-bold text-slate-700 dark:text-slate-200 group-hover:text-red-500 transition-colors">${local}</span>
-                                <span class="text-red-500 font-bold text-sm bg-red-50 px-2 py-1 rounded dark:bg-red-900/20">-${missing}</span>
+                        <div class="group p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 ${borderClass}">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-700 dark:text-slate-200">${local}</span>
+                                <div class="flex flex-col items-end gap-1">${statusHtml}</div>
                             </div>
                             <div class="flex flex-wrap gap-1">${details}</div>
                         </div>`;
@@ -1049,7 +1072,6 @@
                 container.innerHTML = html;
             } catch (err) {
                 console.error("Error updating dashboard:", err);
-                alert("Error al cargar el dashboard. Ver consola.");
             }
         }
 
@@ -1301,9 +1323,13 @@
                 if (!hContainer) return;
                 hContainer.innerHTML = '';
                 snap.docs.forEach(d => {
+                    const isBackup = d.id.includes('_RESPALDO_');
+                    const displayName = isBackup ? d.id.replace('_', ' ') : `Semana ${d.id}`;
+                    const btnClass = isBackup ? 'border-teal-500 bg-teal-50' : 'border-slate-200';
+                    
                     const btn = document.createElement('div');
-                    btn.className = "p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex justify-between";
-                    btn.innerHTML = `<span>Semana ${d.id}</span> <button class="text-blue-500 font-bold" onclick="window.loadHist('${d.id}')">Cargar</button>`;
+                    btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex justify-between ${btnClass}`;
+                    btn.innerHTML = `<span class="font-medium">${displayName}</span> <button class="text-blue-500 font-bold" onclick="window.loadHist('${d.id}')">Cargar</button>`;
                     hContainer.appendChild(btn);
                 });
             });
@@ -1463,6 +1489,25 @@
             if (btnCloseDashboard) {
                 btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
             }
+            
+            // Listener para Guardar Respaldo
+            const btnSaveHistory = getEl('btn-save-history');
+            if (btnSaveHistory) {
+                btnSaveHistory.onclick = async () => {
+                    if(!confirm("¿Guardar estado actual en el historial?")) return;
+                    const week = state.selectedWeek;
+                    const data = state.asignaciones[week] || {};
+                    // Crear ID único para el respaldo
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                    const backupId = `${week}_RESPALDO_${timestamp}`;
+                    
+                    await setDoc(doc(collections.historial, backupId), data);
+                    // También guardarlo en asignaciones para poder cargarlo después (truco del sistema actual)
+                    await setDoc(doc(collections.asignaciones, backupId), data);
+                    
+                    showToast("Respaldo guardado exitosamente");
+                };
+            }
 
             getEl('programacion-container').addEventListener('click', async (e) => {
                 const btnCopy = e.target.closest('.btn-copy-individual');
@@ -1482,6 +1527,7 @@
                         'porteria': 'Portería'
                     };
 
+                    const groupedShifts = [];
                     const rawShifts = Object.entries(weekAsig)
                         .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
                         .map(([k]) => {
@@ -1510,48 +1556,39 @@
                                 startMin: startMin,
                                 label
                             };
-                        })
-                        .sort((a,b) => {
-                            if (a.order !== b.order) return a.order - b.order; 
-                            return a.startMin - b.startMin; 
                         });
-
-                    if(rawShifts.length === 0) return showToast("Sin turnos para copiar", "error");
-
-                    const groupedShifts = [];
+                        
+                    // Agrupar para mensaje
                     rawShifts.forEach(s => {
-                        const existing = groupedShifts.find(g => 
-                            g.dia === s.dia && 
-                            g.local === s.local
-                        );
-
-                        if (existing) {
-                            if (s.startMin < existing.startMin) {
-                                existing.startMin = s.startMin;
-                                existing.horaEntrada = s.horaEntrada;
-                                existing.vestimenta = s.vestimenta;
-                            }
-                            
-                            if (s.label && !existing.labels.includes(s.label)) {
-                                existing.labels.push(s.label);
-                            }
-                        } else {
-                            groupedShifts.push({
-                                dia: s.dia,
-                                local: s.local,
-                                horaEntrada: s.horaEntrada, 
-                                startMin: s.startMin,
-                                vestimenta: s.vestimenta,
-                                order: s.order, 
-                                labels: s.label ? [s.label] : []
-                            });
-                        }
+                         const existing = groupedShifts.find(g => g.dia === s.dia && g.local === s.local);
+                         if (existing) {
+                             if (s.startMin < existing.startMin) {
+                                 existing.startMin = s.startMin;
+                                 existing.horaEntrada = s.horaEntrada;
+                                 existing.vestimenta = s.vestimenta;
+                             }
+                             if (s.label && !existing.labels.includes(s.label)) {
+                                 existing.labels.push(s.label);
+                             }
+                         } else {
+                             groupedShifts.push({
+                                 dia: s.dia,
+                                 local: s.local,
+                                 horaEntrada: s.horaEntrada, 
+                                 startMin: s.startMin,
+                                 vestimenta: s.vestimenta,
+                                 order: s.order, 
+                                 labels: s.label ? [s.label] : []
+                             });
+                         }
                     });
                     
                     groupedShifts.sort((a,b) => {
                         if (a.order !== b.order) return a.order - b.order; 
                         return a.startMin - b.startMin; 
                     });
+
+                    if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
 
                     let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
                     groupedShifts.forEach(s => {
@@ -1971,14 +2008,23 @@
                 if(shifts.length === 0) return '';
                 
                 const allConfirmed = shifts.every(s => s.isConfirmed);
-                const borderClass = allConfirmed 
-                    ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" 
-                    : "border-slate-200 dark:border-slate-600";
+                
+                // LÓGICA VISUAL DE ESTADO (COMPLETO / INCOMPLETO)
+                let borderClass = "";
+                let statusBadge = "";
+
+                if (allConfirmed) {
+                    borderClass = "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]";
+                    statusBadge = '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>';
+                } else {
+                    borderClass = "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
+                    statusBadge = '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
+                }
 
                 return `
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden">
                     
-                    ${allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : ''}
+                    ${statusBadge}
 
                     <div class="flex justify-between items-center mb-4 mt-1">
                         <h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">
@@ -2125,39 +2171,77 @@
         }
 
         function generateTextSchedule(filterLocal) {
-            let text = `*PROGRAMACIÓN SEMANA ${state.selectedWeek}*\n\n`;
-            const asig = state.asignaciones[state.selectedWeek] || {};
+            let finalText = ""; 
+            const week = state.selectedWeek;
+            const asig = state.asignaciones[week] || {};
             
-            const locales = filterLocal ? state.locales.filter(l => l.nombre === filterLocal) : state.locales;
+            // Mapa para etiquetas amigables en el reporte
+            const specialRoleMap = {
+                'cacheos': 'Cacheo',
+                'cacheoIngreso': 'Ingreso',
+                'cacheoSalida': 'Salida',
+                'porteria': 'Portería'
+            };
             
-            locales.forEach(l => {
-                text += `📍 *${l.nombre.toUpperCase()}*\n`;
+            const localesToPrint = filterLocal 
+                ? state.locales.filter(l => l.nombre === filterLocal)
+                : state.locales;
+
+            localesToPrint.forEach(l => {
+                let localBlock = `Programación ${l.nombre.toUpperCase()}\n\n`;
+                let hasContent = false;
+                
                 diasSemana.forEach(d => {
                     const shifts = [];
                     const conf = state.mapeoConfig[l.nombre]?.[d];
-                    if(!conf) return;
                     
-                    ['puestos','cacheos'].forEach(t => {
-                        const cant = parseInt(conf[t] || 0);
-                        for(let i=1; i<=cant; i++) {
-                            const sid = `${l.nombre}-${d}-${t}-${i}`;
-                            const pid = asig[sid];
-                            if(pid) {
-                                const p = state.personal.find(x=>x.id===pid);
-                                const h = `${conf[`hora${t}Entrada`]}-${conf[`hora${t}Salida`]}`;
-                                shifts.push(`   • ${t} ${i}: ${getFullName(p)} (${h})`);
+                    if (conf) {
+                        const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
+                        
+                        allTypes.forEach(t => {
+                            const cant = parseInt(conf[t] || 0);
+                            for(let i=1; i<=cant; i++) {
+                                const sid = `${l.nombre}-${d}-${t}-${i}`;
+                                const pid = asig[sid];
+                                if(pid) {
+                                    const p = state.personal.find(x => x.id === pid);
+                                    if (p) {
+                                        let line = getFullName(p);
+                                        // Agregar etiqueta si es rol especial
+                                        if (specialRoleMap[t]) {
+                                            line += ` (+ ${specialRoleMap[t]})`;
+                                        }
+                                        shifts.push(line);
+                                    }
+                                }
                             }
-                        }
-                    });
-                    
-                    if(shifts.length > 0) {
-                        text += `📅 ${d.toUpperCase()}:\n${shifts.join('\n')}\n`;
+                        });
+                    }
+
+                    if (shifts.length > 0) {
+                        hasContent = true;
+                        shifts.sort((a, b) => a.localeCompare(b));
+                        
+                        localBlock += `${capitalize(d)}\n`;
+                        shifts.forEach((name, index) => {
+                            localBlock += `${index + 1}. ${name}\n`;
+                        });
+                        localBlock += '\n'; 
                     }
                 });
-                text += '\n------------------\n';
+                
+                // Solo agregar el bloque del local si tiene contenido
+                if (hasContent) {
+                    finalText += localBlock + '\n';
+                }
             });
             
-            copiarTextoSeguro(text);
+            if (!finalText) {
+                showToast("No hay asignaciones para copiar.", "error");
+                return;
+            }
+            
+            copiarTextoSeguro(finalText);
         }
 
         window.verPersonal = (id) => {
