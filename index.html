@@ -212,6 +212,14 @@
         #search-panel { position: fixed; bottom: 80px; right: 20px; width: 300px; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 16px; z-index: 1000; transform: translateY(20px) scale(0.95); opacity: 0; transition: all 0.3s ease; pointer-events: none; }
         #search-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         html.dark #search-panel { background-color: rgba(30, 41, 59, 0.9); }
+        
+        /* Estilos Calendario */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .calendar-day { min-height: 80px; padding: 4px; border: 1px solid #e2e8f0; background-color: white; cursor: pointer; transition: all 0.2s; }
+        .calendar-day:hover { background-color: #f8fafc; }
+        html.dark .calendar-day { background-color: #1e293b; border-color: #334155; }
+        html.dark .calendar-day:hover { background-color: #334155; }
+        .calendar-header { font-weight: bold; text-align: center; padding: 8px 0; font-size: 0.85rem; color: #64748b; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -279,6 +287,14 @@
             <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Mapeo Semanal</h1>
             <div class="absolute top-0 right-0 flex items-center gap-3">
                 
+                <!-- BOTÓN PERMISOS (Ajustado al mismo tamaño que Estado) -->
+                <button id="btn-permisos" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 group" title="Gestión de Permisos">
+                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 hidden sm:block">Permisos</span>
+                </button>
+
                 <!-- BOTÓN DASHBOARD MINIMALISTA -->
                 <button id="btn-dashboard" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group" title="Ver Dashboard de Estado">
                     <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -505,6 +521,75 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal Permisos -->
+    <div id="permisos-modal" class="modal">
+         <div class="modal-content !max-w-5xl max-h-[90vh] flex flex-col dark:bg-slate-800 dark:border-slate-700 p-6">
+             <div class="flex justify-between items-center mb-4 shrink-0">
+                 <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2">
+                     <span class="text-3xl">📅</span> Calendario de Ausencias
+                 </h3>
+                 <button onclick="document.getElementById('permisos-modal').style.display='none'" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
+             </div>
+             
+             <div class="flex gap-4 mb-4">
+                 <button id="prev-month" class="px-3 py-1 bg-slate-200 rounded hover:bg-slate-300 dark:bg-slate-700 dark:text-white">&lt;</button>
+                 <span id="current-month-display" class="font-bold text-xl w-40 text-center dark:text-white"></span>
+                 <button id="next-month" class="px-3 py-1 bg-slate-200 rounded hover:bg-slate-300 dark:bg-slate-700 dark:text-white">&gt;</button>
+             </div>
+             
+             <div class="grid grid-cols-7 gap-2 mb-2 text-center font-bold text-slate-500 dark:text-slate-400">
+                 <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+             </div>
+             
+             <div id="calendar-grid" class="calendar-grid flex-grow overflow-y-auto"></div>
+             
+             <div class="mt-4 flex gap-4 text-sm">
+                 <div class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-400 rounded-full"></span> Permiso</div>
+                 <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> Baja Médica</div>
+                 <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> Vacaciones</div>
+             </div>
+         </div>
+    </div>
+    
+    <!-- Modal Agregar Permiso (Sub-modal) -->
+    <div id="add-permiso-modal" class="modal" style="z-index: 3100;">
+        <div class="modal-content !max-w-md p-6 dark:bg-slate-800 dark:border-slate-700">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Registrar Ausencia</h3>
+            <form id="form-permiso" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-slate-300">Personal</label>
+                    <select id="permiso-personal" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                     <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Desde</label>
+                        <input type="date" id="permiso-start" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required>
+                     </div>
+                     <div>
+                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Hasta</label>
+                        <input type="date" id="permiso-end" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required>
+                     </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-slate-300">Tipo</label>
+                    <select id="permiso-type" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white">
+                        <option value="permiso">Permiso Personal (Amarillo)</option>
+                        <option value="baja">Baja Médica (Rojo)</option>
+                        <option value="vacaciones">Vacaciones (Verde)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-slate-300">Motivo</label>
+                    <input type="text" id="permiso-reason" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" placeholder="Opcional">
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="document.getElementById('add-permiso-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal Agregar/Editar Personal -->
     <div id="personal-modal" class="modal">
@@ -615,17 +700,19 @@
             asignaciones: collection(db, `${basePath}/asignaciones`),
             historial: collection(db, `${basePath}/historial`),
             tarifarios: collection(db, `${basePath}/tarifarios`),
-            status: collection(db, `${basePath}/status`)
+            status: collection(db, `${basePath}/status`),
+            permisos: collection(db, `${basePath}/permisos`)
         };
 
         // 3. ESTADO GLOBAL
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const vestimentaEmojis = { 'Ropa Táctica': '🥋', 'Terno': '🤵' };
-        let state = { personal: [], locales: [], mapeoConfig: {}, asignaciones: {}, historial: {}, tarifarios: {}, selectedWeek: '' };
+        let state = { personal: [], locales: [], mapeoConfig: {}, asignaciones: {}, historial: {}, tarifarios: {}, permisos: [], selectedWeek: '' };
         let listeners = { asignaciones: null };
         let tempScheduleConfig = {}; 
         let currentSlotId = null;
         let currentlyEditingLocal = null;
+        let currentCalendarDate = new Date();
         
         // Estado de conflictos
         let conflictMap = {
@@ -879,6 +966,7 @@
                             } 
                             // 2. ROJO (Grave)
                             // Mismo Local OR Cruce > 2 horas (120 min)
+                            // "Cruce de 8 horas" es > 2 horas para simplificar y asegurar gravedad
                             else if (sameLocal || overlap > 120) {
                                 conflictMap.repeat.add(s1.slotId);
                                 conflictMap.repeat.add(s2.slotId);
@@ -926,6 +1014,8 @@
                             stats.byLocal[local.nombre].total += count;
                             
                             const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
+                            
+                            // Check valid date/time before calculating urgency
                             let shiftDate = null;
                             try {
                                 shiftDate = getShiftDate(week, dia, hIn);
@@ -956,6 +1046,7 @@
                                     if(!stats.byLocal[local.nombre].missingTypes[tipo]) stats.byLocal[local.nombre].missingTypes[tipo] = 0;
                                     stats.byLocal[local.nombre].missingTypes[tipo]++;
 
+                                    // Check Critical
                                     if(specialRoles.includes(tipo)) {
                                         stats.critical.push(`${local.nombre} - ${capitalize(dia)}: Falta ${specialLabels[tipo]}`);
                                     }
@@ -972,8 +1063,12 @@
         function updateDashboard() {
             try {
                 const container = getEl('dashboard-content');
-                if(!container) return;
+                if(!container) {
+                    console.error("Dashboard content container not found");
+                    return;
+                }
 
+                // If data isn't loaded yet
                 if(!state.locales || state.locales.length === 0) {
                     container.innerHTML = '<p class="text-center text-slate-500">Cargando datos...</p>';
                     return;
@@ -1027,6 +1122,15 @@
                                 ${stats.urgent.map(u => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>${u}</li>`).join('')}
                             </ul>
                         </div>` : ''}
+
+                        ${stats.critical.length > 0 ? `
+                        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg dark:bg-orange-900/20">
+                            <h4 class="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> Puestos Críticos</h4>
+                            <ul class="list-none space-y-1 text-sm text-orange-600 dark:text-orange-300">
+                                ${stats.critical.slice(0, 5).map(c => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>${c}</li>`).join('')}
+                                ${stats.critical.length > 5 ? `<li class="text-xs italic pl-4 opacity-75">... y ${stats.critical.length - 5} más</li>` : ''}
+                            </ul>
+                        </div>` : ''}
                     </div>
 
                     <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[400px]">
@@ -1072,6 +1176,7 @@
                 container.innerHTML = html;
             } catch (err) {
                 console.error("Error updating dashboard:", err);
+                alert("Error al cargar el dashboard. Ver consola.");
             }
         }
 
@@ -1342,6 +1447,12 @@
             });
             
             watchWeek(state.selectedWeek);
+            
+            // Listen to Permisos
+            onSnapshot(query(collections.permisos), snap => {
+                state.permisos = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderCalendar();
+            });
         }
 
         function watchWeek(week) {
@@ -1508,6 +1619,32 @@
                     showToast("Respaldo guardado exitosamente");
                 };
             }
+            
+            // Listener para Permisos
+            const btnPermisos = getEl('btn-permisos');
+            if(btnPermisos) {
+                btnPermisos.onclick = () => {
+                    renderCalendar();
+                    getEl('permisos-modal').style.display = 'block';
+                };
+            }
+            
+            getEl('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
+            getEl('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
+            
+            getEl('form-permiso').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = {
+                    personalId: getEl('permiso-personal').value,
+                    startDate: getEl('permiso-start').value,
+                    endDate: getEl('permiso-end').value,
+                    type: getEl('permiso-type').value,
+                    reason: getEl('permiso-reason').value
+                };
+                await addDoc(collections.permisos, data);
+                getEl('add-permiso-modal').style.display = 'none';
+                showToast("Ausencia registrada");
+            });
 
             getEl('programacion-container').addEventListener('click', async (e) => {
                 const btnCopy = e.target.closest('.btn-copy-individual');
@@ -1919,6 +2056,76 @@
             const tbody = getEl(id);
             if (!tbody) return;
             tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
+        }
+
+        function renderCalendar() {
+            const container = getEl('calendar-grid');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            getEl('current-month-display').textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Adjust to start on Sunday (or Monday, depending on pref. Using Sunday as col 1)
+            // Grid is 7 cols.
+            
+            // Padding
+            for(let i=0; i<firstDay; i++) {
+                container.innerHTML += `<div class="calendar-day opacity-50 bg-slate-100 dark:bg-slate-800"></div>`;
+            }
+            
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                // Find permits
+                const activePermits = state.permisos.filter(p => {
+                    return dateStr >= p.startDate && dateStr <= p.endDate;
+                });
+                
+                let dayContent = `<div class="font-bold text-right text-xs mb-1 dark:text-slate-400">${d}</div>`;
+                activePermits.forEach(p => {
+                    let color = "bg-yellow-400";
+                    if(p.type === 'baja') color = "bg-red-500 text-white";
+                    if(p.type === 'vacaciones') color = "bg-green-500 text-white";
+                    
+                    const person = state.personal.find(x => x.id === p.personalId);
+                    const name = person ? getFullName(person).split(' ')[0] : '???';
+                    
+                    dayContent += `<div class="text-[10px] ${color} px-1 rounded truncate mb-1" title="${p.reason}">${name}</div>`;
+                });
+                
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto';
+                cell.innerHTML = dayContent;
+                cell.onclick = (e) => {
+                    // Si se hace click en el fondo, abrir modal para agregar
+                    if(e.target === cell || e.target.classList.contains('font-bold')) {
+                        openAddPermisoModal(dateStr);
+                    } else {
+                         // Click en permiso existente? (Futura mejora: editar/borrar)
+                         if(confirm("¿Eliminar este registro de ausencia?")) {
+                             // Lógica simple de borrado si se hace click en la etiqueta (requeriría id exacto)
+                             // Por ahora solo abre agregar
+                         }
+                    }
+                };
+                container.appendChild(cell);
+            }
+        }
+        
+        function openAddPermisoModal(dateStr) {
+            getEl('permiso-start').value = dateStr;
+            getEl('permiso-end').value = dateStr;
+            // Populate select
+            const sel = getEl('permiso-personal');
+            sel.innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
+            
+            getEl('add-permiso-modal').style.display = 'block';
         }
 
         function renderModalPersonalList() {
