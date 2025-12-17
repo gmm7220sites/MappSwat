@@ -2161,22 +2161,41 @@
                     const person = state.personal.find(x => x.id === p.personalId);
                     const name = person ? getFullName(person).split(' ')[0] : '???';
                     
-                    dayContent += `<div class="text-[10px] ${color} px-1 rounded truncate mb-1" title="${p.reason}">${name}</div>`;
+                    // Añadimos clase 'permiso-item' y data-id para detectar el click
+                    dayContent += `<div class="permiso-item text-[10px] ${color} px-1 rounded truncate mb-1 cursor-pointer hover:opacity-80 transition-opacity" data-id="${p.id}" title="${p.reason || ''}">${name}</div>`;
                 });
                 
                 const cell = document.createElement('div');
-                cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto';
+                cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto relative';
                 cell.innerHTML = dayContent;
-                cell.onclick = (e) => {
-                    // Si se hace click en el fondo, abrir modal para agregar
-                    if(e.target === cell || e.target.classList.contains('font-bold')) {
+                
+                cell.onclick = async (e) => {
+                    // 1. Detectamos si el clic fue en una etiqueta de permiso
+                    const itemPermiso = e.target.closest('.permiso-item');
+                    
+                    if (itemPermiso) {
+                        e.stopPropagation(); // Evita abrir el modal de "Crear Nuevo"
+                        
+                        // Recuperamos los datos reales usando el ID
+                        const pid = itemPermiso.dataset.id;
+                        const dataPermiso = state.permisos.find(x => x.id === pid);
+                        
+                        if (!dataPermiso) return;
+
+                        const personal = state.personal.find(p => p.id === dataPermiso.personalId);
+                        const nombreCompleto = personal ? `${personal.nombre} ${personal.apellido}` : 'Personal Desconocido';
+                        
+                        // 2. Mostramos el MOTIVO y pedimos confirmación
+                        const mensaje = `📅 GESTIÓN DE AUSENCIA\n\n👤 Personal: ${nombreCompleto}\n📝 Motivo: ${dataPermiso.reason || 'Sin motivo especificado'}\n📌 Tipo: ${dataPermiso.type.toUpperCase()}\n\n¿Deseas ELIMINAR este registro permanentemente?`;
+
+                        // 3. Eliminamos si el usuario confirma
+                        if (confirm(mensaje)) {
+                            await deleteDoc(doc(collections.permisos, pid));
+                            showToast("Ausencia eliminada correctamente");
+                        }
+                    } else if (e.target === cell || e.target.classList.contains('font-bold')) {
+                        // Mantiene la función original de crear nuevo permiso si se clica en el espacio vacío
                         openAddPermisoModal(dateStr);
-                    } else {
-                         // Click en permiso existente? (Futura mejora: editar/borrar)
-                         if(confirm("¿Eliminar este registro de ausencia?")) {
-                             // Lógica simple de borrado si se hace click en la etiqueta (requeriría id exacto)
-                             // Por ahora solo abre agregar
-                         }
                     }
                 };
                 container.appendChild(cell);
@@ -2229,7 +2248,6 @@
                 return term ? nameMatch : hasShift;
             });
             
-            // Mapas de roles especiales para mostrarlos en la UI
             const specialRoleMap = {
                 'cacheos': 'Cacheo',
                 'cacheoIngreso': 'C. Ingreso',
@@ -2252,7 +2270,6 @@
                         
                         const startMin = timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
 
-                        // Calculate if this shift is "urgent"
                         let isUrgent = false;
                         const isConfirmed = weekAsig[`${k}-confirmed`];
                         if (!isConfirmed) {
@@ -2266,8 +2283,6 @@
                         }
 
                         const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
-                        
-                        // Detectar si es rol especial
                         const specialLabel = specialRoleMap[tipo] || null;
                         
                         return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k, order: diasSemana.indexOf(dia), startMin, specialLabel, isUrgent };
@@ -2281,7 +2296,6 @@
                 
                 const allConfirmed = shifts.every(s => s.isConfirmed);
                 
-                // LÓGICA VISUAL DE ESTADO (COMPLETO / INCOMPLETO)
                 let borderClass = "";
                 let statusBadge = "";
 
@@ -2311,11 +2325,9 @@
                             let rowBg = "bg-slate-50 dark:bg-slate-700";
                             let borderL = "border-l-4 border-transparent";
                             
-                            // Urgency Override for Card Visuals
                             if (s.isUrgent) {
                                 rowBg = "urgent-card"; 
                             } 
-                            // Conflict Logic
                             else if (conflictMap.role.has(s.slotId)) {
                                 rowBg = "conflict-role";
                                 borderL = "border-l-4 border-blue-500";
@@ -2367,7 +2379,7 @@
                 </div>`;
             }).join('');
         }
-        
+
         function renderTarifarioTable() {
             const term = getEl('busqueda-tarifario').value.toLowerCase();
             const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
@@ -2388,13 +2400,11 @@
 
         function renderPlanillas() {
             const container = getEl('tabla-planillas');
-            if(!container) return; // FIX: Added safety check
+            if(!container) return; 
             const asig = state.asignaciones[state.selectedWeek] || {};
             
-            // Estructura de datos: { personaId: { Terno: 0, Tactica: 0, Apoyo: 0, Total: 0, Nombre: '' } }
             const report = {};
             
-            // Inicializar reporte con todo el personal
             state.personal.forEach(p => {
                 report[p.id] = { 
                     Terno: 0, 
@@ -2405,14 +2415,11 @@
                 };
             });
             
-            // Recorrer asignaciones
             Object.entries(asig).forEach(([key, pid]) => {
                 if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
                 
                 if (report[pid]) {
                     const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica';
-                    // Asumimos mapeo: 'Terno' -> Terno, 'Ropa Táctica' -> Tactica. 
-                    // Si hubiera un rol de 'Apoyo' específico, habría que definir la lógica. Por ahora sumamos a Tactica si no es Terno.
                     if (vest === 'Terno') {
                         report[pid].Terno++;
                     } else {
@@ -2421,9 +2428,8 @@
                 }
             });
             
-            // Renderizar tabla
             const html = Object.values(report)
-                .filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0) // Mostrar solo los que trabajaron
+                .filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0)
                 .map(r => {
                     const pagoTerno = r.Terno * (parseFloat(r.Tarifas.Terno) || 0);
                     const pagoTactica = r.Tactica * (parseFloat(r.Tarifas.Tactica) || 0);
