@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V5 - Final Visual)</title>
+    <title>Control de Personal SWAT (V6 - Final Dashboard)</title>
     
     <!-- IMPLEMENTACIÓN DEL ICONO -->
     <link rel="icon" href="logo swat.ico" type="image/x-icon">
@@ -34,7 +34,9 @@
     <!-- Librerías Externas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CORRECCIÓN CHART.JS (VERSIÓN UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -112,17 +114,12 @@
         }
 
         /* --- CONFLICTOS --- */
-        /* Prioridad visual: Azul > Rojo > Amarillo */
-        
-        /* Amarillo (Doblete/Leve) */
         .conflict-overlap { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
         html.dark .conflict-overlap { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
 
-        /* Rojo (Grave/Mismo Local) */
         .conflict-repeat { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
         html.dark .conflict-repeat { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
 
-        /* Azul (Roles Especiales) */
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
         html.dark .conflict-role { background-color: #172554 !important; border-left-color: #3b82f6 !important; }
 
@@ -273,6 +270,8 @@
         <button id="btn-tarifario" class="nav-button">Tarifario</button>
         <button id="btn-planillas" class="nav-button">Planillas</button>
         <button id="btn-historial" class="nav-button">Historial</button>
+        <!-- NUEVO BOTÓN DASHBOARD -->
+        <button id="btn-dashboard-admin" class="nav-button">📊 Dashboard Gerencial</button>
         <div class="mt-auto px-6 pb-6 pt-10">
              <button id="btn-logout" class="text-red-500 font-medium hover:text-red-700 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
@@ -323,7 +322,6 @@
                         <div class="flex items-center gap-2">
                             <label class="font-semibold text-slate-700 dark:text-slate-300">Semana:</label>
                             <input type="week" id="semana-mapeo" class="p-2 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white">
-                            <!-- SE ELIMINÓ EL CHECKBOX "VER VACÍOS" A PEDIDO DEL USUARIO -->
                         </div>
                         <div class="flex-grow"></div>
                         <div class="flex flex-wrap gap-2 justify-center items-center">
@@ -411,8 +409,19 @@
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
                             </div>
                         </div>
-                        <button id="btn-abrir-modal-personal" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 mb-6">Agregar Personal Nuevo</button>
-                        <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
+                        
+                        <!-- BOTÓN Y BUSCADOR MEJORADO -->
+                        <button id="btn-abrir-modal-personal" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 mb-4 shadow-md transition-transform hover:scale-[1.02]">Agregar Personal Nuevo</button>
+                        
+                        <!-- NUEVO BUSCADOR GESTIÓN -->
+                        <div class="relative mb-4 group">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" id="gestion-personal-search" class="w-full py-2.5 pl-10 pr-4 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm" placeholder="🔍 Buscar por Nombre o DNI...">
+                        </div>
+
+                        <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar border rounded-lg dark:border-slate-600">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-100 dark:bg-slate-700 sticky top-0">
                                     <tr><th class="p-3">ID</th><th class="p-3">Nombre</th><th class="p-3">Teléfono</th></tr>
@@ -504,6 +513,54 @@
                     <div id="historial-container" class="overflow-x-auto"></div>
                 </div>
             </section>
+
+            <!-- 7. SECCIÓN DASHBOARD GERENCIAL -->
+            <section id="section-dashboard-admin" class="hidden">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-6 border-l-4 border-indigo-600">
+                    <h2 class="text-2xl font-bold dark:text-white">Resumen Ejecutivo</h2>
+                    <p class="text-slate-500 dark:text-slate-400">Análisis financiero y operativo de la semana seleccionada.</p>
+                </div>
+
+                <!-- TARJETAS KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Costo Semanal (Est.)</p>
+                        <h3 id="dash-costo" class="text-3xl font-black text-slate-800 dark:text-white mt-2">S/ 0.00</h3>
+                        <p class="text-xs text-emerald-600 mt-1 font-semibold">Basado en tarifas asignadas</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Turnos Asignados</p>
+                        <h3 id="dash-turnos" class="text-3xl font-black text-slate-800 dark:text-white mt-2">0</h3>
+                        <p class="text-xs text-blue-600 mt-1 font-semibold">Total de servicios cubiertos</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Personal Activo</p>
+                        <h3 id="dash-personal" class="text-3xl font-black text-slate-800 dark:text-white mt-2">0</h3>
+                        <p class="text-xs text-purple-600 mt-1 font-semibold">Agentes trabajando</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-t-4 border-red-500">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Vacantes Libres</p>
+                        <h3 id="dash-vacantes" class="text-3xl font-black text-slate-800 dark:text-white mt-2">0</h3>
+                        <p class="text-xs text-red-600 mt-1 font-semibold">Puestos sin cubrir</p>
+                    </div>
+                </div>
+
+                <!-- GRÁFICOS -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+                        <h4 class="font-bold text-lg mb-4 dark:text-white border-b pb-2 dark:border-slate-700">Operatividad por Local</h4>
+                        <div class="h-64 relative w-full">
+                            <canvas id="chart-turnos-local"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+                        <h4 class="font-bold text-lg mb-4 dark:text-white border-b pb-2 dark:border-slate-700">Distribución de Costos</h4>
+                        <div class="h-64 relative w-full flex justify-center">
+                            <canvas id="chart-costos-tipo"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -512,8 +569,21 @@
     <!-- Modal Selección Global -->
     <div id="global-selection-modal" class="modal">
         <div class="modal-content w-full max-w-md h-[80vh] bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col">
+            <!-- CABECERA MODIFICADA CON BOTÓN DE SUGERENCIA -->
             <div class="p-4 border-b dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800 z-10 shrink-0">
-                <div><h3 class="text-lg font-bold text-slate-800 dark:text-white">Asignar Personal</h3><p id="modal-slot-info" class="text-xs text-slate-500">...</p></div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white">Asignar Personal</h3>
+                        <!-- BOTÓN FOCO -->
+                        <button id="btn-smart-suggest" type="button" class="text-yellow-500 hover:text-yellow-600 transition-all hover:scale-110" title="Sugerencia Inteligente">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                               <path d="M12 18a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0 2a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
+                           </svg>
+                        </button>
+                    </div>
+                    <p id="modal-slot-info" class="text-xs text-slate-500">...</p>
+                </div>
                 <button id="close-global-modal" class="text-slate-400 hover:text-red-500 text-2xl">&times;</button>
             </div>
             <div class="p-4 bg-slate-50 dark:bg-slate-900/50 shrink-0">
@@ -524,7 +594,7 @@
         </div>
     </div>
     
-    <!-- Modal Dashboard -->
+    <!-- Modal Dashboard (Estado) -->
     <div id="dashboard-modal" class="modal">
         <div class="modal-content !max-w-4xl max-h-[85vh] dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col">
             <div class="flex justify-between items-center mb-6 shrink-0">
@@ -534,10 +604,7 @@
                 </h3>
                 <button id="close-dashboard-modal" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
             </div>
-            
-            <div id="dashboard-content" class="flex-grow overflow-hidden flex flex-col">
-                <!-- Se llenará dinámicamente -->
-            </div>
+            <div id="dashboard-content" class="flex-grow overflow-hidden flex flex-col"></div>
         </div>
     </div>
     
@@ -727,6 +794,10 @@
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const vestimentaEmojis = { 'Ropa Táctica': '🥋', 'Terno': '🤵' };
         let state = { personal: [], locales: [], mapeoConfig: {}, asignaciones: {}, historial: {}, tarifarios: {}, permisos: [], selectedWeek: '' };
+        
+        // Variable para guardar los gráficos del Dashboard Admin
+        let adminCharts = { turnos: null, costos: null };
+
         let listeners = { asignaciones: null };
         let tempScheduleConfig = {}; 
         let currentSlotId = null;
@@ -739,8 +810,8 @@
             repeat: new Set(),  // Rojo
             role: new Set()     // Azul
         };
-
-        // 4. FUNCIONES DE UTILIDAD
+        
+        // ... (Funciones de utilidad existentes: getEl, showToast, etc.) ...
         const getEl = (id) => document.getElementById(id);
         const showToast = (msg, type = 'success') => {
             const container = getEl('status-message-container');
@@ -823,7 +894,7 @@
             }
         };
 
-        // 5. RENDERIZADO MODIFICADO
+        // ... (Render Functions remain mostly same, adding new ones) ...
 
         function renderLocalesSelects() {
             const opts = `<option value="">Ninguno</option>` + state.locales.map(l => `<option value="${l.nombre}">${l.nombre.toUpperCase()}</option>`).join('');
@@ -835,21 +906,9 @@
             const pid = state.asignaciones[week]?.[slotId];
             const div = document.createElement('div');
             
-            const tipoLabelMap = {
-                'puestos':'Puesto',
-                'cacheos':'Cacheo',
-                'cacheoIngreso':'Ingreso',
-                'cacheoSalida':'Salida',
-                'turno1': '1er Turno',
-                'turno2': '2do Turno',
-                'turno3': '3er Turno',
-                'porteria': 'Portería'
-            };
+            const tipoLabelMap = { 'puestos':'Puesto', 'cacheos':'Cacheo', 'cacheoIngreso':'Ingreso', 'cacheoSalida':'Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
             const tipoLabel = tipoLabelMap[tipo] || tipo;
-            
-            let baseClass = "slot-empty-row";
-            let content = "";
-            let bgClass = ""; 
+            let baseClass = "slot-empty-row", content = "", bgClass = ""; 
 
             if (pid) {
                 baseClass = "slot-filled-row";
@@ -857,81 +916,44 @@
                 else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
                 else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
                 
-                if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) {
-                    bgClass = "cacheo-row";
-                }
+                if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
 
                 const p = state.personal.find(x => x.id === pid);
                 const vest = state.asignaciones[week]?.[`${slotId}-vestimenta`] || 'Ropa Táctica';
                 const conf = state.asignaciones[week]?.[`${slotId}-confirmed`];
                 
-                content = `
-                    <div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2">
-                        <span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span>
-                        <div class="text-[9px] text-slate-500">${horario}</div>
-                    </div>
-                    <div class="flex-grow p-2 font-semibold text-sm truncate dark:text-slate-100">${getFullName(p)}</div>
-                    <div class="flex gap-1 shrink-0 p-2">
-                        <button class="vestimenta-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Cambiar Vestimenta">${vestimentaEmojis[vest]}</button>
-                        <button class="conf-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Confirmar">${conf ? '✅' : '⬜'}</button>
-                    </div>`;
+                content = `<div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2"><span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span><div class="text-[9px] text-slate-500">${horario}</div></div><div class="flex-grow p-2 font-semibold text-sm truncate dark:text-slate-100">${getFullName(p)}</div><div class="flex gap-1 shrink-0 p-2"><button class="vestimenta-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Cambiar Vestimenta">${vestimentaEmojis[vest]}</button><button class="conf-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Confirmar">${conf ? '✅' : '⬜'}</button></div>`;
             } else {
                 if (['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
-                
-                content = `
-                    <div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2 opacity-50">
-                        <span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span>
-                        <div class="text-[9px] text-slate-500">${horario}</div>
-                    </div>
-                    <div class="flex-grow flex items-center gap-2 text-slate-400 group-hover:text-blue-500 p-2">
-                        <span class="text-xs font-medium">Asignar</span>
-                    </div>`;
+                content = `<div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2 opacity-50"><span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span><div class="text-[9px] text-slate-500">${horario}</div></div><div class="flex-grow flex items-center gap-2 text-slate-400 group-hover:text-blue-500 p-2"><span class="text-xs font-medium">Asignar</span></div>`;
             }
-            
             div.className = `slot-row flex items-center cursor-pointer group ${baseClass} ${bgClass}`;
             div.innerHTML = content;
             div.dataset.slotId = slotId;
             return div;
         }
 
-        // ... [Functions calculateConflicts, calculateDashboardStats, updateDashboard remain the same] ...
-        // Re-declaring calculateConflicts for scope
+        // ... (calculateConflicts, Dashboard Stats, etc.) ...
         function calculateConflicts() {
-            conflictMap.overlap.clear(); 
-            conflictMap.repeat.clear();  
-            conflictMap.role.clear();    
-
+            conflictMap.overlap.clear(); conflictMap.repeat.clear(); conflictMap.role.clear();    
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
             const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
-            
             const shiftsByPerson = {}; 
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
                 if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
-                
-                const parts = slotId.split('-');
-                const indexStr = parts.pop();
-                const tipo = parts.pop();
-                const dia = parts.pop();
-                const local = parts.join('-'); 
-
+                const parts = slotId.split('-'); const indexStr = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                 const conf = state.mapeoConfig[local]?.[dia];
                 if(!conf) return; 
                 
                 const keyNameIn = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
                 const keyNameOut = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`;
-                
-                const hIn = conf[keyNameIn];
-                const hOut = conf[keyNameOut];
+                const hIn = conf[keyNameIn]; const hOut = conf[keyNameOut];
                 if(!hIn || !hOut) return;
 
-                const start = timeToMin(hIn);
-                let end = timeToMin(hOut);
-                if (end < start) end += 24*60; 
-
+                const start = timeToMin(hIn); let end = timeToMin(hOut); if (end < start) end += 24*60; 
                 const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
-                
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
                 shiftsByPerson[pid].push({ slotId, dia, local, tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
             });
@@ -939,7 +961,6 @@
             Object.values(shiftsByPerson).forEach(shifts => {
                 const shiftsByDay = {};
                 shifts.forEach(s => { if(!shiftsByDay[s.dia]) shiftsByDay[s.dia] = []; shiftsByDay[s.dia].push(s); });
-
                 Object.values(shiftsByDay).forEach(dayShifts => {
                     if (dayShifts.length < 2) return; 
                     for(let i=0; i<dayShifts.length; i++) {
@@ -1056,32 +1077,21 @@
             } catch (err) { console.error("Error dashboard", err); }
         }
 
-        // --- RENDER MAPEO CORREGIDO ---
         function renderMapeo() {
             calculateConflicts();
-
             const container = getEl('mapeo-container');
             if(!container) return;
-            container.innerHTML = ''; // Aseguramos limpieza
-            
+            container.innerHTML = ''; 
             const week = state.selectedWeek;
             if (!week) return;
-
-            // INTERRUPTOR DE "MODO EDICIÓN" -> SIEMPRE ACTIVO AHORA
-            // const showAllStructure = getEl('toggle-show-empty')?.checked || false; 
-            // CAMBIO: Ahora siempre es true porque se pidió eliminar el checkbox
             const showAllStructure = true;
-
             const term = getEl('filtro-local-busqueda').value.toLowerCase();
             const filteredLocales = state.locales.filter(l => l.nombre.toLowerCase().includes(term));
-            
             let renderedLocalesCount = 0;
 
             filteredLocales.forEach(local => {
                 const config = state.mapeoConfig[local.nombre] || {};
                 const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
-                
-                // Contenedores temporales
                 const diasContainer = document.createElement('div');
                 let localHasContent = false;
                 let totalSlots = 0;
@@ -1090,9 +1100,7 @@
                 diasSemana.forEach(dia => {
                     const dConf = config[dia] || {};
                     const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
-                    
                     if (activeTypes.length === 0) return;
-
                     const diaBlock = document.createElement('div');
                     diaBlock.innerHTML = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1 rounded mb-1 dark:text-slate-300">${dia}</h4>`;
                     const slotsList = document.createElement('div');
@@ -1107,16 +1115,9 @@
                         for(let i=1; i<=count; i++) {
                             const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
                             const isAssigned = state.asignaciones[week]?.[slotId];
-                            
-                            // === LÓGICA DE HISTORIAL LIMPIO (DESACTIVADA: Siempre muestra estructura) ===
-                            if (!isAssigned && !showAllStructure) {
-                                continue; 
-                            }
-                            // ==================================
-
+                            if (!isAssigned && !showAllStructure) continue; 
                             totalSlots++; 
                             if(isAssigned) filledSlots++;
-
                             slotsList.appendChild(createSlot(slotId, tipo, horario, i));
                             diaHasVisibleSlots = true;
                         }
@@ -1130,9 +1131,7 @@
                 });
 
                 if (!localHasContent && term === '') return;
-
                 renderedLocalesCount++;
-
                 const percent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
                 let strokeColor = percent >= 100 ? "#22c55e" : (percent >= 50 ? "#f59e0b" : "#ef4444"); 
 
@@ -1140,34 +1139,7 @@
                 card.className = "bg-white dark:bg-slate-850 rounded-xl shadow-md border-t-4 border-slate-200 flex flex-col h-full";
                 card.style.borderTopColor = local.color || '#cbd5e1';
                 
-                let headerHtml = `<div class="p-4 border-b dark:border-slate-700 flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3>
-                        <div class="relative w-10 h-10">
-                            <svg class="circular-chart" viewBox="0 0 36 36">
-                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                         <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta">
-                            <!-- ICONO PERCHA/CAMISETA -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path>
-                            </svg>
-                         </button>
-                         <button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></button>
-                         <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar">
-                            <!-- ICONO ENGRANAJE -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/>
-                            </svg>
-                         </button>
-                    </div>
-                </div>`;
-                
+                let headerHtml = `<div class="p-4 border-b dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3><div class="relative w-10 h-10"><svg class="circular-chart" viewBox="0 0 36 36"><path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /></svg><span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span></div></div><div class="flex gap-2"><button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg></button><button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></button><button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg></button></div></div>`;
                 card.innerHTML = headerHtml;
                 const bodyDiv = document.createElement('div');
                 bodyDiv.className = "p-2 space-y-2";
@@ -1177,63 +1149,126 @@
             });
 
             if (renderedLocalesCount === 0 && !showAllStructure) {
-                 container.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60">
-                        <svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                        <p class="text-lg font-semibold">Semana Limpia / Histórica</p>
-                        <p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p>
-                    </div>`;
+                 container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60"><svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg><p class="text-lg font-semibold">Semana Limpia / Histórica</p><p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p></div>`;
             }
         }
 
-        // --- WATCHWEEK (LIMPIADOR DE TRANSICIÓN) ---
+        // --- FUNCIÓN RENDER DASHBOARD GERENCIAL ---
+        function renderAdminDashboard() {
+            const week = state.selectedWeek;
+            const asig = state.asignaciones[week] || {};
+            
+            let totalCost = 0;
+            let totalTurnos = 0;
+            let totalVacantes = 0;
+            const activePersonal = new Set();
+            const turnosPorLocal = {};
+            let costTerno = 0, costTactica = 0;
+
+            state.locales.forEach(l => turnosPorLocal[l.nombre] = 0);
+
+            state.locales.forEach(l => {
+                const conf = state.mapeoConfig[l.nombre] || {};
+                diasSemana.forEach(dia => {
+                    const dayConf = conf[dia] || {};
+                    ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
+                        const cant = parseInt(dayConf[tipo] || 0);
+                        for(let i=1; i<=cant; i++) {
+                            const slotId = `${l.nombre}-${dia}-${tipo}-${i}`;
+                            const pid = asig[slotId];
+                            
+                            if (pid) {
+                                totalTurnos++;
+                                turnosPorLocal[l.nombre] = (turnosPorLocal[l.nombre] || 0) + 1;
+                                activePersonal.add(pid);
+                                
+                                const tarifa = state.tarifarios[pid] || { Terno: 0, Tactica: 0 };
+                                const vestimenta = asig[`${slotId}-vestimenta`] || 'Ropa Táctica';
+                                const costoTurno = vestimenta === 'Terno' ? parseFloat(tarifa.Terno||0) : parseFloat(tarifa.Tactica||0);
+                                totalCost += costoTurno;
+                                if(vestimenta === 'Terno') costTerno += costoTurno; else costTactica += costoTurno;
+                            } else {
+                                totalVacantes++;
+                            }
+                        }
+                    });
+                });
+            });
+
+            const elCosto = document.getElementById('dash-costo');
+            const elTurnos = document.getElementById('dash-turnos');
+            const elPersonal = document.getElementById('dash-personal');
+            const elVacantes = document.getElementById('dash-vacantes');
+
+            if(elCosto) elCosto.textContent = `S/ ${totalCost.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
+            if(elTurnos) elTurnos.textContent = totalTurnos;
+            if(elPersonal) elPersonal.textContent = activePersonal.size;
+            if(elVacantes) elVacantes.textContent = totalVacantes;
+
+            // Gráficos Chart.js
+            const ctx1 = document.getElementById('chart-turnos-local');
+            if(ctx1) {
+                if (adminCharts.turnos) adminCharts.turnos.destroy();
+                adminCharts.turnos = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(turnosPorLocal),
+                        datasets: [{
+                            label: 'Turnos Cubiertos',
+                            data: Object.values(turnosPorLocal),
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+            }
+
+            const ctx2 = document.getElementById('chart-costos-tipo');
+            if(ctx2) {
+                if (adminCharts.costos) adminCharts.costos.destroy();
+                adminCharts.costos = new Chart(ctx2.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Ropa Táctica', 'Terno'],
+                        datasets: [{ data: [costTactica, costTerno], backgroundColor: ['#10b981', '#6366f1'], hoverOffset: 4 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) label += ': '; if (context.parsed !== null) label += `S/ ${context.parsed.toLocaleString('es-PE')}`; return label; } } } } }
+                });
+            }
+        }
+
+        // --- WATCHWEEK ---
         function watchWeek(week) {
             if(!week) return;
-            
-            // 1. LIMPIEZA VISUAL INMEDIATA
             const loader = getEl('loader');
             const mapContainer = getEl('mapeo-container');
             const progContainer = getEl('programacion-container');
             const planContainer = getEl('tabla-planillas');
 
             if(loader) loader.style.display = 'flex'; 
-
             if(mapContainer) mapContainer.innerHTML = ''; 
             if(progContainer) progContainer.innerHTML = '';
             if(planContainer) planContainer.innerHTML = '';
 
-            // 2. DETENER ESCUCHA ANTERIOR (Caza-Fantasmas)
-            if(listeners.asignaciones) {
-                listeners.asignaciones(); 
-                listeners.asignaciones = null;
-            }
+            if(listeners.asignaciones) { listeners.asignaciones(); listeners.asignaciones = null; }
             
-            // 3. CONECTAR A LA NUEVA SEMANA
             listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
                 state.asignaciones[week] = snap.exists() ? snap.data() : {};
-                
                 renderMapeo();
                 renderProgramacion();
                 renderPlanillas();
-                
                 setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
-            }, (error) => {
-                console.error("Error:", error);
-                if(loader) loader.style.display = 'none';
-            });
+            }, (error) => { console.error("Error:", error); if(loader) loader.style.display = 'none'; });
         }
 
+        // ... (system status and other standard functions) ...
         function setupSystemStatus() {
             const statusRef = doc(collections.status, 'ping');
-            onSnapshot(statusRef, (snap) => {
-                if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis());
-            }, () => handleConnectionChange(false));
-
-            setInterval(() => {
-                setDoc(statusRef, { timestamp: serverTimestamp() }).catch(() => handleConnectionChange(false));
-            }, 10000);
+            onSnapshot(statusRef, (snap) => { if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis()); }, () => handleConnectionChange(false));
+            setInterval(() => { setDoc(statusRef, { timestamp: serverTimestamp() }).catch(() => handleConnectionChange(false)); }, 10000);
         }
-
         function updateStatusIcon(latency) {
             const icon = getEl('system-status-icon');
             icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
@@ -1241,25 +1276,21 @@
             else if (latency < 2000) { icon.classList.add('text-yellow-500'); icon.parentElement.title = `Conexión: Regular (${latency}ms)`; } 
             else { icon.classList.add('text-red-500'); icon.parentElement.title = `Conexión: Lenta (${latency}ms)`; }
         }
-
         function handleConnectionChange(online) {
             const icon = getEl('system-status-icon');
             icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
             if (online) { icon.classList.add('text-yellow-500'); showToast("✅ Conexión restaurada"); } 
             else { icon.classList.add('text-red-500', 'animate-pulse'); icon.parentElement.title = "¡Sin conexión!"; showToast("⚠️ Sin conexión", "error"); }
         }
-
         function renderConfigModal(localNombre) {
             const container = getEl('schedule-config-container');
             if (!container) return;
             container.innerHTML = '';
             const localConf = tempScheduleConfig;
-            
             diasSemana.forEach(dia => {
                 if(!localConf[dia]) localConf[dia] = {};
                 const div = document.createElement('div');
                 div.className = "p-4 bg-white dark:bg-slate-700 rounded border dark:border-slate-600";
-                
                 let html = `<h4 class="font-bold mb-2 capitalize dark:text-white">${dia}</h4>`;
                 ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
                     const cKey = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`;
@@ -1267,24 +1298,107 @@
                     const ent = localConf[dia][cKey+'Entrada'] || '08:00 AM';
                     const sal = localConf[dia][cKey+'Salida'] || '08:00 PM';
                     const labelMap = { 'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
-
-                    html += `
-                    <div class="grid grid-cols-4 gap-2 items-center mb-2">
-                        <label class="text-xs font-medium dark:text-slate-300">${labelMap[tipo]}</label>
-                        <input type="number" min="0" class="p-1 border rounded text-center config-input" data-dia="${dia}" data-tipo="${tipo}" value="${cant}">
-                        <input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Entrada" value="${ent}">
-                        <input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Salida" value="${sal}">
-                    </div>`;
+                    html += `<div class="grid grid-cols-4 gap-2 items-center mb-2"><label class="text-xs font-medium dark:text-slate-300">${labelMap[tipo]}</label><input type="number" min="0" class="p-1 border rounded text-center config-input" data-dia="${dia}" data-tipo="${tipo}" value="${cant}"><input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Entrada" value="${ent}"><input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Salida" value="${sal}"></div>`;
                 });
                 div.innerHTML = html;
                 container.appendChild(div);
             });
         }
-
         function renderTable(id, data, rowFn) {
             const tbody = getEl(id);
             if (!tbody) return;
             tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
+        }
+        // ... (rest of render functions like renderProgramacion, renderCalendar etc.) ...
+        function renderCalendar() {
+            const container = getEl('calendar-grid'); if(!container) return; container.innerHTML = '';
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            getEl('current-month-display').textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+            const year = currentCalendarDate.getFullYear(); const month = currentCalendarDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for(let i=0; i<firstDay; i++) container.innerHTML += `<div class="calendar-day opacity-50 bg-slate-100 dark:bg-slate-800"></div>`;
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const activePermits = state.permisos.filter(p => dateStr >= p.startDate && dateStr <= p.endDate);
+                let dayContent = `<div class="font-bold text-right text-xs mb-1 dark:text-slate-400">${d}</div>`;
+                activePermits.forEach(p => {
+                    let color = "bg-yellow-400"; if(p.type === 'baja') color = "bg-red-500 text-white"; if(p.type === 'vacaciones') color = "bg-green-500 text-white";
+                    const person = state.personal.find(x => x.id === p.personalId);
+                    dayContent += `<div class="permiso-item text-[10px] ${color} px-1 rounded truncate mb-1 cursor-pointer hover:opacity-80 transition-opacity" data-id="${p.id}" title="${p.reason || ''}">${person ? getFullName(person).split(' ')[0] : '???'}</div>`;
+                });
+                const cell = document.createElement('div'); cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto relative'; cell.innerHTML = dayContent;
+                cell.onclick = async (e) => {
+                    const itemPermiso = e.target.closest('.permiso-item');
+                    if (itemPermiso) {
+                        e.stopPropagation();
+                        const pid = itemPermiso.dataset.id; const dataPermiso = state.permisos.find(x => x.id === pid); if (!dataPermiso) return;
+                        if (confirm(`¿Eliminar ausencia de ${getFullName(state.personal.find(p => p.id === dataPermiso.personalId))}?`)) { await deleteDoc(doc(collections.permisos, pid)); showToast("Ausencia eliminada"); }
+                    } else if (e.target === cell || e.target.classList.contains('font-bold')) openAddPermisoModal(dateStr);
+                };
+                container.appendChild(cell);
+            }
+        }
+        
+        function openAddPermisoModal(dateStr) {
+            getEl('permiso-start').value = dateStr; getEl('permiso-end').value = dateStr;
+            getEl('permiso-personal').innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
+            getEl('add-permiso-modal').style.display = 'block';
+        }
+        function renderModalPersonalList() {
+            const container = getEl('modal-list-container');
+            const term = getEl('modal-search').value.toLowerCase();
+            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
+            const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
+            container.innerHTML = filtered.map(p => {
+                const isOccupied = occupiedIds.has(p.id); const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
+                return `<div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')"><div><div class="font-medium dark:text-white">${getFullName(p)}</div><div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div></div>${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold">OCUPADO</span>' : ''}${isCurrent ? '<span class="text-green-500 font-bold">✔</span>' : ''}</div>`;
+            }).join('');
+        }
+        function renderProgramacion() {
+            calculateConflicts();
+            const container = getEl('programacion-container'); if(!container) return;
+            const term = getEl('busqueda-programacion').value.toLowerCase();
+            const weekAsig = state.asignaciones[state.selectedWeek] || {};
+            const relevantPersonal = state.personal.filter(p => { const nameMatch = getFullName(p).toLowerCase().includes(term); const hasShift = Object.values(weekAsig).includes(p.id); if (term.length > 0) return nameMatch; return hasShift; });
+            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
+            container.innerHTML = relevantPersonal.map(p => {
+                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
+                        const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                        const conf = state.mapeoConfig[local]?.[dia];
+                        const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
+                        let isUrgent = false; if (!weekAsig[`${k}-confirmed`]) { const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''); if (shiftDate) { const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 48) isUrgent = true; } }
+                        return { local, dia, tipo, horario, isConfirmed: weekAsig[`${k}-confirmed`], vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', slotId: k, order: diasSemana.indexOf(dia), startMin: timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''), specialLabel: specialRoleMap[tipo] || null, isUrgent };
+                    }).sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
+                if(shifts.length === 0) return '';
+                const allConfirmed = shifts.every(s => s.isConfirmed);
+                let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
+                let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
+                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
+            }).join('');
+        }
+        function renderTarifarioTable() {
+            const term = getEl('busqueda-tarifario').value.toLowerCase();
+            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
+            const tbody = getEl('tabla-tarifario'); if(!tbody) return;
+            tbody.innerHTML = filtered.map(p => {
+                const t = state.tarifarios[p.id] || {};
+                return `<tr class="border-b dark:border-slate-700"><td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td></tr>`;
+            }).join('');
+        }
+        function renderPlanillas() {
+            const container = getEl('tabla-planillas'); if(!container) return; 
+            const asig = state.asignaciones[state.selectedWeek] || {};
+            const report = {};
+            state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
+            Object.entries(asig).forEach(([key, pid]) => {
+                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
+                if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
+            });
+            const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
+                const total = (r.Terno * (parseFloat(r.Tarifas.Terno)||0)) + (r.Tactica * (parseFloat(r.Tarifas.Tactica)||0));
+                return `<tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"><td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td><td class="p-3 text-center dark:text-slate-300">${r.Terno}</td><td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td><td class="p-3 text-center dark:text-slate-300">-</td><td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td></tr>`;
+            }).join('');
+            container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
         }
 
         // --- MAIN INIT ---
@@ -1384,15 +1498,12 @@
                 });
             });
 
-            // Evento para el Checkbox "Ver Vacíos" (ELIMINADO)
-            // const toggleShow = getEl('toggle-show-empty');
-            // if(toggleShow) toggleShow.addEventListener('change', renderMapeo);
-
             document.querySelectorAll('.nav-button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
                     const sec = e.target.id.replace('btn-', 'section-');
-                    getEl(sec).classList.remove('hidden');
+                    const targetSection = getEl(sec);
+                    if(targetSection) targetSection.classList.remove('hidden');
                     document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
                     getEl('side-nav').classList.remove('open');
@@ -1513,16 +1624,12 @@
             });
 
             getEl('programacion-container').addEventListener('click', async (e) => {
-                // --- BOTÓN ELIMINAR TODO (X) ---
                 const btnClear = e.target.closest('.btn-clear-individual');
                 if (btnClear) {
                     if(!confirm("¿Estás seguro de ELIMINAR toda la programación de esta persona para esta semana?")) return;
-                    
                     const pid = btnClear.dataset.personId;
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const batchUpdate = {};
-                    
-                    // Buscar todas las asignaciones de este usuario
                     Object.entries(weekAsig).forEach(([key, val]) => {
                         if (val === pid) {
                             batchUpdate[key] = deleteField();
@@ -1530,7 +1637,6 @@
                             batchUpdate[`${key}-confirmed`] = deleteField();
                         }
                     });
-                    
                     if (Object.keys(batchUpdate).length > 0) {
                         await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate);
                         showToast("Programación eliminada");
@@ -1540,18 +1646,13 @@
                     return;
                 }
 
-                // --- LÓGICA DE COPIADO INTELIGENTE (Prioridad C. Ingreso = 1) ---
                 const btnCopy = e.target.closest('.btn-copy-individual');
                 if(btnCopy) {
                     const pid = btnCopy.dataset.personId;
                     const p = state.personal.find(x => x.id === pid);
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
-                    
                     const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
-                    
-                    // CAMBIO: Se agregó 'cacheoIngreso' a la lista de Prioridad 1
                     const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
-
                     const groupedShifts = [];
                     const rawShifts = Object.entries(weekAsig)
                         .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
@@ -1579,10 +1680,8 @@
                              groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] });
                          }
                     });
-                    
                     groupedShifts.sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
                     if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
-
                     let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
                     groupedShifts.forEach(s => {
                         const extras = s.labels.map(l => ` + (${l})`).join('');
@@ -1749,119 +1848,197 @@
                 table.querySelectorAll('tr').forEach(tr => { const rowData = []; tr.querySelectorAll('td').forEach(td => rowData.push(td.innerText)); rows.push(rowData); });
                 const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Planilla"); XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
             };
-        }
 
-        // --- Render Functions ---
-        function renderCalendar() {
-            const container = getEl('calendar-grid'); if(!container) return; container.innerHTML = '';
-            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            getEl('current-month-display').textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
-            const year = currentCalendarDate.getFullYear(); const month = currentCalendarDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
-            for(let i=0; i<firstDay; i++) container.innerHTML += `<div class="calendar-day opacity-50 bg-slate-100 dark:bg-slate-800"></div>`;
-            for(let d=1; d<=daysInMonth; d++) {
-                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const activePermits = state.permisos.filter(p => dateStr >= p.startDate && dateStr <= p.endDate);
-                let dayContent = `<div class="font-bold text-right text-xs mb-1 dark:text-slate-400">${d}</div>`;
-                activePermits.forEach(p => {
-                    let color = "bg-yellow-400"; if(p.type === 'baja') color = "bg-red-500 text-white"; if(p.type === 'vacaciones') color = "bg-green-500 text-white";
-                    const person = state.personal.find(x => x.id === p.personalId);
-                    dayContent += `<div class="permiso-item text-[10px] ${color} px-1 rounded truncate mb-1 cursor-pointer hover:opacity-80 transition-opacity" data-id="${p.id}" title="${p.reason || ''}">${person ? getFullName(person).split(' ')[0] : '???'}</div>`;
-                });
-                const cell = document.createElement('div'); cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto relative'; cell.innerHTML = dayContent;
-                cell.onclick = async (e) => {
-                    const itemPermiso = e.target.closest('.permiso-item');
-                    if (itemPermiso) {
-                        e.stopPropagation();
-                        const pid = itemPermiso.dataset.id; const dataPermiso = state.permisos.find(x => x.id === pid); if (!dataPermiso) return;
-                        if (confirm(`¿Eliminar ausencia de ${getFullName(state.personal.find(p => p.id === dataPermiso.personalId))}?`)) { await deleteDoc(doc(collections.permisos, pid)); showToast("Ausencia eliminada"); }
-                    } else if (e.target === cell || e.target.classList.contains('font-bold')) openAddPermisoModal(dateStr);
+// --- INICIO LÓGICA SUGERENCIA AVANZADA (HISTORIAL 15 SEMANAS + OCUPADOS + PERMISOS) ---
+            const btnSmart = document.getElementById('btn-smart-suggest');
+            if (btnSmart) {
+                // Función auxiliar para retroceder semanas
+                const getPrevWeekID = (weekStr) => {
+                    let [y, w] = weekStr.split('-W').map(Number);
+                    w--;
+                    if (w < 1) { w = 52; y--; }
+                    return `${y}-W${String(w).padStart(2, '0')}`;
                 };
-                container.appendChild(cell);
+
+                // Función auxiliar para obtener la FECHA exacta del slot (YYYY-MM-DD)
+                const getSlotDateString = (weekStr, dayName) => {
+                    const [y, w] = weekStr.split('-W').map(Number);
+                    const simple = new Date(y, 0, 1 + (w - 1) * 7);
+                    const dow = simple.getDay();
+                    const ISOweekStart = simple;
+                    if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+                    else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+                    
+                    const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+                    const dayIndex = diasArr.indexOf(dayName);
+                    
+                    // Sumar días para llegar al día específico del slot
+                    const targetDate = new Date(ISOweekStart);
+                    targetDate.setDate(targetDate.getDate() + dayIndex);
+                    return targetDate.toISOString().split('T')[0];
+                };
+
+                btnSmart.onclick = async () => {
+                    if (!currentSlotId) return;
+
+                    // 1. Desglosar ID del Slot
+                    const parts = currentSlotId.split('-');
+                    // Estructura: NOMBRE-LOCAL-dia-tipo-numero.
+                    // El día está en la antepenúltima posición (index 3 contando desde atrás)
+                    const dayName = parts[parts.length - 3]; 
+                    const localName = parts.slice(0, parts.length - 3).join('-');
+                    
+                    const listContainer = document.getElementById('modal-list-container');
+
+                    // 2. Mensaje de carga
+                    listContainer.innerHTML = `
+                        <div class="p-4 text-center text-blue-600 bg-blue-50 rounded animate-pulse">
+                            <div class="font-bold">🧠 Analizando disponibilidad total...</div>
+                            <div class="text-xs">Revisando historial, turnos y calendario de permisos.</div>
+                        </div>`;
+
+                    try {
+                        const weeksToAnalyze = [];
+                        let tempWeek = state.selectedWeek;
+                        for (let i = 0; i < 15; i++) { 
+                            tempWeek = getPrevWeekID(tempWeek);
+                            weeksToAnalyze.push(tempWeek);
+                        }
+
+                        // 3. Obtener lista de OCUPADOS (Turnos ya asignados esa semana)
+                        const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
+
+                        // 4. Obtener lista de AUSENTES (Permisos/Vacaciones en esa FECHA específica)
+                        const targetDateStr = getSlotDateString(state.selectedWeek, dayName);
+                        const absentIds = new Set();
+                        
+                        // state.permisos ya debe estar cargado desde Firebase en tu código principal
+                        if (state.permisos && state.permisos.length > 0) {
+                            state.permisos.forEach(perm => {
+                                // Verificar si la fecha del slot cae dentro del rango del permiso
+                                if (targetDateStr >= perm.startDate && targetDateStr <= perm.endDate) {
+                                    absentIds.add(perm.personalId);
+                                }
+                            });
+                        }
+
+                        // 5. Análisis de Puntos (Score)
+                        const stats = {}; 
+                        
+                        // A. Semana Actual
+                        const currentWeekData = state.asignaciones[state.selectedWeek] || {};
+                        Object.entries(currentWeekData).forEach(([k, pid]) => {
+                            if (pid && k.startsWith(localName + '-') && typeof pid === 'string') {
+                                if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] };
+                                if (!stats[pid].tags.includes('En Turno')) {
+                                    stats[pid].tags.push('En Turno');
+                                    stats[pid].score += 50; 
+                                }
+                            }
+                        });
+
+                        // B. Historial 15 Semanas
+                        const snapshots = await Promise.all(weeksToAnalyze.map(wID => getDoc(doc(collections.asignaciones, wID))));
+                        snapshots.forEach(snap => {
+                            if (snap.exists()) {
+                                const data = snap.data();
+                                Object.entries(data).forEach(([key, pid]) => {
+                                    if (key.startsWith(localName + '-') && typeof pid === 'string' && !key.includes('vestimenta')) {
+                                        if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] };
+                                        stats[pid].count++;
+                                        stats[pid].score += 5; 
+                                    }
+                                });
+                            }
+                        });
+
+                        // C. Preferencias Perfil
+                        state.personal.forEach(p => {
+                            if (p.local1 === localName || p.local2 === localName) {
+                                if (!stats[p.id]) stats[p.id] = { count: 0, score: 0, tags: [] };
+                                stats[p.id].score += 25; 
+                                if (!stats[p.id].tags.includes('Preferencia')) stats[p.id].tags.push('Preferencia');
+                            }
+                        });
+
+                        // 6. Filtrado Final y Ordenamiento
+                        const suggestions = Object.keys(stats)
+                            .map(pid => {
+                                const p = state.personal.find(x => x.id === pid);
+                                if (!p) return null;
+                                return { ...p, stats: stats[pid] };
+                            })
+                            .filter(item => {
+                                // FILTROS DE SEGURIDAD:
+                                return item && 
+                                       item.disponibilidad !== 'no-disponible' && // 1. Perfil Disponible
+                                       !occupiedIds.has(item.id) &&               // 2. No tiene turno esta semana
+                                       !absentIds.has(item.id);                   // 3. NO TIENE PERMISO/VACACIONES HOY
+                            })
+                            .sort((a, b) => b.stats.score - a.stats.score)
+                            .slice(0, 5);
+
+                        // 7. Renderizar
+                        if (suggestions.length === 0) {
+                            listContainer.innerHTML = `<div class="p-3 text-center text-slate-500 bg-slate-100 mb-2 rounded">No se encontraron sugerencias disponibles (Libres y sin permisos) para ${localName}.</div>`;
+                            renderModalPersonalList(); 
+                        } else {
+                            listContainer.innerHTML = `
+                                <div class="p-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 text-xs font-bold mb-2 rounded border border-purple-300 flex justify-between items-center shadow-sm">
+                                    <span>✅ Sugerencias Habilitadas</span>
+                                    <span class="bg-white px-2 rounded-full text-[10px] border border-purple-200">100% Libres</span>
+                                </div>` +
+                                suggestions.map(p => {
+                                    const tagsHtml = p.stats.tags.map(t => `<span class="text-[9px] px-1 rounded border ${t==='En Turno'?'bg-purple-100 text-purple-700 border-purple-200':'bg-blue-100 text-blue-700 border-blue-200'}">${t}</span>`).join(' ');
+                                    const historyText = p.stats.count > 0 ? `<span class="text-[10px] font-semibold text-slate-500">Historial: ${p.stats.count} turnos</span>` : '';
+
+                                    return `<div class="group relative p-3 border-b dark:border-slate-700 bg-purple-50/40 dark:bg-purple-900/10 flex justify-between items-center cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700 transition-all" onclick="window.selectPersonal('${p.id}')">
+                                        <div class="absolute left-0 top-0 bottom-0 bg-purple-500 w-1 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div>
+                                            <div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                                ${getFullName(p)} 
+                                                ${tagsHtml}
+                                            </div>
+                                            <div class="flex flex-col mt-0.5">
+                                                ${historyText}
+                                                <span class="text-[10px] text-slate-400">Score: ${p.stats.score} pts</span>
+                                            </div>
+                                        </div>
+                                        <span class="text-[10px] text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-200 shadow-sm">HABILITADO</span>
+                                    </div>`;
+                                }).join('') + 
+                                `<div class="text-center text-[10px] text-slate-400 py-1 border-t dark:border-slate-700 mt-2">--- Fin de Sugerencias ---</div>`;
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+                        listContainer.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${error.message}</div>`;
+                    }
+                };
             }
-        }
-        
-        function openAddPermisoModal(dateStr) {
-            getEl('permiso-start').value = dateStr; getEl('permiso-end').value = dateStr;
-            getEl('permiso-personal').innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
-            getEl('add-permiso-modal').style.display = 'block';
-        }
+            // --- FIN LÓGICA SUGERENCIA AVANZADA ---
+            // --- BUSCADOR GESTIÓN ---
+            const searchGestion = document.getElementById('gestion-personal-search');
+            if (searchGestion) {
+                searchGestion.addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term) || (p.numero_empleado && p.numero_empleado.toString().includes(term)));
+                    renderTable('tabla-personal', filtered, (p) => `<td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.numero_empleado||'-'}</td><td class="p-3 font-medium cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td><td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.telefono||'-'}</td>`);
+                });
+            }
 
-        function renderModalPersonalList() {
-            const container = getEl('modal-list-container');
-            const term = getEl('modal-search').value.toLowerCase();
-            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
-            const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
-            container.innerHTML = filtered.map(p => {
-                const isOccupied = occupiedIds.has(p.id); const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
-                return `<div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')"><div><div class="font-medium dark:text-white">${getFullName(p)}</div><div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div></div>${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold">OCUPADO</span>' : ''}${isCurrent ? '<span class="text-green-500 font-bold">✔</span>' : ''}</div>`;
-            }).join('');
-        }
-
-        function renderProgramacion() {
-            calculateConflicts();
-            const container = getEl('programacion-container'); if(!container) return;
-            const term = getEl('busqueda-programacion').value.toLowerCase();
-            const weekAsig = state.asignaciones[state.selectedWeek] || {};
-            
-            // CORRECCIÓN: Filtro estricto (Nombre O si está vacío, mostrar asignados)
-            const relevantPersonal = state.personal.filter(p => {
-                const nameMatch = getFullName(p).toLowerCase().includes(term);
-                const hasShift = Object.values(weekAsig).includes(p.id);
-                if (term.length > 0) return nameMatch;
-                return hasShift;
-            });
-
-            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
-            
-            container.innerHTML = relevantPersonal.map(p => {
-                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
-                        const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
-                        const conf = state.mapeoConfig[local]?.[dia];
-                        const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
-                        let isUrgent = false; if (!weekAsig[`${k}-confirmed`]) { const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''); if (shiftDate) { const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 48) isUrgent = true; } }
-                        return { local, dia, tipo, horario, isConfirmed: weekAsig[`${k}-confirmed`], vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', slotId: k, order: diasSemana.indexOf(dia), startMin: timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''), specialLabel: specialRoleMap[tipo] || null, isUrgent };
-                    }).sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
-                
-                if(shifts.length === 0) return '';
-                const allConfirmed = shifts.every(s => s.isConfirmed);
-                let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
-                let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
-
-                // CAMBIO: Agregado botón "X" en absolute top-1 left-1
-                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden">
-                    <button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                    ${statusBadge}
-                    <div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
-            }).join('');
-        }
-
-        function renderTarifarioTable() {
-            const term = getEl('busqueda-tarifario').value.toLowerCase();
-            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
-            const tbody = getEl('tabla-tarifario'); if(!tbody) return;
-            tbody.innerHTML = filtered.map(p => {
-                const t = state.tarifarios[p.id] || {};
-                return `<tr class="border-b dark:border-slate-700"><td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td></tr>`;
-            }).join('');
-        }
-
-        function renderPlanillas() {
-            const container = getEl('tabla-planillas'); if(!container) return; 
-            const asig = state.asignaciones[state.selectedWeek] || {};
-            const report = {};
-            state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
-            Object.entries(asig).forEach(([key, pid]) => {
-                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
-                if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
-            });
-            const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
-                const total = (r.Terno * (parseFloat(r.Tarifas.Terno)||0)) + (r.Tactica * (parseFloat(r.Tarifas.Tactica)||0));
-                return `<tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"><td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td><td class="p-3 text-center dark:text-slate-300">${r.Terno}</td><td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td><td class="p-3 text-center dark:text-slate-300">-</td><td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td></tr>`;
-            }).join('');
-            container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
+            // --- ACTIVAR DASHBOARD ---
+            const btnDash = document.getElementById('btn-dashboard-admin');
+            if (btnDash) {
+                btnDash.addEventListener('click', () => {
+                    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+                    document.getElementById('section-dashboard-admin').classList.remove('hidden');
+                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+                    btnDash.classList.add('active');
+                    document.getElementById('side-nav').classList.remove('open');
+                    renderAdminDashboard();
+                });
+            }
         }
 
         function generateTextSchedule(filterLocal) {
