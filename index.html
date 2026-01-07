@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V5 - Con Icono)</title>
+    <title>Control de Personal SWAT (V5 - Final Visual)</title>
     
     <!-- IMPLEMENTACIÓN DEL ICONO -->
     <link rel="icon" href="logo swat.ico" type="image/x-icon">
@@ -298,7 +298,7 @@
                 <!-- BOTÓN DASHBOARD MINIMALISTA -->
                 <button id="btn-dashboard" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group" title="Ver Dashboard de Estado">
                     <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 hidden sm:block">Estado</span>
                 </button>
@@ -323,18 +323,18 @@
                         <div class="flex items-center gap-2">
                             <label class="font-semibold text-slate-700 dark:text-slate-300">Semana:</label>
                             <input type="week" id="semana-mapeo" class="p-2 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                            <!-- SE ELIMINÓ EL CHECKBOX "VER VACÍOS" A PEDIDO DEL USUARIO -->
                         </div>
                         <div class="flex-grow"></div>
                         <div class="flex flex-wrap gap-2 justify-center items-center">
                             
-                            <!-- BOTÓN COPIAR TEXTO (AHORA A LA IZQUIERDA) -->
+                            <!-- BOTÓN COPIAR TEXTO -->
                             <button id="btn-copy-all-schedule" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 shadow-sm text-sm flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar Texto
                             </button>
 
-                            <!-- MENÚ DESPLEGABLE HERRAMIENTAS (AHORA A LA DERECHA) -->
+                            <!-- MENÚ DESPLEGABLE HERRAMIENTAS -->
                             <div class="relative">
-                                <!-- Se ajustó px-4 para igualar tamaño -->
                                 <button id="btn-tools-dropdown" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm flex items-center gap-2 border border-slate-300 dark:border-slate-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
@@ -754,7 +754,6 @@
         const getFullName = (p) => p ? `${p.nombre || ''} ${p.apellido || ''}`.trim() : 'N/A';
         const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
         
-        // Función para convertir hora AM/PM a minutos (para cálculos)
         const timeToMin = (timeStr) => {
             if(!timeStr) return -1;
             const [time, period] = timeStr.split(' ');
@@ -764,7 +763,6 @@
             return hours * 60 + minutes;
         };
 
-        // Función para obtener fecha de semana ISO (MOVIDA AQUÍ PARA EVITAR ERRORES)
         function getWeekNumber(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
@@ -773,7 +771,6 @@
             return weekNo;
         }
 
-        // Función para obtener fecha de inicio de semana ISO
         function getDateOfISOWeek(w, y) {
             var simple = new Date(y, 0, 1 + (w - 1) * 7);
             var dow = simple.getDay();
@@ -785,27 +782,18 @@
             return ISOweekStart;
         }
 
-        // Obtener fecha específica de un turno
         function getShiftDate(weekStr, dayName, timeStr) {
             if(!weekStr || !dayName || !timeStr) return null;
-            
             const [yearStr, weekNoStr] = weekStr.split('-W');
             const year = parseInt(yearStr);
             const weekNo = parseInt(weekNoStr);
-            
-            // Monday of the week
             const date = getDateOfISOWeek(weekNo, year);
-            
-            // Add days to get to target day
             const dayIndex = diasSemana.indexOf(dayName.toLowerCase());
             date.setDate(date.getDate() + dayIndex);
-            
-            // Parse Time
             const [time, period] = timeStr.split(' ');
             let [hours, minutes] = time.split(':').map(Number);
             if(period === 'PM' && hours !== 12) hours += 12;
             if(period === 'AM' && hours === 12) hours = 0;
-            
             date.setHours(hours, minutes, 0, 0);
             return date;
         }
@@ -814,7 +802,6 @@
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
-        // Copiado Seguro
         const copiarTextoSeguro = async (texto) => {
             try {
                 await navigator.clipboard.writeText(texto);
@@ -836,7 +823,8 @@
             }
         };
 
-        // 5. RENDERIZADO
+        // 5. RENDERIZADO MODIFICADO
+
         function renderLocalesSelects() {
             const opts = `<option value="">Ninguno</option>` + state.locales.map(l => `<option value="${l.nombre}">${l.nombre.toUpperCase()}</option>`).join('');
             ['local1', 'local2', 'local3'].forEach(id => getEl(id).innerHTML = opts);
@@ -847,7 +835,6 @@
             const pid = state.asignaciones[week]?.[slotId];
             const div = document.createElement('div');
             
-            // Mapas de nombres para los nuevos turnos
             const tipoLabelMap = {
                 'puestos':'Puesto',
                 'cacheos':'Cacheo',
@@ -860,15 +847,12 @@
             };
             const tipoLabel = tipoLabelMap[tipo] || tipo;
             
-            // Determinar clase base
             let baseClass = "slot-empty-row";
             let content = "";
-            let bgClass = ""; // Override para conflictos
+            let bgClass = ""; 
 
             if (pid) {
                 baseClass = "slot-filled-row";
-                
-                // Prioridad Visual Estricta: Azul > Rojo > Amarillo
                 if (conflictMap.role.has(slotId)) bgClass = "conflict-role"; 
                 else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
                 else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
@@ -892,7 +876,6 @@
                         <button class="conf-btn text-lg hover:bg-slate-200 rounded px-1" data-slot="${slotId}" title="Confirmar">${conf ? '✅' : '⬜'}</button>
                     </div>`;
             } else {
-                // Vacío
                 if (['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
                 
                 content = `
@@ -911,17 +894,17 @@
             return div;
         }
 
+        // ... [Functions calculateConflicts, calculateDashboardStats, updateDashboard remain the same] ...
+        // Re-declaring calculateConflicts for scope
         function calculateConflicts() {
-            // Reset Maps
-            conflictMap.overlap.clear(); // Yellow
-            conflictMap.repeat.clear();  // Red
-            conflictMap.role.clear();    // Blue
+            conflictMap.overlap.clear(); 
+            conflictMap.repeat.clear();  
+            conflictMap.role.clear();    
 
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
             const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
             
-            // Agrupar turnos por Persona
             const shiftsByPerson = {}; 
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
@@ -934,7 +917,6 @@
                 const local = parts.join('-'); 
 
                 const conf = state.mapeoConfig[local]?.[dia];
-                
                 if(!conf) return; 
                 
                 const keyNameIn = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
@@ -942,7 +924,6 @@
                 
                 const hIn = conf[keyNameIn];
                 const hOut = conf[keyNameOut];
-                
                 if(!hIn || !hOut) return;
 
                 const start = timeToMin(hIn);
@@ -952,59 +933,24 @@
                 const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
                 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
-                shiftsByPerson[pid].push({
-                    slotId,
-                    dia,
-                    local,
-                    tipo,
-                    start,
-                    end,
-                    absStart: start + dayOffset,
-                    absEnd: end + dayOffset
-                });
+                shiftsByPerson[pid].push({ slotId, dia, local, tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
             });
 
-            // Analizar conflictos
             Object.values(shiftsByPerson).forEach(shifts => {
                 const shiftsByDay = {};
-                shifts.forEach(s => {
-                    if(!shiftsByDay[s.dia]) shiftsByDay[s.dia] = [];
-                    shiftsByDay[s.dia].push(s);
-                });
+                shifts.forEach(s => { if(!shiftsByDay[s.dia]) shiftsByDay[s.dia] = []; shiftsByDay[s.dia].push(s); });
 
                 Object.values(shiftsByDay).forEach(dayShifts => {
                     if (dayShifts.length < 2) return; 
-
                     for(let i=0; i<dayShifts.length; i++) {
                         for(let j=i+1; j<dayShifts.length; j++) {
-                            const s1 = dayShifts[i];
-                            const s2 = dayShifts[j];
-
-                            // Overlap in minutes
+                            const s1 = dayShifts[i]; const s2 = dayShifts[j];
                             const overlap = Math.min(s1.end, s2.end) - Math.max(s1.start, s2.start);
-                            
                             const isSpecial = specialRoles.includes(s1.tipo) || specialRoles.includes(s2.tipo);
                             const sameLocal = s1.local === s2.local;
-
-                            // 1. AZUL (Prioridad Máxima)
-                            // Si participa un rol especial en CUALQUIER conflicto (cruce, mismo local, doblete)
-                            if (isSpecial) {
-                                conflictMap.role.add(s1.slotId);
-                                conflictMap.role.add(s2.slotId);
-                            } 
-                            // 2. ROJO (Grave)
-                            // Mismo Local OR Cruce > 2 horas (120 min)
-                            // "Cruce de 8 horas" es > 2 horas para simplificar y asegurar gravedad
-                            else if (sameLocal || overlap > 120) {
-                                conflictMap.repeat.add(s1.slotId);
-                                conflictMap.repeat.add(s2.slotId);
-                            } 
-                            // 3. AMARILLO (Advertencia)
-                            // Cruce <= 120 min OR Doblete (sin cruce importante)
-                            else {
-                                conflictMap.overlap.add(s1.slotId);
-                                conflictMap.overlap.add(s2.slotId);
-                            }
+                            if (isSpecial) { conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); } 
+                            else if (sameLocal || overlap > 120) { conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); } 
+                            else { conflictMap.overlap.add(s1.slotId); conflictMap.overlap.add(s2.slotId); }
                         }
                     }
                 });
@@ -1014,15 +960,7 @@
         function calculateDashboardStats() {
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
-            const stats = {
-                totalSlots: 0,
-                filledSlots: 0,
-                confirmedSlots: 0,
-                byLocal: {},
-                urgent: [],
-                critical: []
-            };
-
+            const stats = { totalSlots: 0, filledSlots: 0, confirmedSlots: 0, byLocal: {}, urgent: [], critical: [] };
             const now = new Date();
             const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
             const specialLabels = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'Ingreso', 'cacheoSalida': 'Salida', 'porteria': 'Portería' };
@@ -1030,232 +968,179 @@
             state.locales.forEach(local => {
                 stats.byLocal[local.nombre] = { total: 0, filled: 0, missingTypes: {}, unconfirmedCount: 0 };
                 const config = state.mapeoConfig[local.nombre] || {};
-
                 diasSemana.forEach(dia => {
                     const dConf = config[dia] || {};
                     const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
-                    
                     allTypes.forEach(tipo => {
                         const count = parseInt(dConf[tipo] || 0);
                         if(count > 0) {
                             stats.totalSlots += count;
                             stats.byLocal[local.nombre].total += count;
-                            
                             const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`];
-                            
-                            // Check valid date/time before calculating urgency
                             let shiftDate = null;
-                            try {
-                                shiftDate = getShiftDate(week, dia, hIn);
-                            } catch(e) { console.warn("Invalid date params", e); }
-
+                            try { shiftDate = getShiftDate(week, dia, hIn); } catch(e) {}
                             for(let i=1; i<=count; i++) {
                                 const sid = `${local.nombre}-${dia}-${tipo}-${i}`;
                                 if(weekAsig[sid]) {
                                     stats.filledSlots++;
                                     stats.byLocal[local.nombre].filled++;
-                                    
-                                    // Check confirmation
-                                    if(weekAsig[`${sid}-confirmed`]) {
-                                        stats.confirmedSlots++;
-                                    } else {
+                                    if(weekAsig[`${sid}-confirmed`]) stats.confirmedSlots++;
+                                    else {
                                         stats.byLocal[local.nombre].unconfirmedCount++;
-                                        // Check Urgent (< 48h) for unconfirmed
                                         if(shiftDate) {
                                             const diffMs = shiftDate - now;
                                             const diffHrs = diffMs / (1000 * 60 * 60);
-                                            if(diffHrs > 0 && diffHrs < 48) {
-                                                stats.urgent.push(`${local.nombre} (${capitalize(dia)} ${hIn}): Falta confirmar ${tipo === 'puestos' ? 'Puesto' : specialLabels[tipo] || tipo}`);
-                                            }
+                                            if(diffHrs > 0 && diffHrs < 48) stats.urgent.push(`${local.nombre} (${capitalize(dia)} ${hIn}): Falta confirmar ${tipo}`);
                                         }
                                     }
                                 } else {
-                                    // Vacante
                                     if(!stats.byLocal[local.nombre].missingTypes[tipo]) stats.byLocal[local.nombre].missingTypes[tipo] = 0;
                                     stats.byLocal[local.nombre].missingTypes[tipo]++;
-
-                                    // Check Critical
-                                    if(specialRoles.includes(tipo)) {
-                                        stats.critical.push(`${local.nombre} - ${capitalize(dia)}: Falta ${specialLabels[tipo]}`);
-                                    }
+                                    if(specialRoles.includes(tipo)) stats.critical.push(`${local.nombre} - ${capitalize(dia)}: Falta ${specialLabels[tipo]}`);
                                 }
                             }
                         }
                     });
                 });
             });
-            
             return stats;
         }
 
         function updateDashboard() {
             try {
                 const container = getEl('dashboard-content');
-                if(!container) {
-                    console.error("Dashboard content container not found");
-                    return;
-                }
-
-                // If data isn't loaded yet
-                if(!state.locales || state.locales.length === 0) {
-                    container.innerHTML = '<p class="text-center text-slate-500">Cargando datos...</p>';
-                    return;
-                }
-
+                if(!container) return;
+                if(!state.locales || state.locales.length === 0) { container.innerHTML = '<p class="text-center text-slate-500">Cargando datos...</p>'; return; }
                 const stats = calculateDashboardStats();
-                
                 const percentage = stats.totalSlots > 0 ? Math.round((stats.filledSlots / stats.totalSlots) * 100) : 0;
                 const confirmedPercentage = stats.filledSlots > 0 ? Math.round((stats.confirmedSlots / stats.filledSlots) * 100) : 0;
                 
                 let html = `
                     <div class="mb-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Cobertura de Turnos -->
                             <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
                                 <div class="flex justify-between items-end mb-2">
-                                    <div>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Cobertura de Turnos</p>
-                                        <h4 class="text-2xl font-black text-slate-800 dark:text-white">${percentage}%</h4>
-                                    </div>
-                                    <span class="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                        ${stats.filledSlots}/${stats.totalSlots}
-                                    </span>
+                                    <div><p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Cobertura</p><h4 class="text-2xl font-black text-slate-800 dark:text-white">${percentage}%</h4></div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">${stats.filledSlots}/${stats.totalSlots}</span>
                                 </div>
-                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden">
-                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
-                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden"><div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div></div>
                             </div>
-                            
-                            <!-- Cobertura de Confirmaciones -->
                             <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl shadow-inner">
                                 <div class="flex justify-between items-end mb-2">
-                                    <div>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Confirmaciones</p>
-                                        <h4 class="text-2xl font-black text-slate-800 dark:text-white">${confirmedPercentage}%</h4>
-                                    </div>
-                                    <span class="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                                        ${stats.confirmedSlots}/${stats.filledSlots}
-                                    </span>
+                                    <div><p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Confirmaciones</p><h4 class="text-2xl font-black text-slate-800 dark:text-white">${confirmedPercentage}%</h4></div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">${stats.confirmedSlots}/${stats.filledSlots}</span>
                                 </div>
-                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden">
-                                    <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${confirmedPercentage}%"></div>
-                                </div>
+                                <div class="w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700 overflow-hidden"><div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: ${confirmedPercentage}%"></div></div>
                             </div>
                         </div>
-
-                        ${stats.urgent.length > 0 ? `
-                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg dark:bg-red-900/20">
-                            <h4 class="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">🔥</span> URGENTE (Falta confirmar &lt; 48h)</h4>
-                            <ul class="list-none space-y-1 text-sm text-red-600 dark:text-red-300 max-h-32 overflow-y-auto custom-scrollbar">
-                                ${stats.urgent.map(u => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>${u}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
-
-                        ${stats.critical.length > 0 ? `
-                        <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg dark:bg-orange-900/20">
-                            <h4 class="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> Puestos Críticos</h4>
-                            <ul class="list-none space-y-1 text-sm text-orange-600 dark:text-orange-300">
-                                ${stats.critical.slice(0, 5).map(c => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>${c}</li>`).join('')}
-                                ${stats.critical.length > 5 ? `<li class="text-xs italic pl-4 opacity-75">... y ${stats.critical.length - 5} más</li>` : ''}
-                            </ul>
-                        </div>` : ''}
+                        ${stats.urgent.length > 0 ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg dark:bg-red-900/20"><h4 class="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">🔥</span> URGENTE</h4><ul class="list-none space-y-1 text-sm text-red-600 dark:text-red-300 max-h-32 overflow-y-auto custom-scrollbar">${stats.urgent.map(u => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>${u}</li>`).join('')}</ul></div>` : ''}
+                        ${stats.critical.length > 0 ? `<div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg dark:bg-orange-900/20"><h4 class="font-bold text-orange-700 dark:text-orange-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span> Puestos Críticos</h4><ul class="list-none space-y-1 text-sm text-orange-600 dark:text-orange-300">${stats.critical.slice(0, 5).map(c => `<li class="flex items-start gap-2"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>${c}</li>`).join('')}${stats.critical.length > 5 ? `<li class="text-xs italic pl-4 opacity-75">... y ${stats.critical.length - 5} más</li>` : ''}</ul></div>` : ''}
                     </div>
-
                     <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[400px]">
                         <h4 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-4 sticky top-0 bg-white dark:bg-slate-800 z-10 py-2 border-b dark:border-slate-700">Estado por Local</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 `;
-                
                 Object.entries(stats.byLocal).forEach(([local, data]) => {
                     const missing = data.total - data.filled;
-                    let statusHtml = '';
-                    let borderClass = 'border-l-green-500';
-                    
-                    if (missing === 0 && data.unconfirmedCount === 0) {
-                        statusHtml = `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">Completo</span>`;
-                    } else {
-                        if (missing > 0) {
-                            borderClass = 'border-l-red-500';
-                            statusHtml += `<span class="text-red-500 font-bold text-xs bg-red-50 px-2 py-1 rounded dark:bg-red-900/20 mr-1">-${missing} Vacantes</span>`;
-                        }
-                        if (data.unconfirmedCount > 0) {
-                             if(borderClass === 'border-l-green-500') borderClass = 'border-l-yellow-500';
-                             statusHtml += `<span class="text-yellow-600 font-bold text-xs bg-yellow-50 px-2 py-1 rounded dark:bg-yellow-900/20">⚠ ${data.unconfirmedCount} sin confirmar</span>`;
-                        }
+                    let statusHtml = '', borderClass = 'border-l-green-500';
+                    if (missing === 0 && data.unconfirmedCount === 0) statusHtml = `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full dark:bg-green-900/30 dark:text-green-400">Completo</span>`;
+                    else {
+                        if (missing > 0) { borderClass = 'border-l-red-500'; statusHtml += `<span class="text-red-500 font-bold text-xs bg-red-50 px-2 py-1 rounded dark:bg-red-900/20 mr-1">-${missing} Vacantes</span>`; }
+                        if (data.unconfirmedCount > 0) { if(borderClass === 'border-l-green-500') borderClass = 'border-l-yellow-500'; statusHtml += `<span class="text-yellow-600 font-bold text-xs bg-yellow-50 px-2 py-1 rounded dark:bg-yellow-900/20">⚠ ${data.unconfirmedCount}</span>`; }
                     }
-                    
-                    const details = Object.entries(data.missingTypes)
-                        .map(([type, count]) => `<span class="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30">${count} ${type === 'puestos' ? 'Puestos' : type}</span>`)
-                        .join(' ');
-                        
-                    if(data.total > 0) {
-                        html += `
-                        <div class="group p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 ${borderClass}">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="font-bold text-slate-700 dark:text-slate-200">${local}</span>
-                                <div class="flex flex-col items-end gap-1">${statusHtml}</div>
-                            </div>
-                            <div class="flex flex-wrap gap-1">${details}</div>
-                        </div>`;
-                    }
+                    const details = Object.entries(data.missingTypes).map(([type, count]) => `<span class="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] border border-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900/30">${count} ${type === 'puestos' ? 'Puestos' : type}</span>`).join(' ');
+                    if(data.total > 0) html += `<div class="group p-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm hover:shadow-md transition-all border-l-4 ${borderClass}"><div class="flex justify-between items-start mb-1"><span class="font-bold text-slate-700 dark:text-slate-200">${local}</span><div class="flex flex-col items-end gap-1">${statusHtml}</div></div><div class="flex flex-wrap gap-1">${details}</div></div>`;
                 });
                 html += `</div></div>`;
-
                 container.innerHTML = html;
-            } catch (err) {
-                console.error("Error updating dashboard:", err);
-                alert("Error al cargar el dashboard. Ver consola.");
-            }
+            } catch (err) { console.error("Error dashboard", err); }
         }
 
+        // --- RENDER MAPEO CORREGIDO ---
         function renderMapeo() {
-            // Calcular conflictos SIEMPRE antes de renderizar para mantener estado actualizado
             calculateConflicts();
 
             const container = getEl('mapeo-container');
-            if(!container) return; // Safety check
-            container.innerHTML = '';
+            if(!container) return;
+            container.innerHTML = ''; // Aseguramos limpieza
+            
             const week = state.selectedWeek;
             if (!week) return;
 
+            // INTERRUPTOR DE "MODO EDICIÓN" -> SIEMPRE ACTIVO AHORA
+            // const showAllStructure = getEl('toggle-show-empty')?.checked || false; 
+            // CAMBIO: Ahora siempre es true porque se pidió eliminar el checkbox
+            const showAllStructure = true;
+
             const term = getEl('filtro-local-busqueda').value.toLowerCase();
             const filteredLocales = state.locales.filter(l => l.nombre.toLowerCase().includes(term));
+            
+            let renderedLocalesCount = 0;
 
             filteredLocales.forEach(local => {
                 const config = state.mapeoConfig[local.nombre] || {};
-                let hasSlots = false;
+                const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
+                
+                // Contenedores temporales
+                const diasContainer = document.createElement('div');
+                let localHasContent = false;
                 let totalSlots = 0;
                 let filledSlots = 0;
-                
-                const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
 
-                diasSemana.forEach(d => {
-                    allTypes.forEach(t => {
-                        const count = parseInt(config[d]?.[t] || 0);
-                        if(count > 0) {
-                            hasSlots = true;
-                            totalSlots += count;
-                            for(let i=1; i<=count; i++) {
-                                if(state.asignaciones[week]?.[`${local.nombre}-${d}-${t}-${i}`]) {
-                                    filledSlots++;
-                                }
+                diasSemana.forEach(dia => {
+                    const dConf = config[dia] || {};
+                    const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
+                    
+                    if (activeTypes.length === 0) return;
+
+                    const diaBlock = document.createElement('div');
+                    diaBlock.innerHTML = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1 rounded mb-1 dark:text-slate-300">${dia}</h4>`;
+                    const slotsList = document.createElement('div');
+                    let diaHasVisibleSlots = false;
+
+                    activeTypes.forEach(tipo => {
+                        const count = parseInt(dConf[tipo]);
+                        const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] || '';
+                        const hOut = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`] || '';
+                        const horario = hIn && hOut ? `${hIn}-${hOut}` : '';
+                        
+                        for(let i=1; i<=count; i++) {
+                            const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
+                            const isAssigned = state.asignaciones[week]?.[slotId];
+                            
+                            // === LÓGICA DE HISTORIAL LIMPIO (DESACTIVADA: Siempre muestra estructura) ===
+                            if (!isAssigned && !showAllStructure) {
+                                continue; 
                             }
+                            // ==================================
+
+                            totalSlots++; 
+                            if(isAssigned) filledSlots++;
+
+                            slotsList.appendChild(createSlot(slotId, tipo, horario, i));
+                            diaHasVisibleSlots = true;
                         }
                     });
+
+                    if (diaHasVisibleSlots) {
+                        diaBlock.appendChild(slotsList);
+                        diasContainer.appendChild(diaBlock);
+                        localHasContent = true;
+                    }
                 });
 
-                if (!hasSlots) return;
+                if (!localHasContent && term === '') return;
+
+                renderedLocalesCount++;
 
                 const percent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
-                let strokeColor = "#ef4444"; 
-                if(percent >= 50) strokeColor = "#f59e0b"; 
-                if(percent >= 100) strokeColor = "#22c55e"; 
+                let strokeColor = percent >= 100 ? "#22c55e" : (percent >= 50 ? "#f59e0b" : "#ef4444"); 
 
                 const card = document.createElement('div');
                 card.className = "bg-white dark:bg-slate-850 rounded-xl shadow-md border-t-4 border-slate-200 flex flex-col h-full";
                 card.style.borderTopColor = local.color || '#cbd5e1';
                 
-                let bodyHtml = `<div class="p-4 border-b dark:border-slate-700 flex justify-between items-center">
+                let headerHtml = `<div class="p-4 border-b dark:border-slate-700 flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3>
                         <div class="relative w-10 h-10">
@@ -1267,47 +1152,101 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
-                         <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta a Todos">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                         <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta">
+                            <!-- ICONO PERCHA/CAMISETA -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path>
                             </svg>
                          </button>
                          <button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></button>
-                         <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg></button>
+                         <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar">
+                            <!-- ICONO ENGRANAJE -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/>
+                            </svg>
+                         </button>
                     </div>
-                </div><div class="p-2 space-y-2">`;
+                </div>`;
                 
+                card.innerHTML = headerHtml;
                 const bodyDiv = document.createElement('div');
-                bodyDiv.innerHTML = bodyHtml;
-                const contentDiv = bodyDiv.lastElementChild;
-
-                diasSemana.forEach(dia => {
-                    const dConf = config[dia] || {};
-                    const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
-                    if (activeTypes.length === 0) return;
-                    
-                    const diaBlock = document.createElement('div');
-                    diaBlock.innerHTML = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1 rounded mb-1 dark:text-slate-300">${dia}</h4>`;
-                    const slotsList = document.createElement('div');
-                    
-                    activeTypes.forEach(tipo => {
-                        const count = parseInt(dConf[tipo]);
-                        const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] || '';
-                        const hOut = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`] || '';
-                        const horario = hIn && hOut ? `${hIn}-${hOut}` : '';
-                        
-                        for(let i=1; i<=count; i++) {
-                            slotsList.appendChild(createSlot(`${local.nombre}-${dia}-${tipo}-${i}`, tipo, horario, i));
-                        }
-                    });
-                    diaBlock.appendChild(slotsList);
-                    contentDiv.appendChild(diaBlock);
-                });
-                
+                bodyDiv.className = "p-2 space-y-2";
+                bodyDiv.appendChild(diasContainer);
                 card.appendChild(bodyDiv);
-                card.lastElementChild.appendChild(contentDiv);
                 container.appendChild(card);
             });
+
+            if (renderedLocalesCount === 0 && !showAllStructure) {
+                 container.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60">
+                        <svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                        <p class="text-lg font-semibold">Semana Limpia / Histórica</p>
+                        <p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p>
+                    </div>`;
+            }
+        }
+
+        // --- WATCHWEEK (LIMPIADOR DE TRANSICIÓN) ---
+        function watchWeek(week) {
+            if(!week) return;
+            
+            // 1. LIMPIEZA VISUAL INMEDIATA
+            const loader = getEl('loader');
+            const mapContainer = getEl('mapeo-container');
+            const progContainer = getEl('programacion-container');
+            const planContainer = getEl('tabla-planillas');
+
+            if(loader) loader.style.display = 'flex'; 
+
+            if(mapContainer) mapContainer.innerHTML = ''; 
+            if(progContainer) progContainer.innerHTML = '';
+            if(planContainer) planContainer.innerHTML = '';
+
+            // 2. DETENER ESCUCHA ANTERIOR (Caza-Fantasmas)
+            if(listeners.asignaciones) {
+                listeners.asignaciones(); 
+                listeners.asignaciones = null;
+            }
+            
+            // 3. CONECTAR A LA NUEVA SEMANA
+            listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
+                state.asignaciones[week] = snap.exists() ? snap.data() : {};
+                
+                renderMapeo();
+                renderProgramacion();
+                renderPlanillas();
+                
+                setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
+            }, (error) => {
+                console.error("Error:", error);
+                if(loader) loader.style.display = 'none';
+            });
+        }
+
+        function setupSystemStatus() {
+            const statusRef = doc(collections.status, 'ping');
+            onSnapshot(statusRef, (snap) => {
+                if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis());
+            }, () => handleConnectionChange(false));
+
+            setInterval(() => {
+                setDoc(statusRef, { timestamp: serverTimestamp() }).catch(() => handleConnectionChange(false));
+            }, 10000);
+        }
+
+        function updateStatusIcon(latency) {
+            const icon = getEl('system-status-icon');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            if (latency < 800) { icon.classList.add('text-green-500'); icon.parentElement.title = `Conexión: Excelente (${latency}ms)`; } 
+            else if (latency < 2000) { icon.classList.add('text-yellow-500'); icon.parentElement.title = `Conexión: Regular (${latency}ms)`; } 
+            else { icon.classList.add('text-red-500'); icon.parentElement.title = `Conexión: Lenta (${latency}ms)`; }
+        }
+
+        function handleConnectionChange(online) {
+            const icon = getEl('system-status-icon');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            if (online) { icon.classList.add('text-yellow-500'); showToast("✅ Conexión restaurada"); } 
+            else { icon.classList.add('text-red-500', 'animate-pulse'); icon.parentElement.title = "¡Sin conexión!"; showToast("⚠️ Sin conexión", "error"); }
         }
 
         function renderConfigModal(localNombre) {
@@ -1322,17 +1261,12 @@
                 div.className = "p-4 bg-white dark:bg-slate-700 rounded border dark:border-slate-600";
                 
                 let html = `<h4 class="font-bold mb-2 capitalize dark:text-white">${dia}</h4>`;
-                
                 ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
                     const cKey = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`;
                     const cant = localConf[dia][tipo] || 0;
                     const ent = localConf[dia][cKey+'Entrada'] || '08:00 AM';
                     const sal = localConf[dia][cKey+'Salida'] || '08:00 PM';
-                    
-                    const labelMap = {
-                        'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida',
-                        'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería'
-                    };
+                    const labelMap = { 'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
 
                     html += `
                     <div class="grid grid-cols-4 gap-2 items-center mb-2">
@@ -1347,78 +1281,20 @@
             });
         }
 
-        // --- SISTEMA DE ESTADO / PING ---
-        function setupSystemStatus() {
-            const statusRef = doc(collections.status, 'ping');
-            onSnapshot(statusRef, (snap) => {
-                if(snap.exists()) {
-                    const data = snap.data();
-                    if(data.timestamp) {
-                        const latency = Date.now() - data.timestamp.toMillis();
-                        updateStatusIcon(latency);
-                    }
-                }
-            }, (error) => {
-                // Error en el snapshot (posible desconexión de Firestore)
-                handleConnectionChange(false);
-            });
-
-            setInterval(() => {
-                setDoc(statusRef, { timestamp: serverTimestamp() })
-                    .catch(err => {
-                        console.warn("Ping fallido (offline)", err);
-                        handleConnectionChange(false);
-                    });
-            }, 10000);
+        function renderTable(id, data, rowFn) {
+            const tbody = getEl(id);
+            if (!tbody) return;
+            tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
         }
 
-        function updateStatusIcon(latency) {
-            const icon = getEl('system-status-icon');
-            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
-            
-            if (latency < 800) {
-                icon.classList.add('text-green-500'); 
-                icon.parentElement.title = `Conexión: Excelente (${latency}ms)`;
-            } else if (latency < 2000) {
-                icon.classList.add('text-yellow-500');
-                icon.parentElement.title = `Conexión: Regular (${latency}ms)`;
-            } else {
-                icon.classList.add('text-red-500');
-                icon.parentElement.title = `Conexión: Lenta (${latency}ms)`;
-            }
-        }
-
-        function handleConnectionChange(online) {
-            const icon = getEl('system-status-icon');
-            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
-            
-            if (online) {
-                // Al volver online, dejamos que el próximo ping determine el color real
-                // Ponemos amarillo temporalmente
-                icon.classList.add('text-yellow-500');
-                showToast("✅ Conexión restaurada");
-            } else {
-                icon.classList.add('text-red-500', 'animate-pulse'); // Rojo y parpadeando
-                icon.parentElement.title = "¡Sin conexión a internet!";
-                showToast("⚠️ Sin conexión a internet", "error");
-            }
-        }
-
-        // 6. EVENT LISTENERS
+        // --- MAIN INIT ---
         document.addEventListener('DOMContentLoaded', async () => {
             getEl('loader').style.display = 'flex';
-            
-            // Listeners de red globales
             window.addEventListener('online', () => handleConnectionChange(true));
             window.addEventListener('offline', () => handleConnectionChange(false));
 
-            try {
-                await signInAnonymously(auth);
-            } catch (e) {
-                console.error("Error Auth", e);
-                showToast("Error de conexión", "error");
-                handleConnectionChange(false);
-            }
+            try { await signInAnonymously(auth); } 
+            catch (e) { console.error("Error Auth", e); handleConnectionChange(false); }
 
             const now = new Date();
             const w = `${now.getFullYear()}-W${String(getWeekNumber(now)).padStart(2,'0')}`;
@@ -1433,44 +1309,23 @@
             setupUIListeners();
             setupSystemStatus();
             
-            const remembered = localStorage.getItem('swat_remember');
-            if(remembered === 'true') {
-                getEl('login-overlay').style.display = 'none';
-            } else {
-                getEl('login-overlay').style.display = 'flex';
-            }
+            if(localStorage.getItem('swat_remember') === 'true') getEl('login-overlay').style.display = 'none';
+            else getEl('login-overlay').style.display = 'flex';
             
             getEl('loader').style.display = 'none';
         });
 
         function setupListeners() {
             onSnapshot(query(collections.locales), snap => {
-                state.locales = snap.docs.map(d => ({id:d.id, ...d.data()}))
-                    .sort((a,b) => a.nombre.localeCompare(b.nombre)); 
+                state.locales = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => a.nombre.localeCompare(b.nombre)); 
                 renderLocalesSelects();
-                renderTable('tabla-locales', state.locales, (l) => `
-                    <td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td>
-                    <td class="p-3 text-right">
-                        <button class="text-indigo-500 hover:text-indigo-700 font-medium mr-2 btn-config-local-gestion" data-nombre="${l.nombre}">Horarios</button>
-                        <button class="text-blue-500 mr-2 btn-edit-local" data-id="${l.id}">Editar</button>
-                        <button class="text-red-500 btn-del-local" data-id="${l.id}">Eliminar</button>
-                    </td>`);
+                renderTable('tabla-locales', state.locales, (l) => `<td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td><td class="p-3 text-right"><button class="text-indigo-500 hover:text-indigo-700 font-medium mr-2 btn-config-local-gestion" data-nombre="${l.nombre}">Horarios</button><button class="text-blue-500 mr-2 btn-edit-local" data-id="${l.id}">Editar</button><button class="text-red-500 btn-del-local" data-id="${l.id}">Eliminar</button></td>`);
                 renderMapeo();
-                // updateDashboard se llama cuando se abre el modal
             });
 
             onSnapshot(query(collections.personal), snap => {
-                state.personal = snap.docs.map(d => ({id:d.id, ...d.data()}))
-                    .sort((a, b) => {
-                        const numA = parseInt(a.numero_empleado) || 999999;
-                        const numB = parseInt(b.numero_empleado) || 999999;
-                        if (numA !== numB) return numA - numB;
-                        return (a.nombre || '').localeCompare(b.nombre || '');
-                    });
-                renderTable('tabla-personal', state.personal, (p) => `
-                    <td class="p-3">${p.numero_empleado||'-'}</td>
-                    <td class="p-3 font-medium cursor-pointer text-blue-600 hover:underline" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td>
-                    <td class="p-3">${p.telefono||'-'}</td>`);
+                state.personal = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a, b) => (parseInt(a.numero_empleado)||999999) - (parseInt(b.numero_empleado)||999999));
+                renderTable('tabla-personal', state.personal, (p) => `<td class="p-3">${p.numero_empleado||'-'}</td><td class="p-3 font-medium cursor-pointer text-blue-600 hover:underline" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td><td class="p-3">${p.telefono||'-'}</td>`);
                 if(getEl('loader').style.display === 'flex') getEl('loader').style.display = 'none';
             });
 
@@ -1488,7 +1343,6 @@
                     const isBackup = d.id.includes('_RESPALDO_');
                     const displayName = isBackup ? d.id.replace('_', ' ') : `Semana ${d.id}`;
                     const btnClass = isBackup ? 'border-teal-500 bg-teal-50' : 'border-slate-200';
-                    
                     const btn = document.createElement('div');
                     btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex justify-between ${btnClass}`;
                     btn.innerHTML = `<span class="font-medium">${displayName}</span> <button class="text-blue-500 font-bold" onclick="window.loadHist('${d.id}')">Cargar</button>`;
@@ -1505,21 +1359,9 @@
             
             watchWeek(state.selectedWeek);
             
-            // Listen to Permisos
             onSnapshot(query(collections.permisos), snap => {
                 state.permisos = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 renderCalendar();
-            });
-        }
-
-        function watchWeek(week) {
-            if(!week) return;
-            if(listeners.asignaciones) listeners.asignaciones(); 
-            listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
-                state.asignaciones[week] = snap.exists() ? snap.data() : {};
-                renderMapeo();
-                renderProgramacion();
-                renderPlanillas();
             });
         }
 
@@ -1527,20 +1369,12 @@
             getEl('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
-                    if(getEl('remember-me').checked) {
-                        localStorage.setItem('swat_remember', 'true');
-                    } else {
-                        localStorage.removeItem('swat_remember');
-                    }
+                    if(getEl('remember-me').checked) localStorage.setItem('swat_remember', 'true');
+                    else localStorage.removeItem('swat_remember');
                     getEl('login-overlay').style.display = 'none';
-                } else {
-                    getEl('login-error').textContent = "Credenciales incorrectas";
-                }
+                } else getEl('login-error').textContent = "Credenciales incorrectas";
             });
-            getEl('btn-logout').onclick = () => {
-                localStorage.removeItem('swat_remember');
-                location.reload();
-            };
+            getEl('btn-logout').onclick = () => { localStorage.removeItem('swat_remember'); location.reload(); };
 
             ['semana-mapeo', 'semana-programacion', 'semana-planillas'].forEach(id => {
                 getEl(id).addEventListener('change', (e) => {
@@ -1550,6 +1384,10 @@
                 });
             });
 
+            // Evento para el Checkbox "Ver Vacíos" (ELIMINADO)
+            // const toggleShow = getEl('toggle-show-empty');
+            // if(toggleShow) toggleShow.addEventListener('change', renderMapeo);
+
             document.querySelectorAll('.nav-button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -1558,7 +1396,6 @@
                     document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
                     getEl('side-nav').classList.remove('open');
-                    
                     if(sec === 'section-tarifario') renderTarifarioTable();
                     if(sec === 'section-programacion') renderProgramacion();
                     if(sec === 'section-planillas') renderPlanillas();
@@ -1568,10 +1405,8 @@
             const nav = getEl('side-nav');
             const toggle = getEl('menu-toggle');
             let navTimeout;
-            
             const openMenu = () => { clearTimeout(navTimeout); nav.classList.add('open'); };
             const closeMenu = () => { navTimeout = setTimeout(() => nav.classList.remove('open'), 300); };
-            
             toggle.addEventListener('mouseenter', openMenu);
             nav.addEventListener('mouseenter', openMenu);
             nav.addEventListener('mouseleave', closeMenu);
@@ -1590,7 +1425,6 @@
                     getEl('modal-search').value = '';
                     getEl('modal-search').focus();
                 }
-
                 const btnVest = e.target.closest('.vestimenta-btn');
                 if(btnVest) {
                     const sid = btnVest.dataset.slot;
@@ -1598,14 +1432,12 @@
                     const next = cur === 'Ropa Táctica' ? 'Terno' : 'Ropa Táctica';
                     await setDoc(doc(collections.asignaciones, state.selectedWeek), { [`${sid}-vestimenta`]: next }, {merge:true});
                 }
-                
                 const btnConf = e.target.closest('.conf-btn');
                 if(btnConf) {
                     const sid = btnConf.dataset.slot;
                     const cur = state.asignaciones[state.selectedWeek][`${sid}-confirmed`];
                     await setDoc(doc(collections.asignaciones, state.selectedWeek), { [`${sid}-confirmed`]: !cur }, {merge:true});
                 }
-
                 const btnConfig = e.target.closest('.btn-config-local');
                 if(btnConfig) {
                     currentlyEditingLocal = btnConfig.dataset.nombre;
@@ -1614,12 +1446,8 @@
                     renderConfigModal(currentlyEditingLocal);
                     getEl('schedule-config-modal').style.display = 'flex';
                 }
-                
                 const btnCopy = e.target.closest('.btn-copy-local');
-                if(btnCopy) {
-                    const local = btnCopy.dataset.local;
-                    generateTextSchedule(local);
-                }
+                if(btnCopy) generateTextSchedule(btnCopy.dataset.local);
 
                 const btnVestAll = e.target.closest('.btn-vestimenta-local');
                 if(btnVestAll) {
@@ -1627,7 +1455,6 @@
                     const localName = btnVestAll.dataset.local;
                     const weekData = state.asignaciones[state.selectedWeek];
                     const batchUpdate = {};
-                    
                     Object.keys(weekData).forEach(key => {
                         if(key.startsWith(localName + '-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed')) {
                             const curVest = weekData[`${key}-vestimenta`] || 'Ropa Táctica';
@@ -1635,168 +1462,125 @@
                             batchUpdate[`${key}-vestimenta`] = newVest;
                         }
                     });
-                    
-                    if(Object.keys(batchUpdate).length > 0) {
-                        await setDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate, {merge:true});
-                        showToast("Vestimenta actualizada");
-                    } else {
-                        showToast("No hay personal asignado", "error");
-                    }
+                    if(Object.keys(batchUpdate).length > 0) { await setDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate, {merge:true}); showToast("Vestimenta actualizada"); } 
+                    else showToast("No hay personal asignado", "error");
                 }
             });
             
-            // Fix: Add listener safely after DOM load
             const btnDashboard = getEl('btn-dashboard');
-            if (btnDashboard) {
-                btnDashboard.onclick = () => {
-                    updateDashboard();
-                    getEl('dashboard-modal').style.display = 'block';
-                };
-            }
+            if (btnDashboard) btnDashboard.onclick = () => { updateDashboard(); getEl('dashboard-modal').style.display = 'block'; };
             const btnCloseDashboard = getEl('close-dashboard-modal');
-            if (btnCloseDashboard) {
-                btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
-            }
+            if (btnCloseDashboard) btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
             
-            // -- LOGICA DEL MENU DE HERRAMIENTAS --
             const toolsBtn = getEl('btn-tools-dropdown');
             const toolsMenu = getEl('tools-dropdown-menu');
             if(toolsBtn && toolsMenu) {
-                toolsBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    toolsMenu.classList.toggle('hidden');
-                };
-                document.addEventListener('click', (e) => {
-                    if(!toolsMenu.contains(e.target) && !toolsBtn.contains(e.target)) {
-                        toolsMenu.classList.add('hidden');
-                    }
-                });
+                toolsBtn.onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle('hidden'); };
+                document.addEventListener('click', (e) => { if(!toolsMenu.contains(e.target) && !toolsBtn.contains(e.target)) toolsMenu.classList.add('hidden'); });
             }
 
-            // Listener para Guardar Respaldo
             const btnSaveHistory = getEl('btn-save-history');
             if (btnSaveHistory) {
                 btnSaveHistory.onclick = async () => {
                     if(!confirm("¿Guardar estado actual en el historial?")) return;
                     const week = state.selectedWeek;
                     const data = state.asignaciones[week] || {};
-                    // Crear ID único para el respaldo
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
                     const backupId = `${week}_RESPALDO_${timestamp}`;
-                    
                     await setDoc(doc(collections.historial, backupId), data);
-                    // También guardarlo en asignaciones para poder cargarlo después (truco del sistema actual)
                     await setDoc(doc(collections.asignaciones, backupId), data);
-                    
                     showToast("Respaldo guardado exitosamente");
                 };
             }
             
-            // Listener para Permisos
             const btnPermisos = getEl('btn-permisos');
-            if(btnPermisos) {
-                btnPermisos.onclick = () => {
-                    renderCalendar();
-                    getEl('permisos-modal').style.display = 'block';
-                };
-            }
+            if(btnPermisos) btnPermisos.onclick = () => { renderCalendar(); getEl('permisos-modal').style.display = 'block'; };
             
             getEl('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
             getEl('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
             
             getEl('form-permiso').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const data = {
+                await addDoc(collections.permisos, {
                     personalId: getEl('permiso-personal').value,
                     startDate: getEl('permiso-start').value,
                     endDate: getEl('permiso-end').value,
                     type: getEl('permiso-type').value,
                     reason: getEl('permiso-reason').value
-                };
-                await addDoc(collections.permisos, data);
+                });
                 getEl('add-permiso-modal').style.display = 'none';
                 showToast("Ausencia registrada");
             });
 
             getEl('programacion-container').addEventListener('click', async (e) => {
+                // --- BOTÓN ELIMINAR TODO (X) ---
+                const btnClear = e.target.closest('.btn-clear-individual');
+                if (btnClear) {
+                    if(!confirm("¿Estás seguro de ELIMINAR toda la programación de esta persona para esta semana?")) return;
+                    
+                    const pid = btnClear.dataset.personId;
+                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
+                    const batchUpdate = {};
+                    
+                    // Buscar todas las asignaciones de este usuario
+                    Object.entries(weekAsig).forEach(([key, val]) => {
+                        if (val === pid) {
+                            batchUpdate[key] = deleteField();
+                            batchUpdate[`${key}-vestimenta`] = deleteField();
+                            batchUpdate[`${key}-confirmed`] = deleteField();
+                        }
+                    });
+                    
+                    if (Object.keys(batchUpdate).length > 0) {
+                        await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate);
+                        showToast("Programación eliminada");
+                    } else {
+                        showToast("No hay turnos para eliminar", "error");
+                    }
+                    return;
+                }
+
+                // --- LÓGICA DE COPIADO INTELIGENTE (Prioridad C. Ingreso = 1) ---
                 const btnCopy = e.target.closest('.btn-copy-individual');
                 if(btnCopy) {
                     const pid = btnCopy.dataset.personId;
                     const p = state.personal.find(x => x.id === pid);
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     
-                    const friendlyLabels = {
-                        'puestos': '',
-                        'cacheos': 'Cacheo',
-                        'cacheoIngreso': 'C. Ingreso',
-                        'cacheoSalida': 'C. Salida',
-                        'turno1': '1er Turno',
-                        'turno2': '2do Turno',
-                        'turno3': '3er Turno',
-                        'porteria': 'Portería'
-                    };
+                    const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
+                    
+                    // CAMBIO: Se agregó 'cacheoIngreso' a la lista de Prioridad 1
+                    const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
 
                     const groupedShifts = [];
                     const rawShifts = Object.entries(weekAsig)
                         .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
                         .map(([k]) => {
-                            const parts = k.split('-');
-                            const indexStr = parts.pop();
-                            const tipo = parts.pop();
-                            const dia = parts.pop();
-                            const local = parts.join('-'); 
-
+                            const parts = k.split('-'); parts.pop();
+                            const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                             const conf = state.mapeoConfig[local]?.[dia];
-                            
                             const keyName = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
                             const horaEntrada = conf ? conf[keyName] : '??';
-                            
-                            const startMin = timeToMin(horaEntrada);
-                            
-                            const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
-                            const label = friendlyLabels[tipo] || '';
-
-                            return { 
-                                dia: capitalize(dia), 
-                                local, 
-                                horaEntrada,
-                                vestimenta,
-                                order: diasSemana.indexOf(dia),
-                                startMin: startMin,
-                                label
-                            };
+                            return { dia: capitalize(dia), local, horaEntrada, vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', order: diasSemana.indexOf(dia), startMin: timeToMin(horaEntrada), label: friendlyLabels[tipo] || '', tipoRaw: tipo };
                         });
                         
-                    // Agrupar para mensaje
                     rawShifts.forEach(s => {
                          const existing = groupedShifts.find(g => g.dia === s.dia && g.local === s.local);
                          if (existing) {
-                             if (s.startMin < existing.startMin) {
-                                 existing.startMin = s.startMin;
-                                 existing.horaEntrada = s.horaEntrada;
-                                 existing.vestimenta = s.vestimenta;
+                             const sPriority = getPriority(s.tipoRaw);
+                             const existPriority = getPriority(existing.tipoRaw);
+                             if (sPriority < existPriority) {
+                                 existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; existing.tipoRaw = s.tipoRaw;
+                             } else if (sPriority === existPriority) {
+                                 if (s.startMin < existing.startMin) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; }
                              }
-                             if (s.label && !existing.labels.includes(s.label)) {
-                                 existing.labels.push(s.label);
-                             }
+                             if (s.label && !existing.labels.includes(s.label)) existing.labels.push(s.label);
                          } else {
-                             groupedShifts.push({
-                                 dia: s.dia,
-                                 local: s.local,
-                                 horaEntrada: s.horaEntrada, 
-                                 startMin: s.startMin,
-                                 vestimenta: s.vestimenta,
-                                 order: s.order, 
-                                 labels: s.label ? [s.label] : []
-                             });
+                             groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] });
                          }
                     });
                     
-                    groupedShifts.sort((a,b) => {
-                        if (a.order !== b.order) return a.order - b.order; 
-                        return a.startMin - b.startMin; 
-                    });
-
+                    groupedShifts.sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
                     if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
 
                     let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
@@ -1805,39 +1589,24 @@
                         text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`;
                     });
                     text += `\nMANDAME TU CONFIRMACIÓN ✅`;
-                    
                     copiarTextoSeguro(text);
                 }
 
                 const btnConf = e.target.closest('.btn-confirm-individual');
                 if(btnConf) {
                     if(!confirm("¿Confirmar todos los turnos de esta persona?")) return;
-                    
                     const pid = btnConf.dataset.personId;
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const batchData = {};
-                    
-                    Object.entries(weekAsig)
-                        .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
-                        .forEach(([k]) => {
-                            batchData[`${k}-confirmed`] = true;
-                        });
-                    
-                    if(Object.keys(batchData).length > 0) {
-                        await setDoc(doc(collections.asignaciones, state.selectedWeek), batchData, {merge:true});
-                        showToast("Turnos confirmados");
-                    }
+                    Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).forEach(([k]) => batchData[`${k}-confirmed`] = true);
+                    if(Object.keys(batchData).length > 0) { await setDoc(doc(collections.asignaciones, state.selectedWeek), batchData, {merge:true}); showToast("Turnos confirmados"); }
                 }
             });
 
             getEl('modal-search').addEventListener('input', renderModalPersonalList);
             getEl('btn-unassign-slot').onclick = async () => {
                 if(currentSlotId) {
-                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), {
-                        [currentSlotId]: deleteField(),
-                        [`${currentSlotId}-vestimenta`]: deleteField(),
-                        [`${currentSlotId}-confirmed`]: deleteField()
-                    });
+                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: deleteField(), [`${currentSlotId}-vestimenta`]: deleteField(), [`${currentSlotId}-confirmed`]: deleteField() });
                     getEl('global-selection-modal').style.display = 'none';
                 }
             };
@@ -1854,7 +1623,6 @@
             getEl('btn-guardar-horarios').onclick = async () => {
                 if(currentlyEditingLocal) {
                     await setDoc(doc(collections.mapeoConfig, currentlyEditingLocal), tempScheduleConfig);
-                    
                     const week = state.selectedWeek;
                     const currentAssignments = state.asignaciones[week] || {};
                     const updates = {};
@@ -1863,60 +1631,31 @@
                     Object.keys(currentAssignments).forEach(key => {
                         if (!key.startsWith(currentlyEditingLocal + '-')) return;
                         if (key.endsWith('-vestimenta') || key.endsWith('-confirmed')) return;
-
-                        const parts = key.split('-');
-                        const indexStr = parts.pop();
-                        const type = parts.pop();
-                        const dia = parts.pop();
-                        const localNameFromKey = parts.join('-'); 
-
-                        if (localNameFromKey !== currentlyEditingLocal) return;
-
+                        const parts = key.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop();
                         const newCount = parseInt(tempScheduleConfig[dia]?.[type] || 0);
-                        const slotIndex = parseInt(indexStr);
-
+                        const slotIndex = parseInt(key.split('-').pop());
                         if (slotIndex > newCount) {
-                            updates[key] = deleteField();
-                            updates[`${key}-vestimenta`] = deleteField();
-                            updates[`${key}-confirmed`] = deleteField();
+                            updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField();
                             hasUpdates = true;
                         }
                     });
-
-                    if (hasUpdates) {
-                         await updateDoc(doc(collections.asignaciones, week), updates);
-                         showToast("Horarios guardados y asignaciones limpiadas");
-                    } else {
-                         showToast("Horarios guardados");
-                    }
-
+                    if (hasUpdates) { await updateDoc(doc(collections.asignaciones, week), updates); showToast("Horarios guardados y asignaciones limpiadas"); } else showToast("Horarios guardados");
                     getEl('schedule-config-modal').style.display = 'none';
                 }
             };
-            getEl('btn-limpiar-horarios-local').onclick = async () => {
-                if(confirm("¿Borrar configuración de este local?")) {
-                    tempScheduleConfig = {};
-                    renderConfigModal(currentlyEditingLocal);
-                }
-            };
+            getEl('btn-limpiar-horarios-local').onclick = async () => { if(confirm("¿Borrar configuración de este local?")) { tempScheduleConfig = {}; renderConfigModal(currentlyEditingLocal); } };
             getEl('close-schedule-config-modal').onclick = () => getEl('schedule-config-modal').style.display = 'none';
 
             getEl('form-locales').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const nombre = getEl('nuevo-local').value.toUpperCase();
-                await addDoc(collections.locales, { nombre, color: '#3b82f6' });
-                getEl('nuevo-local').value = '';
-                showToast("Local agregado");
+                await addDoc(collections.locales, { nombre: getEl('nuevo-local').value.toUpperCase(), color: '#3b82f6' });
+                getEl('nuevo-local').value = ''; showToast("Local agregado");
             });
             getEl('tabla-locales').addEventListener('click', async (e) => {
-                if(e.target.classList.contains('btn-del-local')) {
-                    if(confirm("¿Eliminar local?")) await deleteDoc(doc(collections.locales, e.target.dataset.id));
-                }
+                if(e.target.classList.contains('btn-del-local')) if(confirm("¿Eliminar local?")) await deleteDoc(doc(collections.locales, e.target.dataset.id));
                 if(e.target.classList.contains('btn-edit-local')) {
                     const l = state.locales.find(x => x.id === e.target.dataset.id);
-                    getEl('edit-local-id').value = l.id;
-                    getEl('edit-local-name').value = l.nombre;
-                    getEl('edit-local-color').value = l.color;
+                    getEl('edit-local-id').value = l.id; getEl('edit-local-name').value = l.nombre; getEl('edit-local-color').value = l.color;
                     getEl('edit-local-modal').style.display = 'block';
                 }
                 if(e.target.classList.contains('btn-config-local-gestion')) {
@@ -1929,165 +1668,75 @@
             });
             getEl('form-edit-local').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const id = getEl('edit-local-id').value;
-                const nombre = getEl('edit-local-name').value.toUpperCase();
-                await updateDoc(doc(collections.locales, id), {
-                    nombre: nombre,
-                    color: getEl('edit-local-color').value
-                });
+                await updateDoc(doc(collections.locales, getEl('edit-local-id').value), { nombre: getEl('edit-local-name').value.toUpperCase(), color: getEl('edit-local-color').value });
                 getEl('edit-local-modal').style.display = 'none';
             });
             getEl('close-local-modal').onclick = () => getEl('edit-local-modal').style.display = 'none';
 
             const formP = getEl('form-personal');
             getEl('btn-abrir-modal-personal').onclick = () => {
-                formP.reset();
-                getEl('personal-id').value = '';
-                
-                // AUTO-ASIGNAR Nº EMPLEADO
+                formP.reset(); getEl('personal-id').value = '';
                 const maxId = state.personal.reduce((max, p) => Math.max(max, parseInt(p.numero_empleado) || 0), 0);
                 getEl('numero_empleado').value = maxId + 1;
-                
                 getEl('personal-modal').style.display = 'block';
             };
             formP.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const data = {
-                    numero_empleado: getEl('numero_empleado').value,
-                    nombre: getEl('nombre').value,
-                    apellido: getEl('apellido').value,
-                    telefono: getEl('telefono').value,
-                    disponibilidad: getEl('disponibilidad').value,
-                    local1: getEl('local1').value,
-                    local2: getEl('local2').value,
-                    local3: getEl('local3').value
-                };
+                const data = { numero_empleado: getEl('numero_empleado').value, nombre: getEl('nombre').value, apellido: getEl('apellido').value, telefono: getEl('telefono').value, disponibilidad: getEl('disponibilidad').value, local1: getEl('local1').value, local2: getEl('local2').value, local3: getEl('local3').value };
                 const id = getEl('personal-id').value;
-                if(id) await updateDoc(doc(collections.personal, id), data);
-                else await addDoc(collections.personal, data);
-                getEl('personal-modal').style.display = 'none';
-                showToast("Personal guardado");
+                if(id) await updateDoc(doc(collections.personal, id), data); else await addDoc(collections.personal, data);
+                getEl('personal-modal').style.display = 'none'; showToast("Personal guardado");
             });
             getEl('close-personal-modal').onclick = () => getEl('personal-modal').style.display = 'none';
             getEl('close-view-personal-modal').onclick = () => getEl('view-personal-modal').style.display = 'none';
             
             getEl('btn-editar-personal-view').onclick = () => {
-                const id = getEl('btn-editar-personal-view').dataset.id;
-                const p = state.personal.find(x => x.id === id);
+                const id = getEl('btn-editar-personal-view').dataset.id; const p = state.personal.find(x => x.id === id);
                 if(p) {
-                    getEl('personal-id').value = p.id;
-                    getEl('numero_empleado').value = p.numero_empleado || '';
-                    getEl('nombre').value = p.nombre || '';
-                    getEl('apellido').value = p.apellido || '';
-                    getEl('telefono').value = p.telefono || '';
-                    getEl('disponibilidad').value = p.disponibilidad || 'disponible';
-                    getEl('local1').value = p.local1 || '';
-                    getEl('local2').value = p.local2 || '';
-                    getEl('local3').value = p.local3 || '';
-                    getEl('view-personal-modal').style.display = 'none';
-                    getEl('personal-modal').style.display = 'block';
+                    getEl('personal-id').value = p.id; getEl('numero_empleado').value = p.numero_empleado || ''; getEl('nombre').value = p.nombre || ''; getEl('apellido').value = p.apellido || ''; getEl('telefono').value = p.telefono || ''; getEl('disponibilidad').value = p.disponibilidad || 'disponible'; getEl('local1').value = p.local1 || ''; getEl('local2').value = p.local2 || ''; getEl('local3').value = p.local3 || '';
+                    getEl('view-personal-modal').style.display = 'none'; getEl('personal-modal').style.display = 'block';
                 }
             };
-            getEl('btn-eliminar-personal-view').onclick = async () => {
-                if(confirm("¿Eliminar personal?")) {
-                    const id = getEl('btn-eliminar-personal-view').dataset.id;
-                    await deleteDoc(doc(collections.personal, id));
-                    getEl('view-personal-modal').style.display = 'none';
-                }
-            };
+            getEl('btn-eliminar-personal-view').onclick = async () => { if(confirm("¿Eliminar personal?")) { await deleteDoc(doc(collections.personal, getEl('btn-eliminar-personal-view').dataset.id)); getEl('view-personal-modal').style.display = 'none'; } };
 
             getEl('btn-copy-previous-week').onclick = async () => {
                 if(!confirm("¿Sobrescribir esta semana con la anterior?")) return;
-                const curr = state.selectedWeek;
-                const [y, w] = curr.split('-W').map(Number);
-                let prevW = w - 1; let prevY = y;
-                if(prevW < 1) { prevW = 52; prevY--; }
+                const curr = state.selectedWeek; const [y, w] = curr.split('-W').map(Number);
+                let prevW = w - 1; let prevY = y; if(prevW < 1) { prevW = 52; prevY--; }
                 const prevKey = `${prevY}-W${String(prevW).padStart(2,'0')}`;
-                
                 const prevDocSnap = await getDoc(doc(collections.asignaciones, prevKey));
-                if (prevDocSnap.exists()) {
-                    const prevData = prevDocSnap.data();
-                    await setDoc(doc(collections.asignaciones, curr), prevData);
-                    showToast("Copiado exitosamente");
-                } else {
-                    showToast("No hay datos en la semana anterior", "error");
-                }
+                if (prevDocSnap.exists()) { await setDoc(doc(collections.asignaciones, curr), prevDocSnap.data()); showToast("Copiado exitosamente"); } 
+                else showToast("No hay datos en la semana anterior", "error");
             };
             
-            getEl('btn-limpiar-mapeo').onclick = async () => {
-                if(confirm("¿Borrar TODAS las asignaciones de esta semana?")) {
-                    await setDoc(doc(collections.asignaciones, state.selectedWeek), {});
-                    showToast("Mapeo limpiado");
-                }
-            };
+            getEl('btn-limpiar-mapeo').onclick = async () => { if(confirm("¿Borrar TODAS las asignaciones de esta semana?")) { await setDoc(doc(collections.asignaciones, state.selectedWeek), {}); showToast("Mapeo limpiado"); } };
 
             getEl('btn-copy-all-schedule').onclick = () => generateTextSchedule(null); 
             
             getEl('btn-descargar-excel').onclick = () => {
-                const rows = [];
-                rows.push(["Fecha", "Día", "Local", "Puesto", "Nombre", "Hora Entrada", "Hora Salida", "Vestimenta"]);
-                
-                const w = state.selectedWeek;
-                const [yearStr, weekNoStr] = w.split('-W');
-                const year = parseInt(yearStr);
-                const weekNo = parseInt(weekNoStr);
-                
+                const rows = []; rows.push(["Fecha", "Día", "Local", "Puesto", "Nombre", "Hora Entrada", "Hora Salida", "Vestimenta"]);
+                const w = state.selectedWeek; const [yearStr, weekNoStr] = w.split('-W'); const year = parseInt(yearStr); const weekNo = parseInt(weekNoStr);
                 const asig = state.asignaciones[w] || {};
-                
                 state.locales.forEach(l => {
                     diasSemana.forEach((d, dIndex) => {
-                        // Calcular fecha real
-                        // diasSemana: 0=lunes... 6=domingo. 
-                        // getDateOfISOWeek devuelve el Lunes de esa semana.
-                        const mondayDate = getDateOfISOWeek(weekNo, year);
-                        const currentDate = new Date(mondayDate);
-                        currentDate.setDate(mondayDate.getDate() + dIndex);
-                        const dateStr = formatDate(currentDate);
-
-                        const conf = state.mapeoConfig[l.nombre]?.[d];
-                        if(!conf) return;
-                        
-                        const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
-                        
-                        allTypes.forEach(t => {
+                        const mondayDate = getDateOfISOWeek(weekNo, year); const currentDate = new Date(mondayDate); currentDate.setDate(mondayDate.getDate() + dIndex); const dateStr = formatDate(currentDate);
+                        const conf = state.mapeoConfig[l.nombre]?.[d]; if(!conf) return;
+                        ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(t => {
                             const cant = parseInt(conf[t] || 0);
                             for(let i=1; i<=cant; i++) {
-                                const sid = `${l.nombre}-${d}-${t}-${i}`;
-                                const pid = asig[sid];
+                                const sid = `${l.nombre}-${d}-${t}-${i}`; const pid = asig[sid];
                                 const pName = pid ? getFullName(state.personal.find(x=>x.id===pid)) : 'VACANTE';
-                                const vestimenta = asig[`${sid}-vestimenta`] || 'Ropa Táctica';
-                                
-                                const hIn = conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Entrada`] || '';
-                                const hOut = conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Salida`] || '';
-                                
-                                rows.push([
-                                    dateStr, 
-                                    capitalize(d), 
-                                    l.nombre, 
-                                    `${t} ${i}`, 
-                                    pName, 
-                                    hIn, 
-                                    hOut, 
-                                    vestimenta
-                                ]);
+                                rows.push([dateStr, capitalize(d), l.nombre, `${t} ${i}`, pName, conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Entrada`]||'', conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Salida`]||'', asig[`${sid}-vestimenta`] || 'Ropa Táctica']);
                             }
                         });
                     });
                 });
-                
-                const ws = XLSX.utils.aoa_to_sheet(rows);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Mapeo Semanal");
-                XLSX.writeFile(wb, `Mapeo_Completo_${w}.xlsx`);
+                const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Mapeo Semanal"); XLSX.writeFile(wb, `Mapeo_Completo_${w}.xlsx`);
             };
 
             getEl('tabla-tarifario').addEventListener('change', async (e) => {
                 if(e.target.matches('input')) {
-                    const uid = e.target.dataset.uid;
-                    const field = e.target.dataset.field;
-                    const val = e.target.value;
-                    await setDoc(doc(collections.tarifarios, uid), { [field]: val }, { merge: true });
-                    // No llamamos renderPlanillas aquí para no sobrecargar, se actualizará al cambiar de pestaña o recargar
+                    await setDoc(doc(collections.tarifarios, e.target.dataset.uid), { [e.target.dataset.field]: e.target.value }, { merge: true });
                 }
             });
 
@@ -2095,120 +1744,46 @@
             getEl('busqueda-tarifario').addEventListener('input', renderTarifarioTable);
             
             getEl('btn-exportar-planilla').onclick = () => {
-                const table = getEl('tabla-planillas');
-                const rows = [];
-                // Headers
-                const headers = [];
-                table.parentElement.querySelectorAll('thead th').forEach(th => headers.push(th.innerText));
-                rows.push(headers);
-                
-                // Data
-                table.querySelectorAll('tr').forEach(tr => {
-                    const rowData = [];
-                    tr.querySelectorAll('td').forEach(td => rowData.push(td.innerText));
-                    rows.push(rowData);
-                });
-                
-                const ws = XLSX.utils.aoa_to_sheet(rows);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Planilla");
-                XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
+                const table = getEl('tabla-planillas'); const rows = []; const headers = [];
+                table.parentElement.querySelectorAll('thead th').forEach(th => headers.push(th.innerText)); rows.push(headers);
+                table.querySelectorAll('tr').forEach(tr => { const rowData = []; tr.querySelectorAll('td').forEach(td => rowData.push(td.innerText)); rows.push(rowData); });
+                const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Planilla"); XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
             };
         }
 
-        // --- Render Functions (RESTORED) ---
-        function renderTable(id, data, rowFn) {
-            const tbody = getEl(id);
-            if (!tbody) return;
-            tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
-        }
-
+        // --- Render Functions ---
         function renderCalendar() {
-            const container = getEl('calendar-grid');
-            if(!container) return;
-            container.innerHTML = '';
-            
+            const container = getEl('calendar-grid'); if(!container) return; container.innerHTML = '';
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             getEl('current-month-display').textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
-            
-            const year = currentCalendarDate.getFullYear();
-            const month = currentCalendarDate.getMonth();
-            
-            const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            // Adjust to start on Sunday (or Monday, depending on pref. Using Sunday as col 1)
-            // Grid is 7 cols.
-            
-            // Padding
-            for(let i=0; i<firstDay; i++) {
-                container.innerHTML += `<div class="calendar-day opacity-50 bg-slate-100 dark:bg-slate-800"></div>`;
-            }
-            
+            const year = currentCalendarDate.getFullYear(); const month = currentCalendarDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for(let i=0; i<firstDay; i++) container.innerHTML += `<div class="calendar-day opacity-50 bg-slate-100 dark:bg-slate-800"></div>`;
             for(let d=1; d<=daysInMonth; d++) {
                 const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                // Find permits
-                const activePermits = state.permisos.filter(p => {
-                    return dateStr >= p.startDate && dateStr <= p.endDate;
-                });
-                
+                const activePermits = state.permisos.filter(p => dateStr >= p.startDate && dateStr <= p.endDate);
                 let dayContent = `<div class="font-bold text-right text-xs mb-1 dark:text-slate-400">${d}</div>`;
                 activePermits.forEach(p => {
-                    let color = "bg-yellow-400";
-                    if(p.type === 'baja') color = "bg-red-500 text-white";
-                    if(p.type === 'vacaciones') color = "bg-green-500 text-white";
-                    
+                    let color = "bg-yellow-400"; if(p.type === 'baja') color = "bg-red-500 text-white"; if(p.type === 'vacaciones') color = "bg-green-500 text-white";
                     const person = state.personal.find(x => x.id === p.personalId);
-                    const name = person ? getFullName(person).split(' ')[0] : '???';
-                    
-                    // Añadimos clase 'permiso-item' y data-id para detectar el click
-                    dayContent += `<div class="permiso-item text-[10px] ${color} px-1 rounded truncate mb-1 cursor-pointer hover:opacity-80 transition-opacity" data-id="${p.id}" title="${p.reason || ''}">${name}</div>`;
+                    dayContent += `<div class="permiso-item text-[10px] ${color} px-1 rounded truncate mb-1 cursor-pointer hover:opacity-80 transition-opacity" data-id="${p.id}" title="${p.reason || ''}">${person ? getFullName(person).split(' ')[0] : '???'}</div>`;
                 });
-                
-                const cell = document.createElement('div');
-                cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto relative';
-                cell.innerHTML = dayContent;
-                
+                const cell = document.createElement('div'); cell.className = 'calendar-day border dark:border-slate-700 bg-white dark:bg-slate-800 p-1 h-24 overflow-y-auto relative'; cell.innerHTML = dayContent;
                 cell.onclick = async (e) => {
-                    // 1. Detectamos si el clic fue en una etiqueta de permiso
                     const itemPermiso = e.target.closest('.permiso-item');
-                    
                     if (itemPermiso) {
-                        e.stopPropagation(); // Evita abrir el modal de "Crear Nuevo"
-                        
-                        // Recuperamos los datos reales usando el ID
-                        const pid = itemPermiso.dataset.id;
-                        const dataPermiso = state.permisos.find(x => x.id === pid);
-                        
-                        if (!dataPermiso) return;
-
-                        const personal = state.personal.find(p => p.id === dataPermiso.personalId);
-                        const nombreCompleto = personal ? `${personal.nombre} ${personal.apellido}` : 'Personal Desconocido';
-                        
-                        // 2. Mostramos el MOTIVO y pedimos confirmación
-                        const mensaje = `📅 GESTIÓN DE AUSENCIA\n\n👤 Personal: ${nombreCompleto}\n📝 Motivo: ${dataPermiso.reason || 'Sin motivo especificado'}\n📌 Tipo: ${dataPermiso.type.toUpperCase()}\n\n¿Deseas ELIMINAR este registro permanentemente?`;
-
-                        // 3. Eliminamos si el usuario confirma
-                        if (confirm(mensaje)) {
-                            await deleteDoc(doc(collections.permisos, pid));
-                            showToast("Ausencia eliminada correctamente");
-                        }
-                    } else if (e.target === cell || e.target.classList.contains('font-bold')) {
-                        // Mantiene la función original de crear nuevo permiso si se clica en el espacio vacío
-                        openAddPermisoModal(dateStr);
-                    }
+                        e.stopPropagation();
+                        const pid = itemPermiso.dataset.id; const dataPermiso = state.permisos.find(x => x.id === pid); if (!dataPermiso) return;
+                        if (confirm(`¿Eliminar ausencia de ${getFullName(state.personal.find(p => p.id === dataPermiso.personalId))}?`)) { await deleteDoc(doc(collections.permisos, pid)); showToast("Ausencia eliminada"); }
+                    } else if (e.target === cell || e.target.classList.contains('font-bold')) openAddPermisoModal(dateStr);
                 };
                 container.appendChild(cell);
             }
         }
         
         function openAddPermisoModal(dateStr) {
-            getEl('permiso-start').value = dateStr;
-            getEl('permiso-end').value = dateStr;
-            // Populate select
-            const sel = getEl('permiso-personal');
-            sel.innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
-            
+            getEl('permiso-start').value = dateStr; getEl('permiso-end').value = dateStr;
+            getEl('permiso-personal').innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
             getEl('add-permiso-modal').style.display = 'block';
         }
 
@@ -2216,310 +1791,104 @@
             const container = getEl('modal-list-container');
             const term = getEl('modal-search').value.toLowerCase();
             const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
-            
             const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
-            
             container.innerHTML = filtered.map(p => {
-                const isOccupied = occupiedIds.has(p.id);
-                const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
-                return `
-                <div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')">
-                    <div>
-                        <div class="font-medium dark:text-white">${getFullName(p)}</div>
-                        <div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div>
-                    </div>
-                    ${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold">OCUPADO</span>' : ''}
-                    ${isCurrent ? '<span class="text-green-500 font-bold">✔</span>' : ''}
-                </div>`;
+                const isOccupied = occupiedIds.has(p.id); const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
+                return `<div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')"><div><div class="font-medium dark:text-white">${getFullName(p)}</div><div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div></div>${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold">OCUPADO</span>' : ''}${isCurrent ? '<span class="text-green-500 font-bold">✔</span>' : ''}</div>`;
             }).join('');
         }
 
         function renderProgramacion() {
             calculateConflicts();
-
-            const container = getEl('programacion-container');
-            if(!container) return;
+            const container = getEl('programacion-container'); if(!container) return;
             const term = getEl('busqueda-programacion').value.toLowerCase();
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
             
+            // CORRECCIÓN: Filtro estricto (Nombre O si está vacío, mostrar asignados)
             const relevantPersonal = state.personal.filter(p => {
                 const nameMatch = getFullName(p).toLowerCase().includes(term);
                 const hasShift = Object.values(weekAsig).includes(p.id);
-                return term ? nameMatch : hasShift;
+                if (term.length > 0) return nameMatch;
+                return hasShift;
             });
-            
-            const specialRoleMap = {
-                'cacheos': 'Cacheo',
-                'cacheoIngreso': 'C. Ingreso',
-                'cacheoSalida': 'C. Salida',
-                'porteria': 'Portería'
-            };
+
+            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
             
             container.innerHTML = relevantPersonal.map(p => {
-                const shifts = Object.entries(weekAsig)
-                    .filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
-                    .map(([k]) => {
-                        const parts = k.split('-');
-                        const indexStr = parts.pop();
-                        const tipo = parts.pop();
-                        const dia = parts.pop();
-                        const local = parts.join('-'); 
-
+                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
+                        const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                         const conf = state.mapeoConfig[local]?.[dia];
                         const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
-                        
-                        const startMin = timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
-
-                        let isUrgent = false;
-                        const isConfirmed = weekAsig[`${k}-confirmed`];
-                        if (!isConfirmed) {
-                             const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '');
-                             if (shiftDate) {
-                                 const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60);
-                                 if (diffHours > 0 && diffHours < 48) {
-                                     isUrgent = true;
-                                 }
-                             }
-                        }
-
-                        const vestimenta = weekAsig[`${k}-vestimenta`] || 'Ropa Táctica';
-                        const specialLabel = specialRoleMap[tipo] || null;
-                        
-                        return { local, dia, tipo, horario, isConfirmed, vestimenta, slotId: k, order: diasSemana.indexOf(dia), startMin, specialLabel, isUrgent };
-                    })
-                    .sort((a,b) => {
-                        if (a.order !== b.order) return a.order - b.order;
-                        return a.startMin - b.startMin;
-                    });
+                        let isUrgent = false; if (!weekAsig[`${k}-confirmed`]) { const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''); if (shiftDate) { const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 48) isUrgent = true; } }
+                        return { local, dia, tipo, horario, isConfirmed: weekAsig[`${k}-confirmed`], vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', slotId: k, order: diasSemana.indexOf(dia), startMin: timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''), specialLabel: specialRoleMap[tipo] || null, isUrgent };
+                    }).sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
                 
                 if(shifts.length === 0) return '';
-                
                 const allConfirmed = shifts.every(s => s.isConfirmed);
-                
-                let borderClass = "";
-                let statusBadge = "";
+                let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
+                let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
 
-                if (allConfirmed) {
-                    borderClass = "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]";
-                    statusBadge = '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>';
-                } else {
-                    borderClass = "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
-                    statusBadge = '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
-                }
-
-                return `
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden">
-                    
+                // CAMBIO: Agregado botón "X" en absolute top-1 left-1
+                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden">
+                    <button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                     ${statusBadge}
-
-                    <div class="flex justify-between items-center mb-4 mt-1">
-                        <h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">
-                            ${getFullName(p)}
-                            ${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}
-                        </h4>
-                        ${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}
-                    </div>
-
-                    <div class="space-y-2 flex-grow">
-                        ${shifts.map(s => {
-                            let rowBg = "bg-slate-50 dark:bg-slate-700";
-                            let borderL = "border-l-4 border-transparent";
-                            
-                            if (s.isUrgent) {
-                                rowBg = "urgent-card"; 
-                            } 
-                            else if (conflictMap.role.has(s.slotId)) {
-                                rowBg = "conflict-role";
-                                borderL = "border-l-4 border-blue-500";
-                            } 
-                            else if (conflictMap.repeat.has(s.slotId)) {
-                                rowBg = "conflict-repeat";
-                                borderL = "border-l-4 border-red-500";
-                            } 
-                            else if (conflictMap.overlap.has(s.slotId)) {
-                                rowBg = "conflict-overlap";
-                                borderL = "border-l-4 border-yellow-500";
-                            }
-
-                            return `
-                            <div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm">
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span>
-                                        <span class="text-xs text-slate-400 font-mono">${s.horario}</span>
-                                        ${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}
-                                    </div>
-                                    <span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span>
-                                </div>
-                                <div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md">
-                                    <span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span>
-                                    <span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">
-                                        ${s.isConfirmed ? '●' : '○'}
-                                    </span>
-                                </div>
-                            </div>
-                        `}).join('')}
-                    </div>
-                    
-                    <div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2">
-                        <button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            Confirmar
-                        </button>
-                        <button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                            </svg>
-                            Copiar
-                        </button>
-                    </div>
-                </div>`;
+                    <div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
             }).join('');
         }
 
         function renderTarifarioTable() {
             const term = getEl('busqueda-tarifario').value.toLowerCase();
             const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
-            const tbody = getEl('tabla-tarifario');
-            if(!tbody) return;
-            
+            const tbody = getEl('tabla-tarifario'); if(!tbody) return;
             tbody.innerHTML = filtered.map(p => {
                 const t = state.tarifarios[p.id] || {};
-                return `
-                <tr class="border-b dark:border-slate-700">
-                    <td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td>
-                    <td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td>
-                    <td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td>
-                    <td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td>
-                </tr>`;
+                return `<tr class="border-b dark:border-slate-700"><td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td></tr>`;
             }).join('');
         }
 
         function renderPlanillas() {
-            const container = getEl('tabla-planillas');
-            if(!container) return; 
+            const container = getEl('tabla-planillas'); if(!container) return; 
             const asig = state.asignaciones[state.selectedWeek] || {};
-            
             const report = {};
-            
-            state.personal.forEach(p => {
-                report[p.id] = { 
-                    Terno: 0, 
-                    Tactica: 0, 
-                    Apoyo: 0, 
-                    Nombre: getFullName(p),
-                    Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 }
-                };
-            });
-            
+            state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
             Object.entries(asig).forEach(([key, pid]) => {
                 if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
-                
-                if (report[pid]) {
-                    const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica';
-                    if (vest === 'Terno') {
-                        report[pid].Terno++;
-                    } else {
-                        report[pid].Tactica++;
-                    }
-                }
+                if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
             });
-            
-            const html = Object.values(report)
-                .filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0)
-                .map(r => {
-                    const pagoTerno = r.Terno * (parseFloat(r.Tarifas.Terno) || 0);
-                    const pagoTactica = r.Tactica * (parseFloat(r.Tarifas.Tactica) || 0);
-                    const total = pagoTerno + pagoTactica;
-                    
-                    return `
-                    <tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600">
-                        <td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td>
-                        <td class="p-3 text-center dark:text-slate-300">${r.Terno}</td>
-                        <td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td>
-                        <td class="p-3 text-center dark:text-slate-300">-</td>
-                        <td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td>
-                    </tr>`;
-                }).join('');
-                
+            const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
+                const total = (r.Terno * (parseFloat(r.Tarifas.Terno)||0)) + (r.Tactica * (parseFloat(r.Tarifas.Tactica)||0));
+                return `<tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"><td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td><td class="p-3 text-center dark:text-slate-300">${r.Terno}</td><td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td><td class="p-3 text-center dark:text-slate-300">-</td><td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td></tr>`;
+            }).join('');
             container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
         }
 
         function generateTextSchedule(filterLocal) {
-            let finalText = ""; 
-            const week = state.selectedWeek;
-            const asig = state.asignaciones[week] || {};
-            
-            // Mapa para etiquetas amigables en el reporte
-            const specialRoleMap = {
-                'cacheos': 'Cacheo',
-                'cacheoIngreso': 'Ingreso',
-                'cacheoSalida': 'Salida',
-                'porteria': 'Portería'
-            };
-            
-            const localesToPrint = filterLocal 
-                ? state.locales.filter(l => l.nombre === filterLocal)
-                : state.locales;
-
+            let finalText = ""; const week = state.selectedWeek; const asig = state.asignaciones[week] || {};
+            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'Ingreso', 'cacheoSalida': 'Salida', 'porteria': 'Portería' };
+            const localesToPrint = filterLocal ? state.locales.filter(l => l.nombre === filterLocal) : state.locales;
             localesToPrint.forEach(l => {
-                let localBlock = `Programación ${l.nombre.toUpperCase()}\n\n`;
-                let hasContent = false;
-                
+                let localBlock = `Programación ${l.nombre.toUpperCase()}\n\n`; let hasContent = false;
                 diasSemana.forEach(d => {
-                    const shifts = [];
-                    const conf = state.mapeoConfig[l.nombre]?.[d];
-                    
+                    const shifts = []; const conf = state.mapeoConfig[l.nombre]?.[d];
                     if (conf) {
-                        const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
-                        
-                        allTypes.forEach(t => {
+                        ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(t => {
                             const cant = parseInt(conf[t] || 0);
                             for(let i=1; i<=cant; i++) {
-                                const sid = `${l.nombre}-${d}-${t}-${i}`;
-                                const pid = asig[sid];
+                                const pid = asig[`${l.nombre}-${d}-${t}-${i}`];
                                 if(pid) {
                                     const p = state.personal.find(x => x.id === pid);
-                                    if (p) {
-                                        let line = getFullName(p);
-                                        // Agregar etiqueta si es rol especial
-                                        if (specialRoleMap[t]) {
-                                            line += ` (+ ${specialRoleMap[t]})`;
-                                        }
-                                        shifts.push(line);
-                                    }
+                                    if (p) shifts.push(getFullName(p) + (specialRoleMap[t] ? ` (+ ${specialRoleMap[t]})` : ''));
                                 }
                             }
                         });
                     }
-
-                    if (shifts.length > 0) {
-                        hasContent = true;
-                        shifts.sort((a, b) => a.localeCompare(b));
-                        
-                        localBlock += `${capitalize(d)}\n`;
-                        shifts.forEach((name, index) => {
-                            localBlock += `${index + 1}. ${name}\n`;
-                        });
-                        localBlock += '\n'; 
-                    }
+                    if (shifts.length > 0) { hasContent = true; localBlock += `${capitalize(d)}\n` + shifts.sort().map((n,i)=>`${i+1}. ${n}`).join('\n') + '\n\n'; }
                 });
-                
-                // Solo agregar el bloque del local si tiene contenido
-                if (hasContent) {
-                    finalText += localBlock + '\n';
-                }
+                if (hasContent) finalText += localBlock + '\n';
             });
-            
-            if (!finalText) {
-                showToast("No hay asignaciones para copiar.", "error");
-                return;
-            }
-            
-            copiarTextoSeguro(finalText);
+            if (!finalText) showToast("No hay asignaciones", "error"); else copiarTextoSeguro(finalText);
         }
 
         window.verPersonal = (id) => {
