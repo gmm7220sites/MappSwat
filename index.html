@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V6 - Final)</title>
+    <title>Control de Personal SWAT (V6 - Final Blindado)</title>
     
     <!-- ICONO -->
     <link rel="icon" href="logo swat.ico" type="image/x-icon">
@@ -295,7 +295,7 @@
                     <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
                         <label class="font-semibold dark:text-white">Semana:</label>
                         <input type="week" id="semana-programacion" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white">
-                        <input type="text" id="busqueda-programacion" placeholder="Filtrar por nombre..." class="flex-grow p-2 border rounded-md dark:bg-slate-700 dark:text-white">
+                        <input type="text" id="busqueda-programacion" placeholder="Filtrar por nombre o local..." class="flex-grow p-2 border rounded-md dark:bg-slate-700 dark:text-white">
                     </div>
                     <div id="programacion-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 </div>
@@ -767,19 +767,19 @@
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
                 if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
-                const parts = slotId.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                const parts = slotId.split('-'); const indexStr = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                 const conf = state.mapeoConfig[local]?.[dia];
                 if(!conf) return; 
                 
-                const keyNameIn = `hora${type.charAt(0).toUpperCase()+type.slice(1)}Entrada`;
-                const keyNameOut = `hora${type.charAt(0).toUpperCase()+type.slice(1)}Salida`;
+                const keyNameIn = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
+                const keyNameOut = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`;
                 const hIn = conf[keyNameIn]; const hOut = conf[keyNameOut];
                 if(!hIn || !hOut) return;
 
                 const start = timeToMin(hIn); let end = timeToMin(hOut); if (end < start) end += 24*60; 
                 const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
-                shiftsByPerson[pid].push({ slotId, dia, local, type, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
+                shiftsByPerson[pid].push({ slotId, dia, local, tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
             });
 
             Object.values(shiftsByPerson).forEach(shifts => {
@@ -1141,7 +1141,35 @@
             const container = getEl('programacion-container'); if(!container) return;
             const term = getEl('busqueda-programacion').value.toLowerCase();
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
-            const relevantPersonal = state.personal.filter(p => { const nameMatch = getFullName(p).toLowerCase().includes(term); const hasShift = Object.values(weekAsig).includes(p.id); if (term.length > 0) return nameMatch; return hasShift; });
+            
+            // --- NUEVA LÓGICA DE BÚSQUEDA (NOMBRE + LOCAL) ---
+            const relevantPersonal = state.personal.filter(p => {
+                const nameMatch = getFullName(p).toLowerCase().includes(term);
+                let localMatch = false;
+                if (term.length > 0) {
+                     // Buscar si la persona tiene algún turno en un local que coincida con el término
+                     for (const [key, val] of Object.entries(weekAsig)) {
+                         if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed')) {
+                             const parts = key.split('-');
+                             // Extraer nombre del local (todo antes de los últimos 3 segmentos: dia, tipo, index)
+                             const localName = parts.slice(0, parts.length - 3).join('-').toLowerCase();
+                             if (localName.includes(term)) {
+                                 localMatch = true;
+                                 break;
+                             }
+                         }
+                     }
+                }
+                const hasShift = Object.values(weekAsig).includes(p.id);
+                
+                // Si hay término, mostrar si coincide nombre O local
+                if (term.length > 0) return nameMatch || localMatch;
+                
+                // Si no hay término, mostrar solo los que tienen turno
+                return hasShift;
+            });
+            // ------------------------------------------------
+
             const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
             container.innerHTML = relevantPersonal.map(p => {
                 const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
@@ -1687,7 +1715,25 @@
             getEl('view-personal-modal').style.display = 'block';
         };
         
-        window.selectPersonal = async (pid) => { if(!currentSlotId) return; await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true }); getEl('global-selection-modal').style.display = 'none'; };
+        window.selectPersonal = async (pid) => {
+            if(!currentSlotId) return;
+            const parts = currentSlotId.split('-'); const dayName = parts[parts.length - 3];
+            const getSlotDateString = (weekStr, dayName) => { const [y, w] = weekStr.split('-W').map(Number); const simple = new Date(y, 0, 1 + (w - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']; const dayIndex = diasArr.indexOf(dayName); const targetDate = new Date(ISOweekStart); targetDate.setDate(targetDate.getDate() + dayIndex); return targetDate.toISOString().split('T')[0]; };
+            
+            const slotDate = getSlotDateString(state.selectedWeek, dayName);
+            const personPermisos = state.permisos.filter(p => p.personalId === pid);
+            const conflict = personPermisos.find(p => slotDate >= p.startDate && slotDate <= p.endDate);
+
+            if (conflict) {
+                const pName = getFullName(state.personal.find(p => p.id === pid));
+                alert(`⛔ IMPOSIBLE ASIGNAR:\n\n${pName} tiene una ausencia registrada para esta fecha (${conflict.startDate} al ${conflict.endDate}).\n\nMotivo: ${conflict.type.toUpperCase()} - ${conflict.reason || 'Sin detalle'}`);
+                return;
+            }
+
+            await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true });
+            getEl('global-selection-modal').style.display = 'none';
+        };
+
         window.loadHist = (weekId) => { if(confirm("¿Cargar esta configuración histórica?")) { state.selectedWeek = weekId; getEl('semana-mapeo').value = weekId; watchWeek(weekId); alert("Visualizando datos históricos. Tenga cuidado al guardar cambios."); } };
     </script>
 </body>
