@@ -54,16 +54,10 @@
         html.dark .cacheo-row { background-color: rgba(30, 58, 138, 0.15); }
 
         /* CONFLICTOS - LÓGICA DEFINITIVA */
-        
-        /* 🔵 AZUL: Rol Crítico (Mismo local O Cruce Horas) */
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #dbeafe !important; }
         html.dark .conflict-role { background-color: #1e3a8a !important; border-left-color: #60a5fa !important; }
-
-        /* 🔴 ROJO: Gravedad Alta (Mismo local NO especial O Cruce > 2h) */
         .conflict-overlap { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
         html.dark .conflict-overlap { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
-
-        /* ⚠️ AMARILLO: Advertencia (Cruce < 2h Distinto Local) */
         .conflict-repeat { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
         html.dark .conflict-repeat { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
 
@@ -275,6 +269,9 @@
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Personal</h2>
                             <div class="flex gap-2">
+                                <!-- Botón Duplicados -->
+                                <button id="btn-check-duplicates" class="text-2xl hover:scale-110 transition-transform p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 mr-2" title="Buscar y Eliminar Duplicados">♻️</button>
+                                
                                 <button id="btn-exportar-bd-personal" class="bg-emerald-500 text-white font-bold py-1 px-3 rounded text-sm hover:bg-emerald-600">Exportar</button>
                                 <button onclick="document.getElementById('import-personal-input').click()" class="bg-sky-500 text-white font-bold py-1 px-3 rounded text-sm hover:bg-sky-600">Importar</button>
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
@@ -412,6 +409,21 @@
     </div>
 
     <!-- === MODALES === -->
+    
+    <!-- Modal Duplicados -->
+    <div id="duplicates-modal" class="modal">
+        <div class="modal-content !max-w-2xl dark:bg-slate-800 dark:border-slate-700 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Duplicados Detectados</h3>
+                <button onclick="document.getElementById('duplicates-modal').style.display='none'" class="text-3xl text-slate-500">&times;</button>
+            </div>
+            <div id="duplicates-list" class="overflow-y-auto max-h-[60vh] mb-4 space-y-4"></div>
+            <div class="flex justify-end gap-3">
+                 <button onclick="document.getElementById('duplicates-modal').style.display='none'" class="bg-slate-300 py-2 px-4 rounded hover:bg-slate-400">Cancelar</button>
+                 <button id="btn-fix-duplicates" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600">Eliminar Duplicados (Dejar 1)</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Selección Global -->
     <div id="global-selection-modal" class="modal">
@@ -441,7 +453,7 @@
         <div class="modal-content !max-w-4xl max-h-[85vh] dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col">
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2">
-                    <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     Dashboard de Estado
                 </h3>
                 <button id="close-dashboard-modal" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
@@ -800,19 +812,15 @@
                             const isSpecial = specialRoles.includes(s1.type) || specialRoles.includes(s2.type);
                             const sameLocal = s1.local === s2.local;
                             
-                            // 1. REGLA AZUL (Roles Críticos):
-                            // Se activa si hay solapamiento (Cualquier tiempo) O si se repite en el mismo local (Doblete)
+                            // 1. REGLA AZUL (Roles Críticos): Solapamiento + Rol Especial
                             if (isSpecial && (overlap > 0 || sameLocal)) { 
                                 conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); 
                             } 
-                            // 2. REGLA ROJA (Gravedad Alta):
-                            // Mismo local (Y NO ES ESPECIAL, porque si fuera especial ya entró arriba) 
-                            // O Cruce > 2 horas (Y NO ES ESPECIAL...)
-                            else if (sameLocal || overlap > 120) { 
+                            // 2. REGLA ROJA (Gravedad Alta): Mismo local (NO especial) O Cruce > 2 horas
+                            else if ((sameLocal && !isSpecial) || overlap > 120) { 
                                 conflictMap.overlap.add(s1.slotId); conflictMap.overlap.add(s2.slotId); 
                             } 
-                            // 3. REGLA AMARILLA (Advertencia):
-                            // Cruce <= 2 horas Y Diferente Local (Y NO ES ESPECIAL)
+                            // 3. REGLA AMARILLA (Advertencia): Cruce <= 2 horas Y Diferente Local
                             else if (overlap > 0) { 
                                 conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); 
                             }
@@ -1666,6 +1674,72 @@
                     renderTable('tabla-personal', filtered, (p) => `<td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.numero_empleado||'-'}</td><td class="p-3 font-medium cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td><td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.telefono||'-'}</td>`);
                 });
             }
+            
+            // --- NUEVO: BOTÓN DUPLICADOS ---
+            getEl('btn-check-duplicates').onclick = () => {
+                const groups = {};
+                state.personal.forEach(p => {
+                    const key = (p.nombre + (p.apellido || '')).toLowerCase().trim().replace(/\s+/g, '');
+                    if(!groups[key]) groups[key] = [];
+                    groups[key].push(p);
+                });
+                
+                const duplicates = Object.values(groups).filter(g => g.length > 1);
+                
+                if(duplicates.length === 0) {
+                    showToast("✅ No se encontraron duplicados.");
+                    return;
+                }
+                
+                const listContainer = getEl('duplicates-list');
+                listContainer.innerHTML = duplicates.map(group => {
+                    return `
+                        <div class="bg-orange-50 border border-orange-200 p-3 rounded dark:bg-orange-900/20 dark:border-orange-800">
+                            <p class="font-bold text-orange-800 dark:text-orange-300 mb-2">${group[0].nombre} ${group[0].apellido || ''}</p>
+                            <ul class="text-sm space-y-1">
+                                ${group.map(p => `<li class="flex justify-between text-slate-600 dark:text-slate-400"><span>ID: ${p.numero_empleado || '??'} - Tel: ${p.telefono || '-'}</span> <span class="text-xs bg-slate-200 px-1 rounded dark:bg-slate-700 dark:text-slate-300">...${p.id.substr(-4)}</span></li>`).join('')}
+                            </ul>
+                            <p class="text-xs text-right mt-2 text-red-500 font-semibold">Se eliminarán ${group.length - 1} registros.</p>
+                        </div>
+                    `;
+                }).join('');
+                
+                window.pendingDuplicates = duplicates;
+                getEl('duplicates-modal').style.display = 'block';
+            };
+
+            getEl('btn-fix-duplicates').onclick = async () => {
+                if(!window.pendingDuplicates || window.pendingDuplicates.length === 0) return;
+                if(!confirm(`⚠️ ¿Estás seguro? \n\nSe eliminarán permanentemente los registros redundantes. Esta acción no se puede deshacer.`)) return;
+                
+                const btn = getEl('btn-fix-duplicates');
+                btn.disabled = true;
+                btn.textContent = "Eliminando...";
+                
+                let deletedCount = 0;
+                
+                try {
+                    const promises = [];
+                    window.pendingDuplicates.forEach(group => {
+                        const [keeper, ...toDelete] = group;
+                        toDelete.forEach(p => {
+                            promises.push(deleteDoc(doc(collections.personal, p.id)));
+                            deletedCount++;
+                        });
+                    });
+                    
+                    await Promise.all(promises);
+                    showToast(`♻️ Limpieza completada: ${deletedCount} registros eliminados.`);
+                    getEl('duplicates-modal').style.display = 'none';
+                    
+                } catch (e) {
+                    console.error(e);
+                    showToast("Error al eliminar: " + e.message, "error");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Eliminar Duplicados (Dejar 1)";
+                }
+            };
 
             const btnDash = document.getElementById('btn-dashboard-admin');
             if (btnDash) {
