@@ -53,13 +53,19 @@
         .cacheo-row { background-color: #eff6ff; }
         html.dark .cacheo-row { background-color: rgba(30, 58, 138, 0.15); }
 
-        /* CONFLICTOS */
-        .conflict-overlap { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
-        html.dark .conflict-overlap { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
-        .conflict-repeat { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
-        html.dark .conflict-repeat { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
-        .conflict-role { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
-        html.dark .conflict-role { background-color: #172554 !important; border-left-color: #3b82f6 !important; }
+        /* CONFLICTOS - LÓGICA DEFINITIVA */
+        
+        /* 🔵 AZUL: Rol Crítico (Mismo local O Cruce Horas) */
+        .conflict-role { border-left-color: #3b82f6 !important; background-color: #dbeafe !important; }
+        html.dark .conflict-role { background-color: #1e3a8a !important; border-left-color: #60a5fa !important; }
+
+        /* 🔴 ROJO: Gravedad Alta (Mismo local NO especial O Cruce > 2h) */
+        .conflict-overlap { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        html.dark .conflict-overlap { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
+
+        /* ⚠️ AMARILLO: Advertencia (Cruce < 2h Distinto Local) */
+        .conflict-repeat { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
+        html.dark .conflict-repeat { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
 
         /* ANIMACIONES Y UI */
         @keyframes pulse-red { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
@@ -739,8 +745,8 @@
             if (pid) {
                 baseClass = "slot-filled-row";
                 if (conflictMap.role.has(slotId)) bgClass = "conflict-role"; 
-                else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
                 else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
+                else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
                 if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
 
                 const p = state.personal.find(x => x.id === pid);
@@ -779,7 +785,7 @@
                 const start = timeToMin(hIn); let end = timeToMin(hOut); if (end < start) end += 24*60; 
                 const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
-                shiftsByPerson[pid].push({ slotId, dia, local, tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
+                shiftsByPerson[pid].push({ slotId, dia, local, type: tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
             });
 
             Object.values(shiftsByPerson).forEach(shifts => {
@@ -793,9 +799,23 @@
                             const overlap = Math.min(s1.end, s2.end) - Math.max(s1.start, s2.start);
                             const isSpecial = specialRoles.includes(s1.type) || specialRoles.includes(s2.type);
                             const sameLocal = s1.local === s2.local;
-                            if (isSpecial) { conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); } 
-                            else if (sameLocal || overlap > 120) { conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); } 
-                            else { conflictMap.overlap.add(s1.slotId); conflictMap.overlap.add(s2.slotId); }
+                            
+                            // 1. REGLA AZUL (Roles Críticos):
+                            // Se activa si hay solapamiento (Cualquier tiempo) O si se repite en el mismo local (Doblete)
+                            if (isSpecial && (overlap > 0 || sameLocal)) { 
+                                conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); 
+                            } 
+                            // 2. REGLA ROJA (Gravedad Alta):
+                            // Mismo local (Y NO ES ESPECIAL, porque si fuera especial ya entró arriba) 
+                            // O Cruce > 2 horas (Y NO ES ESPECIAL...)
+                            else if (sameLocal || overlap > 120) { 
+                                conflictMap.overlap.add(s1.slotId); conflictMap.overlap.add(s2.slotId); 
+                            } 
+                            // 3. REGLA AMARILLA (Advertencia):
+                            // Cruce <= 2 horas Y Diferente Local (Y NO ES ESPECIAL)
+                            else if (overlap > 0) { 
+                                conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); 
+                            }
                         }
                     }
                 });
@@ -977,6 +997,7 @@
             }
         }
 
+        // --- FUNCIÓN RENDER DASHBOARD GERENCIAL ---
         function renderAdminDashboard() {
             const week = state.selectedWeek;
             const asig = state.asignaciones[week] || {};
@@ -1038,6 +1059,7 @@
             }
         }
 
+        // --- WATCHWEEK ---
         function watchWeek(week) {
             if(!week) return;
             const loader = getEl('loader');
@@ -1183,7 +1205,7 @@
                 const allConfirmed = shifts.every(s => s.isConfirmed);
                 let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
                 let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
-                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
+                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
             }).join('');
         }
         function renderTarifarioTable() {
@@ -1595,20 +1617,6 @@
                     });
                 });
                 const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Mapeo Semanal"); XLSX.writeFile(wb, `Mapeo_Completo_${w}.xlsx`);
-            };
-
-            getEl('tabla-tarifario').addEventListener('change', async (e) => {
-                if(e.target.matches('input')) { await setDoc(doc(collections.tarifarios, e.target.dataset.uid), { [e.target.dataset.field]: e.target.value }, { merge: true }); }
-            });
-
-            getEl('busqueda-programacion').addEventListener('input', renderProgramacion);
-            getEl('busqueda-tarifario').addEventListener('input', renderTarifarioTable);
-            
-            getEl('btn-exportar-planilla').onclick = () => {
-                const table = getEl('tabla-planillas'); const rows = []; const headers = [];
-                table.parentElement.querySelectorAll('thead th').forEach(th => headers.push(th.innerText)); rows.push(headers);
-                table.querySelectorAll('tr').forEach(tr => { const rowData = []; tr.querySelectorAll('td').forEach(td => rowData.push(td.innerText)); rows.push(rowData); });
-                const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Planilla"); XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
             };
 
             // SUGERENCIA INTELIGENTE
