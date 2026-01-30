@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Personal SWAT (V6 - Final Dashboard)</title>
+    <title>Control de Personal SWAT (V6 - Final)</title>
     
-    <!-- IMPLEMENTACIÓN DEL ICONO -->
+    <!-- ICONO -->
     <link rel="icon" href="logo swat.ico" type="image/x-icon">
     <link rel="shortcut icon" href="logo swat.ico" type="image/x-icon">
 
@@ -18,181 +18,84 @@
                 extend: {
                     colors: {
                         slate: { 850: '#151e2e' },
-                        guinda: {
-                            50: '#fdf2f2',
-                            100: '#fde8e8',
-                            500: '#9f1239', 
-                            600: '#881337', 
-                            700: '#800020', 
-                            800: '#4c0519',
-                        }
+                        guinda: { 50: '#fdf2f2', 100: '#fde8e8', 500: '#9f1239', 600: '#881337', 700: '#800020', 800: '#4c0519' }
                     }
                 }
             }
         }
     </script>
-    <!-- Librerías Externas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- CORRECCIÓN CHART.JS (VERSIÓN UMD) -->
+    <!-- Librerías: Excel y Gráficos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         html.dark { color-scheme: dark; }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc;
-            color: #1e293b;
-            overflow-x: hidden;
-        }
-        html.dark body {
-            background-color: #0f172a;
-            color: #cbd5e1;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        html.dark body { background-color: #0f172a; color: #cbd5e1; }
 
-        /* --- ESTILOS DE FILA (LISTADO) --- */
-        .slot-row {
-            transition: all 0.2s ease;
-            border-bottom: 1px solid #e2e8f0;
-            border-left: 4px solid transparent; 
-        }
-        html.dark .slot-row {
-            border-bottom-color: #334155;
-        }
-        .slot-row:last-child {
-            border-bottom: none;
-        }
-        
-        /* Puestos Resaltados */
-        .slot-label-col {
-            background-color: #f1f5f9;
-            border-right: 1px solid #e2e8f0;
-        }
-        html.dark .slot-label-col {
-            background-color: #1e293b;
-            border-right-color: #334155;
-        }
+        /* LISTADO Y CELDAS */
+        .slot-row { transition: all 0.2s ease; border-bottom: 1px solid #e2e8f0; border-left: 4px solid transparent; }
+        html.dark .slot-row { border-bottom-color: #334155; }
+        .slot-row:last-child { border-bottom: none; }
+        .slot-label-col { background-color: #f1f5f9; border-right: 1px solid #e2e8f0; }
+        html.dark .slot-label-col { background-color: #1e293b; border-right-color: #334155; }
 
-        /* Estado Vacante */
-        .slot-empty-row {
-            opacity: 0.8;
-            border-left: 4px solid #cbd5e1; 
-        }
-        html.dark .slot-empty-row {
-            border-left-color: #475569;
-        }
-        .slot-empty-row:hover {
-            background-color: rgba(59, 130, 246, 0.05);
-            opacity: 1;
-            border-left-color: #3b82f6;
-        }
+        /* ESTADOS DE FILA */
+        .slot-empty-row { opacity: 0.8; border-left: 4px solid #cbd5e1; }
+        html.dark .slot-empty-row { border-left-color: #475569; }
+        .slot-empty-row:hover { background-color: rgba(59, 130, 246, 0.05); opacity: 1; border-left-color: #3b82f6; }
+        .slot-filled-row { background-color: white; border-left: 4px solid #22c55e; }
+        html.dark .slot-filled-row { background-color: transparent; border-left-color: #16a34a; }
+        .slot-filled-row:hover { background-color: #f8fafc; }
+        html.dark .slot-filled-row:hover { background-color: #1e293b; }
+        .cacheo-row { background-color: #eff6ff; }
+        html.dark .cacheo-row { background-color: rgba(30, 58, 138, 0.15); }
 
-        /* Estado Ocupado */
-        .slot-filled-row {
-            background-color: white;
-            border-left: 4px solid #22c55e;
-        }
-        html.dark .slot-filled-row {
-            background-color: transparent;
-            border-left-color: #16a34a;
-        }
-        .slot-filled-row:hover {
-            background-color: #f8fafc;
-        }
-        html.dark .slot-filled-row:hover {
-            background-color: #1e293b;
-        }
-
-        /* Cacheo */
-        .cacheo-row {
-            background-color: #eff6ff;
-        }
-        html.dark .cacheo-row {
-            background-color: rgba(30, 58, 138, 0.15);
-        }
-
-        /* --- CONFLICTOS --- */
+        /* CONFLICTOS */
         .conflict-overlap { border-left-color: #f59e0b !important; background-color: #fffbeb !important; }
         html.dark .conflict-overlap { background-color: #451a03 !important; border-left-color: #f59e0b !important; }
-
         .conflict-repeat { border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
         html.dark .conflict-repeat { background-color: #450a0a !important; border-left-color: #ef4444 !important; }
-
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
         html.dark .conflict-role { background-color: #172554 !important; border-left-color: #3b82f6 !important; }
 
-        /* --- URGENCIAS Y ALARMAS --- */
-        @keyframes pulse-red {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pulse-red {
-            animation: pulse-red 1.5s infinite;
-            color: #ef4444;
-        }
-        
-        .urgent-card {
-            border: 2px solid #ef4444 !important;
-            background-color: #fef2f2 !important;
-        }
-        html.dark .urgent-card {
-            background-color: #450a0a !important;
-            border-color: #ef4444 !important;
-        }
-
-        /* Scrollbar */
+        /* ANIMACIONES Y UI */
+        @keyframes pulse-red { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-pulse-red { animation: pulse-red 1.5s infinite; color: #ef4444; }
+        .urgent-card { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+        html.dark .urgent-card { background-color: #450a0a !important; border-color: #ef4444 !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
         html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
 
-        /* --- MENÚ LATERAL --- */
-        #menu-toggle { position: fixed; top: 20px; left: 20px; z-index: 2000; width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; }
+        /* NAVEGACIÓN LATERAL */
+        #menu-toggle { position: fixed; top: 20px; left: 20px; z-index: 2000; width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease; }
         html.dark #menu-toggle { background-color: rgba(30, 41, 59, 0.8); }
         #menu-toggle:hover { transform: scale(1.1); }
-
-        #side-nav { 
-            position: fixed; top: 0; left: 0; height: 100%; width: 250px; padding: 80px 0 20px; 
-            background-color: rgba(255, 255, 255, 0.25); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-            border-right: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 5px 0 25px rgba(0,0,0,0.05);
-            z-index: 1999; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
+        #side-nav { position: fixed; top: 0; left: 0; height: 100%; width: 250px; padding: 80px 0 20px; background-color: rgba(255, 255, 255, 0.25); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 5px 0 25px rgba(0,0,0,0.05); z-index: 1999; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         html.dark #side-nav { background-color: rgba(15, 23, 42, 0.4); border-right: 1px solid rgba(255, 255, 255, 0.05); }
         #side-nav.open { transform: translateX(0); }
-        
-        #side-nav .nav-button { 
-            display: block; width: calc(100% - 24px); margin: 4px 12px; padding: 12px 16px; 
-            border-radius: 8px; font-weight: 600; text-align: left; transition: all 0.2s; color: #475569; cursor: pointer; 
-        }
+        #side-nav .nav-button { display: block; width: calc(100% - 24px); margin: 4px 12px; padding: 12px 16px; border-radius: 8px; font-weight: 600; text-align: left; transition: all 0.2s; color: #475569; cursor: pointer; }
         html.dark #side-nav .nav-button { color: #cbd5e1; }
-        
         #side-nav .nav-button:hover:not(.active) { background-color: rgba(128, 0, 32, 0.08); color: #800020; }
         html.dark #side-nav .nav-button:hover:not(.active) { background-color: rgba(255, 255, 255, 0.1); color: #f1f5f9; }
-
         #side-nav .nav-button.active { background-color: #800020; color: white; box-shadow: 0 4px 10px rgba(128, 0, 32, 0.3); }
         html.dark #side-nav .nav-button.active { background-color: #9f1239; color: white; }
 
+        /* MODALES */
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
         .modal-content { background-color: #fefefe; margin: 0 auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 12px; color: #1e293b; max-height: 90vh; display: flex; flex-direction: column; }
         html.dark .modal-content { background-color: #1e293b; border-color: #334155; color: #e2e8f0; }
-
-        .card-action-btn { padding: 4px; border-radius: 6px; transition: all 0.2s; opacity: 0.7; }
-        .card-action-btn:hover { background-color: rgba(0,0,0,0.05); opacity: 1; transform: scale(1.1); }
-        html.dark .card-action-btn:hover { background-color: rgba(255,255,255,0.1); }
 
         #loader { display: none; position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8); z-index: 9999; align-items: center; justify-content: center; }
         html.dark #loader { background-color: rgba(15, 23, 42, 0.8); }
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; background-color: rgba(248, 250, 252, 0.7); backdrop-filter: blur(8px); }
         html.dark #login-overlay { background-color: rgba(15, 23, 42, 0.7); }
         
-        /* Animaciones */
-        @keyframes blink { 50% { opacity: 0.3; } }
-        .notification-bell { animation: blink 1.5s infinite; cursor: help; color: #f59e0b; margin-left: 8px; }
-        
-        /* Indicador Circular */
+        /* GRÁFICOS Y UTILIDADES */
         .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 250px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
         html.dark .circle-bg { stroke: #334155; }
@@ -201,22 +104,15 @@
         .percentage-text { fill: #666; font-family: sans-serif; font-weight: bold; font-size: 0.5em; text-anchor: middle; }
         html.dark .percentage-text { fill: #cbd5e1; }
         
-        .icon-btn { background-color: #f1f5f9; border-radius: 9999px; padding: 0.5rem; transition: all 0.2s ease; cursor: pointer; }
-        .icon-btn:hover { background-color: #e2e8f0; transform: scale(1.1); }
-        html.dark .icon-btn { background-color: #334155; }
-        html.dark .icon-btn:hover { background-color: #475569; }
-        
         #search-panel { position: fixed; bottom: 80px; right: 20px; width: 300px; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); padding: 16px; z-index: 1000; transform: translateY(20px) scale(0.95); opacity: 0; transition: all 0.3s ease; pointer-events: none; }
         #search-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
         html.dark #search-panel { background-color: rgba(30, 41, 59, 0.9); }
         
-        /* Estilos Calendario */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
         .calendar-day { min-height: 80px; padding: 4px; border: 1px solid #e2e8f0; background-color: white; cursor: pointer; transition: all 0.2s; }
         .calendar-day:hover { background-color: #f8fafc; }
         html.dark .calendar-day { background-color: #1e293b; border-color: #334155; }
         html.dark .calendar-day:hover { background-color: #334155; }
-        .calendar-header { font-weight: bold; text-align: center; padding: 8px 0; font-size: 0.85rem; color: #64748b; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -234,7 +130,6 @@
                     <label class="block text-slate-700 dark:text-slate-300 font-semibold mb-2">Contraseña</label>
                     <input type="password" id="password" class="w-full p-3 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-white" required>
                 </div>
-                <!-- CHECKBOX RECORDAR USUARIO -->
                 <div class="mb-6 flex items-center">
                     <input type="checkbox" id="remember-me" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded">
                     <label for="remember-me" class="text-slate-700 dark:text-slate-300 font-semibold text-sm">Recordar usuario</label>
@@ -253,7 +148,7 @@
         </div>
     </div>
     
-    <!-- NOTIFICACIONES TOAST -->
+    <!-- TOASTS -->
     <div id="status-message-container" class="fixed top-4 right-4 z-[4000] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- NAVEGACIÓN -->
@@ -270,7 +165,6 @@
         <button id="btn-tarifario" class="nav-button">Tarifario</button>
         <button id="btn-planillas" class="nav-button">Planillas</button>
         <button id="btn-historial" class="nav-button">Historial</button>
-        <!-- NUEVO BOTÓN DASHBOARD -->
         <button id="btn-dashboard-admin" class="nav-button">📊 Dashboard Gerencial</button>
         <div class="mt-auto px-6 pb-6 pt-10">
              <button id="btn-logout" class="text-red-500 font-medium hover:text-red-700 flex items-center gap-2">
@@ -285,23 +179,18 @@
         <header class="text-center mb-8 relative">
             <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Mapeo Semanal</h1>
             <div class="absolute top-0 right-0 flex items-center gap-3">
-                
-                <!-- BOTÓN PERMISOS -->
                 <button id="btn-permisos" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 group" title="Gestión de Permisos">
                     <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 hidden sm:block">Permisos</span>
                 </button>
-
-                <!-- BOTÓN DASHBOARD MINIMALISTA -->
                 <button id="btn-dashboard" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group" title="Ver Dashboard de Estado">
                     <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 hidden sm:block">Estado</span>
                 </button>
-
                 <div id="system-status-container" title="Estado del sistema" class="p-2">
                     <svg id="system-status-icon" class="h-6 w-6 text-slate-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -315,7 +204,7 @@
         </header>
 
         <main>
-            <!-- 1. SECCIÓN MAPEO -->
+            <!-- 1. MAPEO -->
             <section id="section-mapeo">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-slate-100 dark:border-slate-700">
                     <div class="flex flex-col lg:flex-row items-center gap-4 mb-6">
@@ -325,46 +214,25 @@
                         </div>
                         <div class="flex-grow"></div>
                         <div class="flex flex-wrap gap-2 justify-center items-center">
-                            
-                            <!-- BOTÓN COPIAR TEXTO -->
                             <button id="btn-copy-all-schedule" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 shadow-sm text-sm flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar Texto
                             </button>
-
-                            <!-- MENÚ DESPLEGABLE HERRAMIENTAS -->
                             <div class="relative">
                                 <button id="btn-tools-dropdown" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm flex items-center gap-2 border border-slate-300 dark:border-slate-600">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
-                                    </svg>
-                                    Herramientas
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg> Herramientas
                                 </button>
-                                <!-- Contenido del Menú -->
                                 <div id="tools-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-600 overflow-hidden">
-                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                        <span class="text-sky-500">📋</span> Copiar Sem. Ant.
-                                     </button>
-                                     <button id="btn-save-history" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                        <span class="text-teal-500">💾</span> Guardar Respaldo
-                                     </button>
-                                     <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors">
-                                        <span class="text-green-600">📊</span> Excel
-                                     </button>
+                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-sky-500">📋</span> Copiar Sem. Ant.</button>
+                                     <button id="btn-save-history" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-teal-500">💾</span> Guardar Respaldo</button>
+                                     <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-green-600">📊</span> Excel</button>
                                      <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
-                                     <button id="btn-limpiar-mapeo" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-semibold">
-                                        <span>🗑️</span> Limpiar
-                                     </button>
+                                     <button id="btn-limpiar-mapeo" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-semibold"><span>🗑️</span> Limpiar</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6" id="mapeo-container">
-                        <!-- Tarjetas de Mapeo aquí -->
-                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6" id="mapeo-container"></div>
                 </div>
-
-                <!-- Botón Flotante y Panel de Búsqueda -->
                 <div id="search-fab" class="fixed bottom-6 right-6 z-50">
                     <button class="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110">
                          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -379,7 +247,7 @@
                 </div>
             </section>
 
-            <!-- 2. SECCIÓN GESTIÓN -->
+            <!-- 2. GESTIÓN -->
             <section id="section-gestion" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Locales -->
@@ -391,14 +259,11 @@
                         </form>
                         <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
                             <table class="w-full text-left">
-                                <thead class="bg-slate-100 dark:bg-slate-700 sticky top-0">
-                                    <tr><th class="p-3 text-slate-700 dark:text-slate-200">Local</th><th class="p-3 text-right text-slate-700 dark:text-slate-200">Acciones</th></tr>
-                                </thead>
+                                <thead class="bg-slate-100 dark:bg-slate-700 sticky top-0"><tr><th class="p-3 text-slate-700 dark:text-slate-200">Local</th><th class="p-3 text-right text-slate-700 dark:text-slate-200">Acciones</th></tr></thead>
                                 <tbody id="tabla-locales"></tbody>
                             </table>
                         </div>
                     </div>
-                    
                     <!-- Personal -->
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
@@ -409,23 +274,14 @@
                                 <input type="file" id="import-personal-input" class="hidden" accept=".xlsx, .xls">
                             </div>
                         </div>
-                        
-                        <!-- BOTÓN Y BUSCADOR MEJORADO -->
                         <button id="btn-abrir-modal-personal" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 mb-4 shadow-md transition-transform hover:scale-[1.02]">Agregar Personal Nuevo</button>
-                        
-                        <!-- NUEVO BUSCADOR GESTIÓN -->
                         <div class="relative mb-4 group">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><svg class="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div>
                             <input type="text" id="gestion-personal-search" class="w-full py-2.5 pl-10 pr-4 border border-slate-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm" placeholder="🔍 Buscar por Nombre o DNI...">
                         </div>
-
                         <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar border rounded-lg dark:border-slate-600">
                             <table class="w-full text-left">
-                                <thead class="bg-slate-100 dark:bg-slate-700 sticky top-0">
-                                    <tr><th class="p-3">ID</th><th class="p-3">Nombre</th><th class="p-3">Teléfono</th></tr>
-                                </thead>
+                                <thead class="bg-slate-100 dark:bg-slate-700 sticky top-0"><tr><th class="p-3">ID</th><th class="p-3">Nombre</th><th class="p-3">Teléfono</th></tr></thead>
                                 <tbody id="tabla-personal"></tbody>
                             </table>
                         </div>
@@ -433,7 +289,7 @@
                 </div>
             </section>
 
-            <!-- 3. SECCIÓN PROGRAMACIÓN -->
+            <!-- 3. PROGRAMACIÓN -->
             <section id="section-programacion" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row items-center gap-4 mb-6">
@@ -445,14 +301,11 @@
                 </div>
             </section>
 
-            <!-- 4. SECCIÓN TARIFARIO -->
+            <!-- 4. TARIFARIO -->
             <section id="section-tarifario" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold dark:text-white">Tarifario Individual (S/)</h2>
-                            <p class="text-sm text-slate-500">Auto-guardado habilitado.</p>
-                        </div>
+                        <div><h2 class="text-2xl font-bold dark:text-white">Tarifario Individual (S/)</h2><p class="text-sm text-slate-500">Auto-guardado habilitado.</p></div>
                          <div class="flex items-center gap-2">
                             <button id="btn-exportar-tarifario" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded hover:bg-emerald-600 text-sm">Exportar</button>
                             <button onclick="document.getElementById('import-tarifario-input').click()" class="bg-sky-500 text-white font-bold py-2 px-4 rounded hover:bg-sky-600 text-sm">Importar</button>
@@ -476,17 +329,13 @@
                 </div>
             </section>
 
-            <!-- 5. SECCIÓN PLANILLAS -->
+            <!-- 5. PLANILLAS -->
             <section id="section-planillas" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                        <div class="flex items-center gap-2">
-                            <label class="font-semibold dark:text-white">Semana:</label>
-                            <input type="week" id="semana-planillas" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white">
-                        </div>
+                        <div class="flex items-center gap-2"><label class="font-semibold dark:text-white">Semana:</label><input type="week" id="semana-planillas" class="p-2 border rounded-md dark:bg-slate-700 dark:text-white"></div>
                         <button id="btn-exportar-planilla" class="bg-emerald-500 text-white font-bold py-2 px-4 rounded-md hover:bg-emerald-600 flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Descargar Planilla
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Descargar Planilla
                         </button>
                     </div>
                     <div class="overflow-x-auto">
@@ -506,7 +355,7 @@
                 </div>
             </section>
             
-            <!-- 6. SECCIÓN HISTORIAL -->
+            <!-- 6. HISTORIAL -->
             <section id="section-historial" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                     <h2 class="text-2xl font-bold mb-4 dark:text-white">Historial de Mapeos Guardados</h2>
@@ -514,14 +363,12 @@
                 </div>
             </section>
 
-            <!-- 7. SECCIÓN DASHBOARD GERENCIAL -->
+            <!-- 7. DASHBOARD -->
             <section id="section-dashboard-admin" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-6 border-l-4 border-indigo-600">
                     <h2 class="text-2xl font-bold dark:text-white">Resumen Ejecutivo</h2>
                     <p class="text-slate-500 dark:text-slate-400">Análisis financiero y operativo de la semana seleccionada.</p>
                 </div>
-
-                <!-- TARJETAS KPI -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border-t-4 border-emerald-500">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Costo Semanal (Est.)</p>
@@ -544,20 +391,14 @@
                         <p class="text-xs text-red-600 mt-1 font-semibold">Puestos sin cubrir</p>
                     </div>
                 </div>
-
-                <!-- GRÁFICOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
                         <h4 class="font-bold text-lg mb-4 dark:text-white border-b pb-2 dark:border-slate-700">Operatividad por Local</h4>
-                        <div class="h-64 relative w-full">
-                            <canvas id="chart-turnos-local"></canvas>
-                        </div>
+                        <div class="h-64 relative w-full"><canvas id="chart-turnos-local"></canvas></div>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
                         <h4 class="font-bold text-lg mb-4 dark:text-white border-b pb-2 dark:border-slate-700">Distribución de Costos</h4>
-                        <div class="h-64 relative w-full flex justify-center">
-                            <canvas id="chart-costos-tipo"></canvas>
-                        </div>
+                        <div class="h-64 relative w-full flex justify-center"><canvas id="chart-costos-tipo"></canvas></div>
                     </div>
                 </div>
             </section>
@@ -569,17 +410,12 @@
     <!-- Modal Selección Global -->
     <div id="global-selection-modal" class="modal">
         <div class="modal-content w-full max-w-md h-[80vh] bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-2xl flex flex-col">
-            <!-- CABECERA MODIFICADA CON BOTÓN DE SUGERENCIA -->
             <div class="p-4 border-b dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800 z-10 shrink-0">
                 <div>
                     <div class="flex items-center gap-2">
                         <h3 class="text-lg font-bold text-slate-800 dark:text-white">Asignar Personal</h3>
-                        <!-- BOTÓN FOCO -->
                         <button id="btn-smart-suggest" type="button" class="text-yellow-500 hover:text-yellow-600 transition-all hover:scale-110" title="Sugerencia Inteligente">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                               <path d="M12 18a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0 2a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/>
-                           </svg>
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /><path d="M12 18a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0 2a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/></svg>
                         </button>
                     </div>
                     <p id="modal-slot-info" class="text-xs text-slate-500">...</p>
@@ -594,7 +430,7 @@
         </div>
     </div>
     
-    <!-- Modal Dashboard (Estado) -->
+    <!-- Modal Dashboard -->
     <div id="dashboard-modal" class="modal">
         <div class="modal-content !max-w-4xl max-h-[85vh] dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col">
             <div class="flex justify-between items-center mb-6 shrink-0">
@@ -612,24 +448,16 @@
     <div id="permisos-modal" class="modal">
          <div class="modal-content !max-w-5xl max-h-[90vh] flex flex-col dark:bg-slate-800 dark:border-slate-700 p-6">
              <div class="flex justify-between items-center mb-4 shrink-0">
-                 <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2">
-                     <span class="text-3xl">📅</span> Calendario de Ausencias
-                 </h3>
+                 <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2"><span class="text-3xl">📅</span> Calendario de Ausencias</h3>
                  <button onclick="document.getElementById('permisos-modal').style.display='none'" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
              </div>
-             
              <div class="flex gap-4 mb-4">
                  <button id="prev-month" class="px-3 py-1 bg-slate-200 rounded hover:bg-slate-300 dark:bg-slate-700 dark:text-white">&lt;</button>
                  <span id="current-month-display" class="font-bold text-xl w-40 text-center dark:text-white"></span>
                  <button id="next-month" class="px-3 py-1 bg-slate-200 rounded hover:bg-slate-300 dark:bg-slate-700 dark:text-white">&gt;</button>
              </div>
-             
-             <div class="grid grid-cols-7 gap-2 mb-2 text-center font-bold text-slate-500 dark:text-slate-400">
-                 <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
-             </div>
-             
+             <div class="grid grid-cols-7 gap-2 mb-2 text-center font-bold text-slate-500 dark:text-slate-400"><div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div></div>
              <div id="calendar-grid" class="calendar-grid flex-grow overflow-y-auto"></div>
-             
              <div class="mt-4 flex gap-4 text-sm">
                  <div class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-400 rounded-full"></span> Permiso</div>
                  <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> Baja Médica</div>
@@ -638,24 +466,15 @@
          </div>
     </div>
     
-    <!-- Modal Agregar Permiso (Sub-modal) -->
+    <!-- Modal Agregar Permiso -->
     <div id="add-permiso-modal" class="modal" style="z-index: 3100;">
         <div class="modal-content !max-w-md p-6 dark:bg-slate-800 dark:border-slate-700">
             <h3 class="text-xl font-bold mb-4 dark:text-white">Registrar Ausencia</h3>
             <form id="form-permiso" class="flex flex-col gap-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 dark:text-slate-300">Personal</label>
-                    <select id="permiso-personal" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></select>
-                </div>
+                <div><label class="block text-sm font-medium mb-1 dark:text-slate-300">Personal</label><select id="permiso-personal" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></select></div>
                 <div class="grid grid-cols-2 gap-4">
-                     <div>
-                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Desde</label>
-                        <input type="date" id="permiso-start" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required>
-                     </div>
-                     <div>
-                        <label class="block text-sm font-medium mb-1 dark:text-slate-300">Hasta</label>
-                        <input type="date" id="permiso-end" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required>
-                     </div>
+                     <div><label class="block text-sm font-medium mb-1 dark:text-slate-300">Desde</label><input type="date" id="permiso-start" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></div>
+                     <div><label class="block text-sm font-medium mb-1 dark:text-slate-300">Hasta</label><input type="date" id="permiso-end" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1 dark:text-slate-300">Tipo</label>
@@ -665,10 +484,7 @@
                         <option value="vacaciones">Vacaciones (Verde)</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1 dark:text-slate-300">Motivo</label>
-                    <input type="text" id="permiso-reason" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" placeholder="Opcional">
-                </div>
+                <div><label class="block text-sm font-medium mb-1 dark:text-slate-300">Motivo</label><input type="text" id="permiso-reason" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" placeholder="Opcional"></div>
                 <div class="flex justify-end gap-2 mt-2">
                     <button type="button" onclick="document.getElementById('add-permiso-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
@@ -687,25 +503,34 @@
                 <div><label class="text-sm dark:text-slate-300">Nombre</label><input type="text" id="nombre" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></div>
                 <div><label class="text-sm dark:text-slate-300">Apellidos</label><input type="text" id="apellido" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"></div>
                 <div><label class="text-sm dark:text-slate-300">Teléfono</label><input type="tel" id="telefono" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"></div>
-                <div><label class="text-sm dark:text-slate-300">Disponibilidad</label><select id="disponibilidad" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"><option value="disponible">Disponible</option><option value="no-disponible">No Disponible</option></select></div>
                 
+                <div class="md:col-span-2 border-t pt-2 mt-2 dark:border-slate-600">
+                    <p class="text-sm font-bold text-slate-500 mb-2">Fotografía (Interna)</p>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="text-xs dark:text-slate-300">📷 Foto de Perfil (Compresión Automática)</label>
+                            <input type="file" id="foto-personal" accept="image/*" class="w-full text-sm dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                    </div>
+                </div>
+
+                <div><label class="text-sm dark:text-slate-300 mt-2">Disponibilidad</label><select id="disponibilidad" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"><option value="disponible">Disponible</option><option value="no-disponible">No Disponible</option></select></div>
                 <div class="md:col-span-2 grid grid-cols-3 gap-2">
                     <div><label class="text-xs dark:text-slate-400">Pref. Local 1</label><select id="local1" class="w-full p-1 border rounded text-sm dark:bg-slate-700 dark:text-white"><option value="">Ninguno</option></select></div>
                     <div><label class="text-xs dark:text-slate-400">Pref. Local 2</label><select id="local2" class="w-full p-1 border rounded text-sm dark:bg-slate-700 dark:text-white"><option value="">Ninguno</option></select></div>
                     <div><label class="text-xs dark:text-slate-400">Pref. Local 3</label><select id="local3" class="w-full p-1 border rounded text-sm dark:bg-slate-700 dark:text-white"><option value="">Ninguno</option></select></div>
                 </div>
-
                 <div class="md:col-span-2 flex justify-end gap-3 mt-4">
                     <button type="button" id="close-personal-modal" class="bg-slate-300 py-2 px-4 rounded hover:bg-slate-400">Cancelar</button>
-                    <button type="submit" class="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700">Guardar</button>
+                    <button type="submit" id="btn-save-personal" class="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <!-- Modal Vista Rápida Personal -->
+    <!-- Modal Vista Rápida -->
     <div id="view-personal-modal" class="modal">
-        <div class="modal-content dark:bg-slate-800">
+        <div class="modal-content !max-w-xl dark:bg-slate-800">
             <div class="flex justify-between items-start">
                 <h3 id="view-personal-name" class="text-2xl font-bold mb-4 dark:text-white"></h3>
                 <button type="button" id="close-view-personal-modal" class="text-3xl font-bold text-slate-500">&times;</button>
@@ -764,18 +589,16 @@
     </div>
 
     <script type="module">
-        // 1. IMPORTACIONES FIREBASE
+        // 1. IMPORTACIONES FIREBASE (Solo lo necesario)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, updateDoc, deleteField, serverTimestamp, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
-        import { getDatabase, ref, set, onDisconnect, serverTimestamp as rtdbTimestamp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, updateDoc, deleteField, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
         // 2. CONFIGURACIÓN
         const firebaseConfig = { apiKey: "AIzaSyBwtZ8Kdvw4LJyu3t0QeaBgq6_0Z_9jrvw", authDomain: "swattmapee.firebaseapp.com", databaseURL: "https://swattmapee-default-rtdb.firebaseio.com", projectId: "swattmapee", storageBucket: "swattmapee.appspot.com", messagingSenderId: "522791414169", appId: "1:522791414169:web:7c2d3c567fbd1d5703cb08" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const rtdb = getDatabase(app);
 
         const appId = "mapeo-app-v2";
         const basePath = `artifacts/${appId}/public/data`;
@@ -794,24 +617,15 @@
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const vestimentaEmojis = { 'Ropa Táctica': '🥋', 'Terno': '🤵' };
         let state = { personal: [], locales: [], mapeoConfig: {}, asignaciones: {}, historial: {}, tarifarios: {}, permisos: [], selectedWeek: '' };
-        
-        // Variable para guardar los gráficos del Dashboard Admin
         let adminCharts = { turnos: null, costos: null };
-
         let listeners = { asignaciones: null };
         let tempScheduleConfig = {}; 
         let currentSlotId = null;
         let currentlyEditingLocal = null;
         let currentCalendarDate = new Date();
         
-        // Estado de conflictos
-        let conflictMap = {
-            overlap: new Set(), // Amarillo
-            repeat: new Set(),  // Rojo
-            role: new Set()     // Azul
-        };
+        let conflictMap = { overlap: new Set(), repeat: new Set(), role: new Set() };
         
-        // ... (Funciones de utilidad existentes: getEl, showToast, etc.) ...
         const getEl = (id) => document.getElementById(id);
         const showToast = (msg, type = 'success') => {
             const container = getEl('status-message-container');
@@ -846,10 +660,8 @@
             var simple = new Date(y, 0, 1 + (w - 1) * 7);
             var dow = simple.getDay();
             var ISOweekStart = simple;
-            if (dow <= 4)
-                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-            else
-                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+            if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+            else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
             return ISOweekStart;
         }
 
@@ -869,9 +681,7 @@
             return date;
         }
 
-        function formatDate(date) {
-            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
+        function formatDate(date) { return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
         const copiarTextoSeguro = async (texto) => {
             try {
@@ -884,17 +694,34 @@
                 textArea.style.left = "-9999px";
                 document.body.appendChild(textArea);
                 textArea.focus(); textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast("¡Copiado (método alt.)!");
-                } catch (err2) {
-                    showToast("Error al copiar", "error");
-                }
+                try { document.execCommand('copy'); showToast("¡Copiado!"); } catch (err2) { showToast("Error al copiar", "error"); }
                 document.body.removeChild(textArea);
             }
         };
 
-        // ... (Render Functions remain mostly same, adding new ones) ...
+        const compressImage = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_WIDTH = 600; const MAX_HEIGHT = 600;
+                        let width = img.width; let height = img.height;
+                        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                        else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                        canvas.width = width; canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.onerror = (error) => reject(error);
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        };
 
         function renderLocalesSelects() {
             const opts = `<option value="">Ninguno</option>` + state.locales.map(l => `<option value="${l.nombre}">${l.nombre.toUpperCase()}</option>`).join('');
@@ -905,7 +732,6 @@
             const week = state.selectedWeek;
             const pid = state.asignaciones[week]?.[slotId];
             const div = document.createElement('div');
-            
             const tipoLabelMap = { 'puestos':'Puesto', 'cacheos':'Cacheo', 'cacheoIngreso':'Ingreso', 'cacheoSalida':'Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
             const tipoLabel = tipoLabelMap[tipo] || tipo;
             let baseClass = "slot-empty-row", content = "", bgClass = ""; 
@@ -915,7 +741,6 @@
                 if (conflictMap.role.has(slotId)) bgClass = "conflict-role"; 
                 else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
                 else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
-                
                 if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
 
                 const p = state.personal.find(x => x.id === pid);
@@ -933,7 +758,6 @@
             return div;
         }
 
-        // ... (calculateConflicts, Dashboard Stats, etc.) ...
         function calculateConflicts() {
             conflictMap.overlap.clear(); conflictMap.repeat.clear(); conflictMap.role.clear();    
             const week = state.selectedWeek;
@@ -943,19 +767,19 @@
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
                 if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
-                const parts = slotId.split('-'); const indexStr = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                const parts = slotId.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                 const conf = state.mapeoConfig[local]?.[dia];
                 if(!conf) return; 
                 
-                const keyNameIn = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
-                const keyNameOut = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`;
+                const keyNameIn = `hora${type.charAt(0).toUpperCase()+type.slice(1)}Entrada`;
+                const keyNameOut = `hora${type.charAt(0).toUpperCase()+type.slice(1)}Salida`;
                 const hIn = conf[keyNameIn]; const hOut = conf[keyNameOut];
                 if(!hIn || !hOut) return;
 
                 const start = timeToMin(hIn); let end = timeToMin(hOut); if (end < start) end += 24*60; 
                 const dayOffset = diasSemana.indexOf(dia) * 1440 * 2; 
                 if(!shiftsByPerson[pid]) shiftsByPerson[pid] = [];
-                shiftsByPerson[pid].push({ slotId, dia, local, tipo, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
+                shiftsByPerson[pid].push({ slotId, dia, local, type, start, end, absStart: start + dayOffset, absEnd: end + dayOffset });
             });
 
             Object.values(shiftsByPerson).forEach(shifts => {
@@ -967,7 +791,7 @@
                         for(let j=i+1; j<dayShifts.length; j++) {
                             const s1 = dayShifts[i]; const s2 = dayShifts[j];
                             const overlap = Math.min(s1.end, s2.end) - Math.max(s1.start, s2.start);
-                            const isSpecial = specialRoles.includes(s1.tipo) || specialRoles.includes(s2.tipo);
+                            const isSpecial = specialRoles.includes(s1.type) || specialRoles.includes(s2.type);
                             const sameLocal = s1.local === s2.local;
                             if (isSpecial) { conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); } 
                             else if (sameLocal || overlap > 120) { conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); } 
@@ -1153,17 +977,13 @@
             }
         }
 
-        // --- FUNCIÓN RENDER DASHBOARD GERENCIAL ---
         function renderAdminDashboard() {
             const week = state.selectedWeek;
             const asig = state.asignaciones[week] || {};
             
-            let totalCost = 0;
-            let totalTurnos = 0;
-            let totalVacantes = 0;
+            let totalCost = 0, totalTurnos = 0, totalVacantes = 0, costTerno = 0, costTactica = 0;
             const activePersonal = new Set();
             const turnosPorLocal = {};
-            let costTerno = 0, costTactica = 0;
 
             state.locales.forEach(l => turnosPorLocal[l.nombre] = 0);
 
@@ -1176,51 +996,33 @@
                         for(let i=1; i<=cant; i++) {
                             const slotId = `${l.nombre}-${dia}-${tipo}-${i}`;
                             const pid = asig[slotId];
-                            
                             if (pid) {
                                 totalTurnos++;
                                 turnosPorLocal[l.nombre] = (turnosPorLocal[l.nombre] || 0) + 1;
                                 activePersonal.add(pid);
-                                
                                 const tarifa = state.tarifarios[pid] || { Terno: 0, Tactica: 0 };
                                 const vestimenta = asig[`${slotId}-vestimenta`] || 'Ropa Táctica';
                                 const costoTurno = vestimenta === 'Terno' ? parseFloat(tarifa.Terno||0) : parseFloat(tarifa.Tactica||0);
                                 totalCost += costoTurno;
                                 if(vestimenta === 'Terno') costTerno += costoTurno; else costTactica += costoTurno;
-                            } else {
-                                totalVacantes++;
-                            }
+                            } else { totalVacantes++; }
                         }
                     });
                 });
             });
 
             const elCosto = document.getElementById('dash-costo');
-            const elTurnos = document.getElementById('dash-turnos');
-            const elPersonal = document.getElementById('dash-personal');
-            const elVacantes = document.getElementById('dash-vacantes');
-
             if(elCosto) elCosto.textContent = `S/ ${totalCost.toLocaleString('es-PE', {minimumFractionDigits: 2})}`;
-            if(elTurnos) elTurnos.textContent = totalTurnos;
-            if(elPersonal) elPersonal.textContent = activePersonal.size;
-            if(elVacantes) elVacantes.textContent = totalVacantes;
+            if(document.getElementById('dash-turnos')) document.getElementById('dash-turnos').textContent = totalTurnos;
+            if(document.getElementById('dash-personal')) document.getElementById('dash-personal').textContent = activePersonal.size;
+            if(document.getElementById('dash-vacantes')) document.getElementById('dash-vacantes').textContent = totalVacantes;
 
-            // Gráficos Chart.js
             const ctx1 = document.getElementById('chart-turnos-local');
             if(ctx1) {
                 if (adminCharts.turnos) adminCharts.turnos.destroy();
                 adminCharts.turnos = new Chart(ctx1.getContext('2d'), {
                     type: 'bar',
-                    data: {
-                        labels: Object.keys(turnosPorLocal),
-                        datasets: [{
-                            label: 'Turnos Cubiertos',
-                            data: Object.values(turnosPorLocal),
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4,
-                            barPercentage: 0.6
-                        }]
-                    },
+                    data: { labels: Object.keys(turnosPorLocal), datasets: [{ label: 'Turnos', data: Object.values(turnosPorLocal), backgroundColor: '#3b82f6', borderRadius: 4 }] },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
                 });
             }
@@ -1230,40 +1032,24 @@
                 if (adminCharts.costos) adminCharts.costos.destroy();
                 adminCharts.costos = new Chart(ctx2.getContext('2d'), {
                     type: 'doughnut',
-                    data: {
-                        labels: ['Ropa Táctica', 'Terno'],
-                        datasets: [{ data: [costTactica, costTerno], backgroundColor: ['#10b981', '#6366f1'], hoverOffset: 4 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(context) { let label = context.label || ''; if (label) label += ': '; if (context.parsed !== null) label += `S/ ${context.parsed.toLocaleString('es-PE')}`; return label; } } } } }
+                    data: { labels: ['Ropa Táctica', 'Terno'], datasets: [{ data: [costTactica, costTerno], backgroundColor: ['#10b981', '#6366f1'] }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
                 });
             }
         }
 
-        // --- WATCHWEEK ---
         function watchWeek(week) {
             if(!week) return;
             const loader = getEl('loader');
-            const mapContainer = getEl('mapeo-container');
-            const progContainer = getEl('programacion-container');
-            const planContainer = getEl('tabla-planillas');
-
             if(loader) loader.style.display = 'flex'; 
-            if(mapContainer) mapContainer.innerHTML = ''; 
-            if(progContainer) progContainer.innerHTML = '';
-            if(planContainer) planContainer.innerHTML = '';
-
             if(listeners.asignaciones) { listeners.asignaciones(); listeners.asignaciones = null; }
-            
             listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
                 state.asignaciones[week] = snap.exists() ? snap.data() : {};
-                renderMapeo();
-                renderProgramacion();
-                renderPlanillas();
+                renderMapeo(); renderProgramacion(); renderPlanillas();
                 setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
-            }, (error) => { console.error("Error:", error); if(loader) loader.style.display = 'none'; });
+            }, () => { if(loader) loader.style.display = 'none'; });
         }
 
-        // ... (system status and other standard functions) ...
         function setupSystemStatus() {
             const statusRef = doc(collections.status, 'ping');
             onSnapshot(statusRef, (snap) => { if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis()); }, () => handleConnectionChange(false));
@@ -1283,9 +1069,7 @@
             else { icon.classList.add('text-red-500', 'animate-pulse'); icon.parentElement.title = "¡Sin conexión!"; showToast("⚠️ Sin conexión", "error"); }
         }
         function renderConfigModal(localNombre) {
-            const container = getEl('schedule-config-container');
-            if (!container) return;
-            container.innerHTML = '';
+            const container = getEl('schedule-config-container'); if (!container) return; container.innerHTML = '';
             const localConf = tempScheduleConfig;
             diasSemana.forEach(dia => {
                 if(!localConf[dia]) localConf[dia] = {};
@@ -1305,11 +1089,9 @@
             });
         }
         function renderTable(id, data, rowFn) {
-            const tbody = getEl(id);
-            if (!tbody) return;
+            const tbody = getEl(id); if (!tbody) return;
             tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
         }
-        // ... (rest of render functions like renderProgramacion, renderCalendar etc.) ...
         function renderCalendar() {
             const container = getEl('calendar-grid'); if(!container) return; container.innerHTML = '';
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -1331,8 +1113,8 @@
                     const itemPermiso = e.target.closest('.permiso-item');
                     if (itemPermiso) {
                         e.stopPropagation();
-                        const pid = itemPermiso.dataset.id; const dataPermiso = state.permisos.find(x => x.id === pid); if (!dataPermiso) return;
-                        if (confirm(`¿Eliminar ausencia de ${getFullName(state.personal.find(p => p.id === dataPermiso.personalId))}?`)) { await deleteDoc(doc(collections.permisos, pid)); showToast("Ausencia eliminada"); }
+                        const pid = itemPermiso.dataset.id; 
+                        if (confirm(`¿Eliminar ausencia?`)) { await deleteDoc(doc(collections.permisos, pid)); showToast("Ausencia eliminada"); }
                     } else if (e.target === cell || e.target.classList.contains('font-bold')) openAddPermisoModal(dateStr);
                 };
                 container.appendChild(cell);
@@ -1443,16 +1225,10 @@
                 if(getEl('loader').style.display === 'flex') getEl('loader').style.display = 'none';
             });
 
-            onSnapshot(query(collections.mapeoConfig), snap => {
-                state.mapeoConfig = {};
-                snap.docs.forEach(d => state.mapeoConfig[d.id] = d.data());
-                renderMapeo();
-            });
+            onSnapshot(query(collections.mapeoConfig), snap => { state.mapeoConfig = {}; snap.docs.forEach(d => state.mapeoConfig[d.id] = d.data()); renderMapeo(); });
 
             onSnapshot(query(collections.historial), snap => {
-                const hContainer = getEl('historial-container');
-                if (!hContainer) return;
-                hContainer.innerHTML = '';
+                const hContainer = getEl('historial-container'); if (!hContainer) return; hContainer.innerHTML = '';
                 snap.docs.forEach(d => {
                     const isBackup = d.id.includes('_RESPALDO_');
                     const displayName = isBackup ? d.id.replace('_', ' ') : `Semana ${d.id}`;
@@ -1464,27 +1240,16 @@
                 });
             });
 
-            onSnapshot(query(collections.tarifarios), snap => {
-                state.tarifarios = {};
-                snap.docs.forEach(d => state.tarifarios[d.id] = d.data());
-                renderTarifarioTable();
-                renderPlanillas();
-            });
-            
+            onSnapshot(query(collections.tarifarios), snap => { state.tarifarios = {}; snap.docs.forEach(d => state.tarifarios[d.id] = d.data()); renderTarifarioTable(); renderPlanillas(); });
             watchWeek(state.selectedWeek);
-            
-            onSnapshot(query(collections.permisos), snap => {
-                state.permisos = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderCalendar();
-            });
+            onSnapshot(query(collections.permisos), snap => { state.permisos = snap.docs.map(d => ({id: d.id, ...d.data()})); renderCalendar(); });
         }
 
         function setupUIListeners() {
             getEl('login-form').addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
-                    if(getEl('remember-me').checked) localStorage.setItem('swat_remember', 'true');
-                    else localStorage.removeItem('swat_remember');
+                    if(getEl('remember-me').checked) localStorage.setItem('swat_remember', 'true'); else localStorage.removeItem('swat_remember');
                     getEl('login-overlay').style.display = 'none';
                 } else getEl('login-error').textContent = "Credenciales incorrectas";
             });
@@ -1504,8 +1269,7 @@
                     const sec = e.target.id.replace('btn-', 'section-');
                     const targetSection = getEl(sec);
                     if(targetSection) targetSection.classList.remove('hidden');
-                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
+                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
                     getEl('side-nav').classList.remove('open');
                     if(sec === 'section-tarifario') renderTarifarioTable();
                     if(sec === 'section-programacion') renderProgramacion();
@@ -1513,14 +1277,11 @@
                 });
             });
 
-            const nav = getEl('side-nav');
-            const toggle = getEl('menu-toggle');
+            const nav = getEl('side-nav'); const toggle = getEl('menu-toggle');
             let navTimeout;
             const openMenu = () => { clearTimeout(navTimeout); nav.classList.add('open'); };
             const closeMenu = () => { navTimeout = setTimeout(() => nav.classList.remove('open'), 300); };
-            toggle.addEventListener('mouseenter', openMenu);
-            nav.addEventListener('mouseenter', openMenu);
-            nav.addEventListener('mouseleave', closeMenu);
+            toggle.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseleave', closeMenu);
             toggle.onclick = () => nav.classList.toggle('open'); 
 
             getEl('search-fab').onclick = () => getEl('search-panel').classList.toggle('open');
@@ -1533,8 +1294,7 @@
                     currentSlotId = slotRow.dataset.slotId;
                     renderModalPersonalList();
                     getEl('global-selection-modal').style.display = 'block';
-                    getEl('modal-search').value = '';
-                    getEl('modal-search').focus();
+                    getEl('modal-search').value = ''; getEl('modal-search').focus();
                 }
                 const btnVest = e.target.closest('.vestimenta-btn');
                 if(btnVest) {
@@ -1583,8 +1343,7 @@
             const btnCloseDashboard = getEl('close-dashboard-modal');
             if (btnCloseDashboard) btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
             
-            const toolsBtn = getEl('btn-tools-dropdown');
-            const toolsMenu = getEl('tools-dropdown-menu');
+            const toolsBtn = getEl('btn-tools-dropdown'); const toolsMenu = getEl('tools-dropdown-menu');
             if(toolsBtn && toolsMenu) {
                 toolsBtn.onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle('hidden'); };
                 document.addEventListener('click', (e) => { if(!toolsMenu.contains(e.target) && !toolsBtn.contains(e.target)) toolsMenu.classList.add('hidden'); });
@@ -1626,71 +1385,47 @@
             getEl('programacion-container').addEventListener('click', async (e) => {
                 const btnClear = e.target.closest('.btn-clear-individual');
                 if (btnClear) {
-                    if(!confirm("¿Estás seguro de ELIMINAR toda la programación de esta persona para esta semana?")) return;
+                    if(!confirm("¿Borrar TODA la programación de esta persona?")) return;
                     const pid = btnClear.dataset.personId;
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const batchUpdate = {};
                     Object.entries(weekAsig).forEach(([key, val]) => {
-                        if (val === pid) {
-                            batchUpdate[key] = deleteField();
-                            batchUpdate[`${key}-vestimenta`] = deleteField();
-                            batchUpdate[`${key}-confirmed`] = deleteField();
-                        }
+                        if (val === pid) { batchUpdate[key] = deleteField(); batchUpdate[`${key}-vestimenta`] = deleteField(); batchUpdate[`${key}-confirmed`] = deleteField(); }
                     });
-                    if (Object.keys(batchUpdate).length > 0) {
-                        await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate);
-                        showToast("Programación eliminada");
-                    } else {
-                        showToast("No hay turnos para eliminar", "error");
-                    }
+                    if (Object.keys(batchUpdate).length > 0) { await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate); showToast("Programación eliminada"); } 
+                    else { showToast("No hay turnos para eliminar", "error"); }
                     return;
                 }
-
                 const btnCopy = e.target.closest('.btn-copy-individual');
                 if(btnCopy) {
-                    const pid = btnCopy.dataset.personId;
-                    const p = state.personal.find(x => x.id === pid);
+                    const pid = btnCopy.dataset.personId; const p = state.personal.find(x => x.id === pid);
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
                     const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
                     const groupedShifts = [];
-                    const rawShifts = Object.entries(weekAsig)
-                        .filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed'))
-                        .map(([k]) => {
-                            const parts = k.split('-'); parts.pop();
-                            const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                    const rawShifts = Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
+                            const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                             const conf = state.mapeoConfig[local]?.[dia];
                             const keyName = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
                             const horaEntrada = conf ? conf[keyName] : '??';
                             return { dia: capitalize(dia), local, horaEntrada, vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', order: diasSemana.indexOf(dia), startMin: timeToMin(horaEntrada), label: friendlyLabels[tipo] || '', tipoRaw: tipo };
                         });
-                        
                     rawShifts.forEach(s => {
                          const existing = groupedShifts.find(g => g.dia === s.dia && g.local === s.local);
                          if (existing) {
-                             const sPriority = getPriority(s.tipoRaw);
-                             const existPriority = getPriority(existing.tipoRaw);
-                             if (sPriority < existPriority) {
-                                 existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; existing.tipoRaw = s.tipoRaw;
-                             } else if (sPriority === existPriority) {
-                                 if (s.startMin < existing.startMin) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; }
-                             }
+                             const sPriority = getPriority(s.tipoRaw); const existPriority = getPriority(existing.tipoRaw);
+                             if (sPriority < existPriority) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; existing.tipoRaw = s.tipoRaw; } 
+                             else if (sPriority === existPriority) { if (s.startMin < existing.startMin) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; } }
                              if (s.label && !existing.labels.includes(s.label)) existing.labels.push(s.label);
-                         } else {
-                             groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] });
-                         }
+                         } else { groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] }); }
                     });
                     groupedShifts.sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
                     if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
                     let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
-                    groupedShifts.forEach(s => {
-                        const extras = s.labels.map(l => ` + (${l})`).join('');
-                        text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`;
-                    });
+                    groupedShifts.forEach(s => { const extras = s.labels.map(l => ` + (${l})`).join(''); text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`; });
                     text += `\nMANDAME TU CONFIRMACIÓN ✅`;
                     copiarTextoSeguro(text);
                 }
-
                 const btnConf = e.target.closest('.btn-confirm-individual');
                 if(btnConf) {
                     if(!confirm("¿Confirmar todos los turnos de esta persona?")) return;
@@ -1715,8 +1450,7 @@
                 if(e.target.matches('input')) {
                     const { dia, tipo, key } = e.target.dataset;
                     if(!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
-                    if(key) tempScheduleConfig[dia][key] = e.target.value;
-                    else tempScheduleConfig[dia][tipo] = e.target.value;
+                    if(key) tempScheduleConfig[dia][key] = e.target.value; else tempScheduleConfig[dia][tipo] = e.target.value;
                 }
             });
             getEl('btn-guardar-horarios').onclick = async () => {
@@ -1724,19 +1458,14 @@
                     await setDoc(doc(collections.mapeoConfig, currentlyEditingLocal), tempScheduleConfig);
                     const week = state.selectedWeek;
                     const currentAssignments = state.asignaciones[week] || {};
-                    const updates = {};
-                    let hasUpdates = false;
-
+                    const updates = {}; let hasUpdates = false;
                     Object.keys(currentAssignments).forEach(key => {
                         if (!key.startsWith(currentlyEditingLocal + '-')) return;
                         if (key.endsWith('-vestimenta') || key.endsWith('-confirmed')) return;
                         const parts = key.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop();
                         const newCount = parseInt(tempScheduleConfig[dia]?.[type] || 0);
                         const slotIndex = parseInt(key.split('-').pop());
-                        if (slotIndex > newCount) {
-                            updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField();
-                            hasUpdates = true;
-                        }
+                        if (slotIndex > newCount) { updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField(); hasUpdates = true; }
                     });
                     if (hasUpdates) { await updateDoc(doc(collections.asignaciones, week), updates); showToast("Horarios guardados y asignaciones limpiadas"); } else showToast("Horarios guardados");
                     getEl('schedule-config-modal').style.display = 'none';
@@ -1772,6 +1501,7 @@
             });
             getEl('close-local-modal').onclick = () => getEl('edit-local-modal').style.display = 'none';
 
+            // --- LÓGICA DE GUARDADO (PERSONAL) ---
             const formP = getEl('form-personal');
             getEl('btn-abrir-modal-personal').onclick = () => {
                 formP.reset(); getEl('personal-id').value = '';
@@ -1781,10 +1511,17 @@
             };
             formP.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const data = { numero_empleado: getEl('numero_empleado').value, nombre: getEl('nombre').value, apellido: getEl('apellido').value, telefono: getEl('telefono').value, disponibilidad: getEl('disponibilidad').value, local1: getEl('local1').value, local2: getEl('local2').value, local3: getEl('local3').value };
-                const id = getEl('personal-id').value;
-                if(id) await updateDoc(doc(collections.personal, id), data); else await addDoc(collections.personal, data);
-                getEl('personal-modal').style.display = 'none'; showToast("Personal guardado");
+                const btnSave = getEl('btn-save-personal'); const originalText = btnSave.textContent;
+                btnSave.textContent = "Procesando..."; btnSave.disabled = true;
+                try {
+                    const id = getEl('personal-id').value;
+                    const data = { numero_empleado: getEl('numero_empleado').value, nombre: getEl('nombre').value, apellido: getEl('apellido').value, telefono: getEl('telefono').value, disponibilidad: getEl('disponibilidad').value, local1: getEl('local1').value, local2: getEl('local2').value, local3: getEl('local3').value };
+                    const fotoInput = getEl('foto-personal');
+                    if (fotoInput.files.length > 0) { data.fotoUrl = await compressImage(fotoInput.files[0]); }
+                    if(id) { await setDoc(doc(collections.personal, id), data, { merge: true }); } else { await addDoc(collections.personal, data); }
+                    getEl('personal-modal').style.display = 'none'; showToast("Personal guardado");
+                } catch (error) { console.error(error); showToast("Error: " + error.message, "error"); } 
+                finally { btnSave.textContent = originalText; btnSave.disabled = false; }
             });
             getEl('close-personal-modal').onclick = () => getEl('personal-modal').style.display = 'none';
             getEl('close-view-personal-modal').onclick = () => getEl('view-personal-modal').style.display = 'none';
@@ -1809,7 +1546,6 @@
             };
             
             getEl('btn-limpiar-mapeo').onclick = async () => { if(confirm("¿Borrar TODAS las asignaciones de esta semana?")) { await setDoc(doc(collections.asignaciones, state.selectedWeek), {}); showToast("Mapeo limpiado"); } };
-
             getEl('btn-copy-all-schedule').onclick = () => generateTextSchedule(null); 
             
             getEl('btn-descargar-excel').onclick = () => {
@@ -1834,9 +1570,7 @@
             };
 
             getEl('tabla-tarifario').addEventListener('change', async (e) => {
-                if(e.target.matches('input')) {
-                    await setDoc(doc(collections.tarifarios, e.target.dataset.uid), { [e.target.dataset.field]: e.target.value }, { merge: true });
-                }
+                if(e.target.matches('input')) { await setDoc(doc(collections.tarifarios, e.target.dataset.uid), { [e.target.dataset.field]: e.target.value }, { merge: true }); }
             });
 
             getEl('busqueda-programacion').addEventListener('input', renderProgramacion);
@@ -1849,175 +1583,45 @@
                 const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Planilla"); XLSX.writeFile(wb, `Planilla_${state.selectedWeek}.xlsx`);
             };
 
-// --- INICIO LÓGICA SUGERENCIA AVANZADA (HISTORIAL 15 SEMANAS + OCUPADOS + PERMISOS) ---
+            // SUGERENCIA INTELIGENTE
             const btnSmart = document.getElementById('btn-smart-suggest');
             if (btnSmart) {
-                // Función auxiliar para retroceder semanas
-                const getPrevWeekID = (weekStr) => {
-                    let [y, w] = weekStr.split('-W').map(Number);
-                    w--;
-                    if (w < 1) { w = 52; y--; }
-                    return `${y}-W${String(w).padStart(2, '0')}`;
-                };
-
-                // Función auxiliar para obtener la FECHA exacta del slot (YYYY-MM-DD)
-                const getSlotDateString = (weekStr, dayName) => {
-                    const [y, w] = weekStr.split('-W').map(Number);
-                    const simple = new Date(y, 0, 1 + (w - 1) * 7);
-                    const dow = simple.getDay();
-                    const ISOweekStart = simple;
-                    if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-                    else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-                    
-                    const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
-                    const dayIndex = diasArr.indexOf(dayName);
-                    
-                    // Sumar días para llegar al día específico del slot
-                    const targetDate = new Date(ISOweekStart);
-                    targetDate.setDate(targetDate.getDate() + dayIndex);
-                    return targetDate.toISOString().split('T')[0];
-                };
+                const getPrevWeekID = (weekStr) => { let [y, w] = weekStr.split('-W').map(Number); w--; if (w < 1) { w = 52; y--; } return `${y}-W${String(w).padStart(2, '0')}`; };
+                const getSlotDateString = (weekStr, dayName) => { const [y, w] = weekStr.split('-W').map(Number); const simple = new Date(y, 0, 1 + (w - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']; const dayIndex = diasArr.indexOf(dayName); const targetDate = new Date(ISOweekStart); targetDate.setDate(targetDate.getDate() + dayIndex); return targetDate.toISOString().split('T')[0]; };
 
                 btnSmart.onclick = async () => {
                     if (!currentSlotId) return;
-
-                    // 1. Desglosar ID del Slot
-                    const parts = currentSlotId.split('-');
-                    // Estructura: NOMBRE-LOCAL-dia-tipo-numero.
-                    // El día está en la antepenúltima posición (index 3 contando desde atrás)
-                    const dayName = parts[parts.length - 3]; 
-                    const localName = parts.slice(0, parts.length - 3).join('-');
-                    
+                    const parts = currentSlotId.split('-'); const dayName = parts[parts.length - 3]; const localName = parts.slice(0, parts.length - 3).join('-');
                     const listContainer = document.getElementById('modal-list-container');
-
-                    // 2. Mensaje de carga
-                    listContainer.innerHTML = `
-                        <div class="p-4 text-center text-blue-600 bg-blue-50 rounded animate-pulse">
-                            <div class="font-bold">🧠 Analizando disponibilidad total...</div>
-                            <div class="text-xs">Revisando historial, turnos y calendario de permisos.</div>
-                        </div>`;
+                    listContainer.innerHTML = `<div class="p-4 text-center text-blue-600 bg-blue-50 rounded animate-pulse"><div class="font-bold">🧠 Analizando...</div></div>`;
 
                     try {
-                        const weeksToAnalyze = [];
-                        let tempWeek = state.selectedWeek;
-                        for (let i = 0; i < 15; i++) { 
-                            tempWeek = getPrevWeekID(tempWeek);
-                            weeksToAnalyze.push(tempWeek);
-                        }
-
-                        // 3. Obtener lista de OCUPADOS (Turnos ya asignados esa semana)
+                        const weeksToAnalyze = []; let tempWeek = state.selectedWeek;
+                        for (let i = 0; i < 15; i++) { tempWeek = getPrevWeekID(tempWeek); weeksToAnalyze.push(tempWeek); }
                         const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
-
-                        // 4. Obtener lista de AUSENTES (Permisos/Vacaciones en esa FECHA específica)
                         const targetDateStr = getSlotDateString(state.selectedWeek, dayName);
                         const absentIds = new Set();
-                        
-                        // state.permisos ya debe estar cargado desde Firebase en tu código principal
-                        if (state.permisos && state.permisos.length > 0) {
-                            state.permisos.forEach(perm => {
-                                // Verificar si la fecha del slot cae dentro del rango del permiso
-                                if (targetDateStr >= perm.startDate && targetDateStr <= perm.endDate) {
-                                    absentIds.add(perm.personalId);
-                                }
-                            });
-                        }
+                        if (state.permisos && state.permisos.length > 0) { state.permisos.forEach(perm => { if (targetDateStr >= perm.startDate && targetDateStr <= perm.endDate) { absentIds.add(perm.personalId); } }); }
 
-                        // 5. Análisis de Puntos (Score)
                         const stats = {}; 
-                        
-                        // A. Semana Actual
                         const currentWeekData = state.asignaciones[state.selectedWeek] || {};
-                        Object.entries(currentWeekData).forEach(([k, pid]) => {
-                            if (pid && k.startsWith(localName + '-') && typeof pid === 'string') {
-                                if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] };
-                                if (!stats[pid].tags.includes('En Turno')) {
-                                    stats[pid].tags.push('En Turno');
-                                    stats[pid].score += 50; 
-                                }
-                            }
-                        });
+                        Object.entries(currentWeekData).forEach(([k, pid]) => { if (pid && k.startsWith(localName + '-') && typeof pid === 'string') { if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] }; if (!stats[pid].tags.includes('En Turno')) { stats[pid].tags.push('En Turno'); stats[pid].score += 50; } } });
 
-                        // B. Historial 15 Semanas
                         const snapshots = await Promise.all(weeksToAnalyze.map(wID => getDoc(doc(collections.asignaciones, wID))));
-                        snapshots.forEach(snap => {
-                            if (snap.exists()) {
-                                const data = snap.data();
-                                Object.entries(data).forEach(([key, pid]) => {
-                                    if (key.startsWith(localName + '-') && typeof pid === 'string' && !key.includes('vestimenta')) {
-                                        if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] };
-                                        stats[pid].count++;
-                                        stats[pid].score += 5; 
-                                    }
-                                });
-                            }
-                        });
+                        snapshots.forEach(snap => { if (snap.exists()) { const data = snap.data(); Object.entries(data).forEach(([key, pid]) => { if (key.startsWith(localName + '-') && typeof pid === 'string' && !key.includes('vestimenta')) { if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] }; stats[pid].count++; stats[pid].score += 5; } }); } });
 
-                        // C. Preferencias Perfil
-                        state.personal.forEach(p => {
-                            if (p.local1 === localName || p.local2 === localName) {
-                                if (!stats[p.id]) stats[p.id] = { count: 0, score: 0, tags: [] };
-                                stats[p.id].score += 25; 
-                                if (!stats[p.id].tags.includes('Preferencia')) stats[p.id].tags.push('Preferencia');
-                            }
-                        });
+                        state.personal.forEach(p => { if (p.local1 === localName || p.local2 === localName) { if (!stats[p.id]) stats[p.id] = { count: 0, score: 0, tags: [] }; stats[p.id].score += 25; if (!stats[p.id].tags.includes('Preferencia')) stats[p.id].tags.push('Preferencia'); } });
 
-                        // 6. Filtrado Final y Ordenamiento
-                        const suggestions = Object.keys(stats)
-                            .map(pid => {
-                                const p = state.personal.find(x => x.id === pid);
-                                if (!p) return null;
-                                return { ...p, stats: stats[pid] };
-                            })
-                            .filter(item => {
-                                // FILTROS DE SEGURIDAD:
-                                return item && 
-                                       item.disponibilidad !== 'no-disponible' && // 1. Perfil Disponible
-                                       !occupiedIds.has(item.id) &&               // 2. No tiene turno esta semana
-                                       !absentIds.has(item.id);                   // 3. NO TIENE PERMISO/VACACIONES HOY
-                            })
-                            .sort((a, b) => b.stats.score - a.stats.score)
-                            .slice(0, 5);
+                        const suggestions = Object.keys(stats).map(pid => { const p = state.personal.find(x => x.id === pid); if (!p) return null; return { ...p, stats: stats[pid] }; }).filter(item => { return item && item.disponibilidad !== 'no-disponible' && !occupiedIds.has(item.id) && !absentIds.has(item.id); }).sort((a, b) => b.stats.score - a.stats.score).slice(0, 5);
 
-                        // 7. Renderizar
-                        if (suggestions.length === 0) {
-                            listContainer.innerHTML = `<div class="p-3 text-center text-slate-500 bg-slate-100 mb-2 rounded">No se encontraron sugerencias disponibles (Libres y sin permisos) para ${localName}.</div>`;
-                            renderModalPersonalList(); 
-                        } else {
-                            listContainer.innerHTML = `
-                                <div class="p-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 text-xs font-bold mb-2 rounded border border-purple-300 flex justify-between items-center shadow-sm">
-                                    <span>✅ Sugerencias Habilitadas</span>
-                                    <span class="bg-white px-2 rounded-full text-[10px] border border-purple-200">100% Libres</span>
-                                </div>` +
-                                suggestions.map(p => {
-                                    const tagsHtml = p.stats.tags.map(t => `<span class="text-[9px] px-1 rounded border ${t==='En Turno'?'bg-purple-100 text-purple-700 border-purple-200':'bg-blue-100 text-blue-700 border-blue-200'}">${t}</span>`).join(' ');
-                                    const historyText = p.stats.count > 0 ? `<span class="text-[10px] font-semibold text-slate-500">Historial: ${p.stats.count} turnos</span>` : '';
-
-                                    return `<div class="group relative p-3 border-b dark:border-slate-700 bg-purple-50/40 dark:bg-purple-900/10 flex justify-between items-center cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700 transition-all" onclick="window.selectPersonal('${p.id}')">
-                                        <div class="absolute left-0 top-0 bottom-0 bg-purple-500 w-1 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <div>
-                                            <div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                                                ${getFullName(p)} 
-                                                ${tagsHtml}
-                                            </div>
-                                            <div class="flex flex-col mt-0.5">
-                                                ${historyText}
-                                                <span class="text-[10px] text-slate-400">Score: ${p.stats.score} pts</span>
-                                            </div>
-                                        </div>
-                                        <span class="text-[10px] text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-200 shadow-sm">HABILITADO</span>
-                                    </div>`;
-                                }).join('') + 
-                                `<div class="text-center text-[10px] text-slate-400 py-1 border-t dark:border-slate-700 mt-2">--- Fin de Sugerencias ---</div>`;
+                        if (suggestions.length === 0) { listContainer.innerHTML = `<div class="p-3 text-center text-slate-500 bg-slate-100 mb-2 rounded">Sin sugerencias disponibles.</div>`; renderModalPersonalList(); } 
+                        else {
+                            listContainer.innerHTML = `<div class="p-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 text-xs font-bold mb-2 rounded border border-purple-300 flex justify-between items-center shadow-sm"><span>✅ Sugerencias</span><span class="bg-white px-2 rounded-full text-[10px] border border-purple-200">100% Libres</span></div>` + suggestions.map(p => { const tagsHtml = p.stats.tags.map(t => `<span class="text-[9px] px-1 rounded border ${t==='En Turno'?'bg-purple-100 text-purple-700 border-purple-200':'bg-blue-100 text-blue-700 border-blue-200'}">${t}</span>`).join(' '); const historyText = p.stats.count > 0 ? `<span class="text-[10px] font-semibold text-slate-500">Hist: ${p.stats.count}</span>` : ''; return `<div class="group relative p-3 border-b dark:border-slate-700 bg-purple-50/40 dark:bg-purple-900/10 flex justify-between items-center cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700 transition-all" onclick="window.selectPersonal('${p.id}')"><div class="absolute left-0 top-0 bottom-0 bg-purple-500 w-1 opacity-0 group-hover:opacity-100 transition-opacity"></div><div><div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">${getFullName(p)} ${tagsHtml}</div><div class="flex flex-col mt-0.5">${historyText} <span class="text-[10px] text-slate-400">Score: ${p.stats.score}</span></div></div><span class="text-[10px] text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-200 shadow-sm">OK</span></div>`; }).join('') + `<div class="text-center text-[10px] text-slate-400 py-1 border-t dark:border-slate-700 mt-2">--- Fin ---</div>`;
                         }
-
-                    } catch (error) {
-                        console.error(error);
-                        listContainer.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${error.message}</div>`;
-                    }
+                    } catch (error) { console.error(error); listContainer.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${error.message}</div>`; }
                 };
             }
-            // --- FIN LÓGICA SUGERENCIA AVANZADA ---
-            // --- BUSCADOR GESTIÓN ---
+
             const searchGestion = document.getElementById('gestion-personal-search');
             if (searchGestion) {
                 searchGestion.addEventListener('input', (e) => {
@@ -2027,7 +1631,6 @@
                 });
             }
 
-            // --- ACTIVAR DASHBOARD ---
             const btnDash = document.getElementById('btn-dashboard-admin');
             if (btnDash) {
                 btnDash.addEventListener('click', () => {
@@ -2054,10 +1657,7 @@
                             const cant = parseInt(conf[t] || 0);
                             for(let i=1; i<=cant; i++) {
                                 const pid = asig[`${l.nombre}-${d}-${t}-${i}`];
-                                if(pid) {
-                                    const p = state.personal.find(x => x.id === pid);
-                                    if (p) shifts.push(getFullName(p) + (specialRoleMap[t] ? ` (+ ${specialRoleMap[t]})` : ''));
-                                }
+                                if(pid) { const p = state.personal.find(x => x.id === pid); if (p) shifts.push(getFullName(p) + (specialRoleMap[t] ? ` (+ ${specialRoleMap[t]})` : '')); }
                             }
                         });
                     }
@@ -2069,34 +1669,26 @@
         }
 
         window.verPersonal = (id) => {
-            const p = state.personal.find(x => x.id === id);
-            if(!p) return;
+            const p = state.personal.find(x => x.id === id); if(!p) return;
             getEl('view-personal-name').textContent = getFullName(p);
-            getEl('view-personal-details').innerHTML = `
-                <p><strong>Teléfono:</strong> ${p.telefono || '-'}</p>
-                <p><strong>DNI/Legajo:</strong> ${p.numero_empleado || '-'}</p>
-                <p><strong>Locales Pref:</strong> ${[p.local1, p.local2, p.local3].filter(Boolean).join(', ')}</p>
-            `;
+            let extraHtml = '';
+            if(p.fotoUrl) { extraHtml += `<div class="mb-4 flex justify-center"><img src="${p.fotoUrl}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg"></div>`; } 
+            else { extraHtml += `<div class="mb-4 flex justify-center"><div class="w-32 h-32 rounded-full bg-slate-200 flex items-center justify-center text-4xl">👤</div></div>`; }
+
+            getEl('view-personal-details').innerHTML = `${extraHtml}
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg">
+                    <div><p class="text-xs text-slate-500 uppercase font-bold">Teléfono</p><p class="font-mono text-lg">${p.telefono || '-'}</p></div>
+                    <div><p class="text-xs text-slate-500 uppercase font-bold">Nº Empleado</p><p class="font-mono text-lg">${p.numero_empleado || '-'}</p></div>
+                     <div class="col-span-2"><p class="text-xs text-slate-500 uppercase font-bold">Locales Preferidos</p><p>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'Sin preferencias'}</p></div>
+                </div>`;
+            
             getEl('btn-editar-personal-view').dataset.id = id;
             getEl('btn-eliminar-personal-view').dataset.id = id;
             getEl('view-personal-modal').style.display = 'block';
         };
         
-        window.selectPersonal = async (pid) => {
-            if(!currentSlotId) return;
-            await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true });
-            getEl('global-selection-modal').style.display = 'none';
-        };
-
-        window.loadHist = (weekId) => {
-            if(confirm("¿Cargar esta configuración histórica?")) {
-                state.selectedWeek = weekId;
-                getEl('semana-mapeo').value = weekId;
-                watchWeek(weekId);
-                alert("Visualizando datos históricos. Tenga cuidado al guardar cambios.");
-            }
-        };
-
+        window.selectPersonal = async (pid) => { if(!currentSlotId) return; await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true }); getEl('global-selection-modal').style.display = 'none'; };
+        window.loadHist = (weekId) => { if(confirm("¿Cargar esta configuración histórica?")) { state.selectedWeek = weekId; getEl('semana-mapeo').value = weekId; watchWeek(weekId); alert("Visualizando datos históricos. Tenga cuidado al guardar cambios."); } };
     </script>
 </body>
 </html>
