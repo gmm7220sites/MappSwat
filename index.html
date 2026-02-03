@@ -1172,16 +1172,13 @@
             const term = getEl('busqueda-programacion').value.toLowerCase();
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
             
-            // --- NUEVA LÓGICA DE BÚSQUEDA (NOMBRE + LOCAL) ---
             const relevantPersonal = state.personal.filter(p => {
                 const nameMatch = getFullName(p).toLowerCase().includes(term);
                 let localMatch = false;
                 if (term.length > 0) {
-                     // Buscar si la persona tiene algún turno en un local que coincida con el término
                      for (const [key, val] of Object.entries(weekAsig)) {
                          if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed')) {
                              const parts = key.split('-');
-                             // Extraer nombre del local (todo antes de los últimos 3 segmentos: dia, tipo, index)
                              const localName = parts.slice(0, parts.length - 3).join('-').toLowerCase();
                              if (localName.includes(term)) {
                                  localMatch = true;
@@ -1191,14 +1188,9 @@
                      }
                 }
                 const hasShift = Object.values(weekAsig).includes(p.id);
-                
-                // Si hay término, mostrar si coincide nombre O local
                 if (term.length > 0) return nameMatch || localMatch;
-                
-                // Si no hay término, mostrar solo los que tienen turno
                 return hasShift;
             });
-            // ------------------------------------------------
 
             const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
             container.innerHTML = relevantPersonal.map(p => {
@@ -1345,6 +1337,11 @@
             getEl('search-fab').onclick = () => getEl('search-panel').classList.toggle('open');
             getEl('close-search-panel').onclick = () => getEl('search-panel').classList.remove('open');
             getEl('filtro-local-busqueda').addEventListener('input', renderMapeo);
+            
+            const inputBusquedaProg = getEl('busqueda-programacion');
+            if (inputBusquedaProg) {
+                inputBusquedaProg.addEventListener('input', renderProgramacion);
+            }
 
             getEl('mapeo-container').addEventListener('click', async (e) => {
                 const slotRow = e.target.closest('.slot-row');
