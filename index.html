@@ -95,6 +95,10 @@
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; background-color: rgba(248, 250, 252, 0.7); backdrop-filter: blur(8px); }
         html.dark #login-overlay { background-color: rgba(15, 23, 42, 0.7); }
         
+        /* BARRA OFFLINE */
+        #offline-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background-color: #ef4444; color: white; text-align: center; padding: 8px; font-weight: bold; z-index: 9000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse-banner 2s infinite; }
+        @keyframes pulse-banner { 0%, 100% { background-color: #ef4444; } 50% { background-color: #dc2626; } }
+
         /* GRÁFICOS Y UTILIDADES */
         .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 250px; }
         .circle-bg { fill: none; stroke: #eee; stroke-width: 3.8; }
@@ -113,9 +117,20 @@
         .calendar-day:hover { background-color: #f8fafc; }
         html.dark .calendar-day { background-color: #1e293b; border-color: #334155; }
         html.dark .calendar-day:hover { background-color: #334155; }
+
+        /* ESTILOS PASE DE LISTA */
+        .card-asistencia { transition: all 0.3s ease; }
+        .card-asistencia.confirmado { border-left: 6px solid #22c55e; background-color: #f0fdf4; }
+        html.dark .card-asistencia.confirmado { background-color: #14532d; border-left-color: #22c55e; }
+        .card-asistencia.pendiente { border-left: 6px solid #fbbf24; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
+
+    <!-- BARRA OFFLINE -->
+    <div id="offline-banner">
+        ⚠️ MODO OFFLINE: Sin conexión. No guardes cambios hasta reconectar.
+    </div>
 
     <!-- LOGIN -->
     <div id="login-overlay">
@@ -159,6 +174,7 @@
         <div class="px-6 mb-8">
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">AdminPanel</h2>
         </div>
+        <button id="btn-pase-lista" class="nav-button font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 mb-2 border border-blue-200 dark:border-blue-800">📢 Pase de Lista Hoy</button>
         <button id="btn-mapeo" class="nav-button active">Mapeo Semanal</button>
         <button id="btn-gestion" class="nav-button">Gestión Locales/Personal</button>
         <button id="btn-programacion" class="nav-button">Programación Individual</button>
@@ -204,6 +220,41 @@
         </header>
 
         <main>
+            <!-- 0. PASE DE LISTA DIARIO (NUEVO) -->
+            <section id="section-pase-lista" class="hidden">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-6 border-l-8 border-blue-600">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 dark:text-white uppercase">📢 Pase de Lista Diario</h2>
+                            <p id="pase-lista-fecha" class="text-lg text-blue-600 dark:text-blue-400 font-bold mt-1">Cargando fecha...</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="text-center bg-slate-100 dark:bg-slate-700 p-3 rounded-lg min-w-[100px]">
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase">Total Turno</p>
+                                <p id="pl-total" class="text-2xl font-bold text-slate-800 dark:text-white">0</p>
+                            </div>
+                            <div class="text-center bg-green-50 dark:bg-green-900/30 p-3 rounded-lg min-w-[100px] border border-green-200 dark:border-green-800">
+                                <p class="text-xs text-green-600 dark:text-green-400 font-bold uppercase">Asistieron</p>
+                                <p id="pl-asistieron" class="text-2xl font-bold text-green-600 dark:text-green-400">0</p>
+                            </div>
+                             <div class="text-center bg-red-50 dark:bg-red-900/30 p-3 rounded-lg min-w-[100px] border border-red-200 dark:border-red-800">
+                                <p class="text-xs text-red-600 dark:text-red-400 font-bold uppercase">Faltan</p>
+                                <p id="pl-faltan" class="text-2xl font-bold text-red-600 dark:text-red-400">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl mb-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Mostrando personal programado para <b>HOY</b> (según la semana seleccionada). Marca la casilla para confirmar asistencia.</span>
+                </div>
+
+                <div id="pase-lista-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Cards se generan aquí -->
+                </div>
+            </section>
+
             <!-- 1. MAPEO -->
             <section id="section-mapeo">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-slate-100 dark:border-slate-700">
@@ -644,6 +695,9 @@
         
         let conflictMap = { overlap: new Set(), repeat: new Set(), role: new Set() };
         
+        // --- MEMORIA DE SCROLL ---
+        const scrollState = {};
+
         const getEl = (id) => document.getElementById(id);
         const showToast = (msg, type = 'success') => {
             const container = getEl('status-message-container');
@@ -774,6 +828,103 @@
             div.innerHTML = content;
             div.dataset.slotId = slotId;
             return div;
+        }
+
+        // --- PASE DE LISTA DIARIO ---
+        function renderPaseLista() {
+            const container = getEl('pase-lista-container'); if(!container) return;
+            const weekAsig = state.asignaciones[state.selectedWeek] || {};
+            
+            // Detectar día actual
+            const today = new Date();
+            const daysMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+            const currentDayName = daysMap[today.getDay()];
+            
+            getEl('pase-lista-fecha').textContent = `HOY: ${currentDayName.toUpperCase()} ${today.toLocaleDateString()}`;
+
+            let totalHoy = 0;
+            let confirmadosHoy = 0;
+            const items = [];
+
+            // Recorrer configuración para encontrar turnos de HOY
+            state.locales.forEach(l => {
+                const conf = state.mapeoConfig[l.nombre]?.[currentDayName];
+                if (!conf) return;
+
+                ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(t => {
+                    const cant = parseInt(conf[t] || 0);
+                    if(cant > 0) {
+                        const hIn = conf[`hora${t.charAt(0).toUpperCase()+t.slice(1)}Entrada`] || '??';
+                        
+                        for(let i=1; i<=cant; i++) {
+                            const sid = `${l.nombre}-${currentDayName}-${t}-${i}`;
+                            const pid = weekAsig[sid];
+                            
+                            if (pid) {
+                                totalHoy++;
+                                const isConfirmed = weekAsig[`${sid}-confirmed`];
+                                if(isConfirmed) confirmadosHoy++;
+                                
+                                const p = state.personal.find(x => x.id === pid);
+                                items.push({
+                                    sid,
+                                    pid,
+                                    person: p,
+                                    local: l.nombre,
+                                    tipo: t,
+                                    hora: hIn,
+                                    confirmed: isConfirmed,
+                                    order: timeToMin(hIn)
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Actualizar contadores
+            getEl('pl-total').textContent = totalHoy;
+            getEl('pl-asistieron').textContent = confirmadosHoy;
+            getEl('pl-faltan').textContent = totalHoy - confirmadosHoy;
+
+            // Renderizar Grid
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-12"><p class="text-xl">No hay personal programado para hoy (${currentDayName}).</p></div>`;
+                return;
+            }
+
+            // Ordenar por hora
+            items.sort((a,b) => a.order - b.order);
+
+            container.innerHTML = items.map(item => {
+                const pName = item.person ? getFullName(item.person) : 'Personal Eliminado';
+                const statusClass = item.confirmed ? 'confirmado' : 'pendiente';
+                const btnText = item.confirmed ? 'ASISTIÓ' : 'MARCAR ASISTENCIA';
+                const btnColor = item.confirmed ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
+                const textColor = item.confirmed ? 'text-white' : '';
+                const avatar = item.person?.fotoUrl ? `<img src="${item.person.fotoUrl}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">` : `<div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl">👤</div>`;
+
+                return `
+                <div class="card-asistencia bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 flex flex-col gap-3 ${statusClass}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            ${avatar}
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${pName}</h4>
+                                <p class="text-xs text-slate-500 uppercase tracking-wide">${item.local}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-lg font-black text-slate-700 dark:text-slate-300">${item.hora}</span>
+                            <span class="text-[10px] bg-slate-100 px-1 rounded uppercase font-bold text-slate-500">${item.tipo}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-toggle-asistencia w-full py-3 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${btnColor} ${textColor}" data-slot="${item.sid}">
+                        ${item.confirmed ? '✅' : '⬜'} ${btnText}
+                    </button>
+                </div>`;
+            }).join('');
         }
 
         function calculateConflicts() {
@@ -929,13 +1080,21 @@
             } catch (err) { console.error("Error dashboard", err); }
         }
 
+        // --- OPTIMIZACIÓN DE RENDIMIENTO: RenderMapeo con DocumentFragment ---
         function renderMapeo() {
             calculateConflicts();
             const container = getEl('mapeo-container');
             if(!container) return;
+            
+            // LIMPIAR CONTENEDOR ANTES DE INSERTAR
             container.innerHTML = ''; 
+            
             const week = state.selectedWeek;
             if (!week) return;
+            
+            // CREAR FRAGMENTO DE DOCUMENTO EN MEMORIA
+            const fragment = document.createDocumentFragment();
+
             const showAllStructure = true;
             const term = getEl('filtro-local-busqueda').value.toLowerCase();
             const filteredLocales = state.locales.filter(l => l.nombre.toLowerCase().includes(term));
@@ -951,8 +1110,11 @@
 
                 diasSemana.forEach(dia => {
                     const dConf = config[dia] || {};
+                    // Filtrar tipos activos antes de iterar para rendimiento
                     const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
+                    
                     if (activeTypes.length === 0) return;
+                    
                     const diaBlock = document.createElement('div');
                     diaBlock.innerHTML = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1 rounded mb-1 dark:text-slate-300">${dia}</h4>`;
                     const slotsList = document.createElement('div');
@@ -960,8 +1122,9 @@
 
                     activeTypes.forEach(tipo => {
                         const count = parseInt(dConf[tipo]);
-                        const hIn = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] || '';
-                        const hOut = dConf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`] || '';
+                        const capTipo = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+                        const hIn = dConf[`hora${capTipo}Entrada`] || '';
+                        const hOut = dConf[`hora${capTipo}Salida`] || '';
                         const horario = hIn && hOut ? `${hIn}-${hOut}` : '';
                         
                         for(let i=1; i<=count; i++) {
@@ -991,17 +1154,46 @@
                 card.className = "bg-white dark:bg-slate-850 rounded-xl shadow-md border-t-4 border-slate-200 flex flex-col h-full";
                 card.style.borderTopColor = local.color || '#cbd5e1';
                 
-                let headerHtml = `<div class="p-4 border-b dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3><div class="relative w-10 h-10"><svg class="circular-chart" viewBox="0 0 36 36"><path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /><path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" /></svg><span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span></div></div><div class="flex gap-2"><button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg></button><button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg></button><button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg></button></div></div>`;
+                let headerHtml = `
+                    <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3>
+                            <div class="relative w-10 h-10">
+                                <svg class="circular-chart" viewBox="0 0 36 36">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg>
+                            </button>
+                            <button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                            </button>
+                            <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg>
+                            </button>
+                        </div>
+                    </div>`;
+
                 card.innerHTML = headerHtml;
                 const bodyDiv = document.createElement('div');
                 bodyDiv.className = "p-2 space-y-2";
                 bodyDiv.appendChild(diasContainer);
                 card.appendChild(bodyDiv);
-                container.appendChild(card);
+                
+                // INSERTAR EN FRAGMENTO
+                fragment.appendChild(card);
             });
 
+            // INYECCIÓN FINAL AL DOM
             if (renderedLocalesCount === 0 && !showAllStructure) {
                  container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60"><svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg><p class="text-lg font-semibold">Semana Limpia / Histórica</p><p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p></div>`;
+            } else {
+                container.appendChild(fragment);
             }
         }
 
@@ -1075,7 +1267,7 @@
             if(listeners.asignaciones) { listeners.asignaciones(); listeners.asignaciones = null; }
             listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
                 state.asignaciones[week] = snap.exists() ? snap.data() : {};
-                renderMapeo(); renderProgramacion(); renderPlanillas();
+                renderMapeo(); renderProgramacion(); renderPlanillas(); renderPaseLista();
                 setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
             }, () => { if(loader) loader.style.display = 'none'; });
         }
@@ -1094,9 +1286,18 @@
         }
         function handleConnectionChange(online) {
             const icon = getEl('system-status-icon');
+            const banner = getEl('offline-banner');
             icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
-            if (online) { icon.classList.add('text-yellow-500'); showToast("✅ Conexión restaurada"); } 
-            else { icon.classList.add('text-red-500', 'animate-pulse'); icon.parentElement.title = "¡Sin conexión!"; showToast("⚠️ Sin conexión", "error"); }
+            if (online) { 
+                icon.classList.add('text-yellow-500'); 
+                banner.style.display = 'none'; 
+                showToast("✅ Conexión restaurada"); 
+            } else { 
+                icon.classList.add('text-red-500', 'animate-pulse'); 
+                icon.parentElement.title = "¡Sin conexión!"; 
+                banner.style.display = 'block'; 
+                showToast("⚠️ Sin conexión", "error"); 
+            }
         }
         function renderConfigModal(localNombre) {
             const container = getEl('schedule-config-container'); if (!container) return; container.innerHTML = '';
@@ -1313,18 +1514,50 @@
                 });
             });
 
+            // --- LÓGICA DE MEMORIA DE SCROLL EN NAVEGACIÓN ---
             document.querySelectorAll('.nav-button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
+                    const currentSection = document.querySelector('section:not(.hidden)');
+                    if (currentSection) {
+                        scrollState[currentSection.id] = window.scrollY;
+                    }
                     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
                     const sec = e.target.id.replace('btn-', 'section-');
                     const targetSection = getEl(sec);
                     if(targetSection) targetSection.classList.remove('hidden');
-                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
+                    
+                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); 
+                    e.target.classList.add('active');
                     getEl('side-nav').classList.remove('open');
+                    
                     if(sec === 'section-tarifario') renderTarifarioTable();
                     if(sec === 'section-programacion') renderProgramacion();
                     if(sec === 'section-planillas') renderPlanillas();
+                    if(sec === 'section-pase-lista') renderPaseLista();
+
+                    if (scrollState[sec] !== undefined) {
+                        setTimeout(() => window.scrollTo(0, scrollState[sec]), 0);
+                    } else {
+                        window.scrollTo(0, 0);
+                    }
                 });
+            });
+            
+            // --- NUEVO LISTENER PARA PASE DE LISTA ---
+            getEl('pase-lista-container').addEventListener('click', async (e) => {
+                const btn = e.target.closest('.btn-toggle-asistencia');
+                if(btn) {
+                    const sid = btn.dataset.slot;
+                    const week = state.selectedWeek;
+                    const currentStatus = state.asignaciones[week]?.[`${sid}-confirmed`];
+                    
+                    // Efecto visual inmediato
+                    btn.classList.add('scale-90');
+                    setTimeout(() => btn.classList.remove('scale-90'), 150);
+
+                    // Actualizar en Firebase
+                    await setDoc(doc(collections.asignaciones, week), { [`${sid}-confirmed`]: !currentStatus }, { merge: true });
+                }
             });
 
             const nav = getEl('side-nav'); const toggle = getEl('menu-toggle');
@@ -1591,12 +1824,27 @@
             getEl('btn-eliminar-personal-view').onclick = async () => { if(confirm("¿Eliminar personal?")) { await deleteDoc(doc(collections.personal, getEl('btn-eliminar-personal-view').dataset.id)); getEl('view-personal-modal').style.display = 'none'; } };
 
             getEl('btn-copy-previous-week').onclick = async () => {
-                if(!confirm("¿Sobrescribir esta semana con la anterior?")) return;
+                if(!confirm("¿Copiar programación de semana anterior?\n\nNOTA: Las confirmaciones (checks verdes) se limpiarán para la nueva semana.")) return;
                 const curr = state.selectedWeek; const [y, w] = curr.split('-W').map(Number);
                 let prevW = w - 1; let prevY = y; if(prevW < 1) { prevW = 52; prevY--; }
                 const prevKey = `${prevY}-W${String(prevW).padStart(2,'0')}`;
                 const prevDocSnap = await getDoc(doc(collections.asignaciones, prevKey));
-                if (prevDocSnap.exists()) { await setDoc(doc(collections.asignaciones, curr), prevDocSnap.data()); showToast("Copiado exitosamente"); } 
+                
+                if (prevDocSnap.exists()) { 
+                    // COPIA INTELIGENTE: Eliminamos las confirmaciones
+                    const data = prevDocSnap.data();
+                    const newData = {};
+                    
+                    Object.keys(data).forEach(key => {
+                        // Solo copiamos si NO es un campo de confirmación
+                        if (!key.endsWith('-confirmed')) {
+                            newData[key] = data[key];
+                        }
+                    });
+
+                    await setDoc(doc(collections.asignaciones, curr), newData); 
+                    showToast("Copiado exitosamente (Confirmaciones reiniciadas)"); 
+                } 
                 else showToast("No hay datos en la semana anterior", "error");
             };
             
