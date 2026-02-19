@@ -220,7 +220,7 @@
         </header>
 
         <main>
-            <!-- 0. PASE DE LISTA DIARIO (NUEVO) -->
+            <!-- 0. PASE DE LISTA DIARIO (NUEVO E INDEPENDIENTE) -->
             <section id="section-pase-lista" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-6 border-l-8 border-blue-600">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -247,7 +247,7 @@
 
                 <div class="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-xl mb-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                     <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>Mostrando personal programado para <b>HOY</b> (según la semana seleccionada). Marca la casilla para confirmar asistencia.</span>
+                    <span>Esta asistencia es <b>independiente</b>. No afecta las confirmaciones previas del Mapeo Semanal.</span>
                 </div>
 
                 <div id="pase-lista-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -830,7 +830,7 @@
             return div;
         }
 
-        // --- PASE DE LISTA DIARIO ---
+        // --- PASE DE LISTA DIARIO (NUEVO E INDEPENDIENTE) ---
         function renderPaseLista() {
             const container = getEl('pase-lista-container'); if(!container) return;
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
@@ -843,7 +843,7 @@
             getEl('pase-lista-fecha').textContent = `HOY: ${currentDayName.toUpperCase()} ${today.toLocaleDateString()}`;
 
             let totalHoy = 0;
-            let confirmadosHoy = 0;
+            let asistieronHoy = 0;
             const items = [];
 
             // Recorrer configuración para encontrar turnos de HOY
@@ -862,8 +862,12 @@
                             
                             if (pid) {
                                 totalHoy++;
+                                // Variable de planificación (Semanal)
                                 const isConfirmed = weekAsig[`${sid}-confirmed`];
-                                if(isConfirmed) confirmadosHoy++;
+                                // Variable de ejecución real (Pase de Lista) - Totalmente independiente
+                                const hasAttended = weekAsig[`${sid}-asistio`]; 
+                                
+                                if(hasAttended) asistieronHoy++;
                                 
                                 const p = state.personal.find(x => x.id === pid);
                                 items.push({
@@ -873,7 +877,8 @@
                                     local: l.nombre,
                                     tipo: t,
                                     hora: hIn,
-                                    confirmed: isConfirmed,
+                                    confirmed: isConfirmed, // Para mostrar contexto
+                                    attended: hasAttended,  // El estado real de asistencia
                                     order: timeToMin(hIn)
                                 });
                             }
@@ -884,8 +889,8 @@
 
             // Actualizar contadores
             getEl('pl-total').textContent = totalHoy;
-            getEl('pl-asistieron').textContent = confirmadosHoy;
-            getEl('pl-faltan').textContent = totalHoy - confirmadosHoy;
+            getEl('pl-asistieron').textContent = asistieronHoy;
+            getEl('pl-faltan').textContent = totalHoy - asistieronHoy;
 
             // Renderizar Grid
             if (items.length === 0) {
@@ -898,11 +903,16 @@
 
             container.innerHTML = items.map(item => {
                 const pName = item.person ? getFullName(item.person) : 'Personal Eliminado';
-                const statusClass = item.confirmed ? 'confirmado' : 'pendiente';
-                const btnText = item.confirmed ? 'ASISTIÓ' : 'MARCAR ASISTENCIA';
-                const btnColor = item.confirmed ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-200 text-slate-600 hover:bg-slate-300';
-                const textColor = item.confirmed ? 'text-white' : '';
+                const statusClass = item.attended ? 'confirmado' : 'pendiente';
+                const btnText = item.attended ? 'ASISTIÓ (EN LÍNEA)' : 'MARCAR ASISTENCIA';
+                const btnColor = item.attended ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300';
+                const textColor = item.attended ? 'text-white' : '';
                 const avatar = item.person?.fotoUrl ? `<img src="${item.person.fotoUrl}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">` : `<div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl">👤</div>`;
+
+                // Pequeña etiqueta de contexto (Saber si en la semana había confirmado o no)
+                const planningBadge = item.confirmed 
+                    ? `<span class="inline-block mt-1 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded border border-green-200">✅ Confirmó en semana</span>` 
+                    : `<span class="inline-block mt-1 text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded border border-yellow-200">⏳ No había confirmado</span>`;
 
                 return `
                 <div class="card-asistencia bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 flex flex-col gap-3 ${statusClass}">
@@ -912,16 +922,17 @@
                             <div>
                                 <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${pName}</h4>
                                 <p class="text-xs text-slate-500 uppercase tracking-wide">${item.local}</p>
+                                ${planningBadge}
                             </div>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right shrink-0">
                             <span class="block text-lg font-black text-slate-700 dark:text-slate-300">${item.hora}</span>
                             <span class="text-[10px] bg-slate-100 px-1 rounded uppercase font-bold text-slate-500">${item.tipo}</span>
                         </div>
                     </div>
                     
                     <button class="btn-toggle-asistencia w-full py-3 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${btnColor} ${textColor}" data-slot="${item.sid}">
-                        ${item.confirmed ? '✅' : '⬜'} ${btnText}
+                        ${item.attended ? '✅' : '👉'} ${btnText}
                     </button>
                 </div>`;
             }).join('');
@@ -935,7 +946,7 @@
             const shiftsByPerson = {}; 
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
-                if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed')) return;
+                if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed') || slotId.endsWith('asistio')) return;
                 const parts = slotId.split('-'); const indexStr = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                 const conf = state.mapeoConfig[local]?.[dia];
                 if(!conf) return; 
@@ -1378,7 +1389,7 @@
                 let localMatch = false;
                 if (term.length > 0) {
                      for (const [key, val] of Object.entries(weekAsig)) {
-                         if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed')) {
+                         if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
                              const parts = key.split('-');
                              const localName = parts.slice(0, parts.length - 3).join('-').toLowerCase();
                              if (localName.includes(term)) {
@@ -1395,7 +1406,7 @@
 
             const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
             container.innerHTML = relevantPersonal.map(p => {
-                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
+                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).map(([k]) => {
                         const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                         const conf = state.mapeoConfig[local]?.[dia];
                         const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
@@ -1424,7 +1435,7 @@
             const report = {};
             state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
             Object.entries(asig).forEach(([key, pid]) => {
-                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed')) return;
+                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
                 if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
             });
             const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
@@ -1549,14 +1560,14 @@
                 if(btn) {
                     const sid = btn.dataset.slot;
                     const week = state.selectedWeek;
-                    const currentStatus = state.asignaciones[week]?.[`${sid}-confirmed`];
+                    const currentStatus = state.asignaciones[week]?.[`${sid}-asistio`]; // SEPARADO DE CONFIRMED
                     
                     // Efecto visual inmediato
                     btn.classList.add('scale-90');
                     setTimeout(() => btn.classList.remove('scale-90'), 150);
 
                     // Actualizar en Firebase
-                    await setDoc(doc(collections.asignaciones, week), { [`${sid}-confirmed`]: !currentStatus }, { merge: true });
+                    await setDoc(doc(collections.asignaciones, week), { [`${sid}-asistio`]: !currentStatus }, { merge: true });
                 }
             });
 
@@ -1615,7 +1626,7 @@
                     const weekData = state.asignaciones[state.selectedWeek];
                     const batchUpdate = {};
                     Object.keys(weekData).forEach(key => {
-                        if(key.startsWith(localName + '-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed')) {
+                        if(key.startsWith(localName + '-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
                             const curVest = weekData[`${key}-vestimenta`] || 'Ropa Táctica';
                             const newVest = curVest === 'Ropa Táctica' ? 'Terno' : 'Ropa Táctica';
                             batchUpdate[`${key}-vestimenta`] = newVest;
@@ -1678,7 +1689,7 @@
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const batchUpdate = {};
                     Object.entries(weekAsig).forEach(([key, val]) => {
-                        if (val === pid) { batchUpdate[key] = deleteField(); batchUpdate[`${key}-vestimenta`] = deleteField(); batchUpdate[`${key}-confirmed`] = deleteField(); }
+                        if (val === pid) { batchUpdate[key] = deleteField(); batchUpdate[`${key}-vestimenta`] = deleteField(); batchUpdate[`${key}-confirmed`] = deleteField(); batchUpdate[`${key}-asistio`] = deleteField(); }
                     });
                     if (Object.keys(batchUpdate).length > 0) { await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate); showToast("Programación eliminada"); } 
                     else { showToast("No hay turnos para eliminar", "error"); }
@@ -1691,7 +1702,7 @@
                     const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
                     const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
                     const groupedShifts = [];
-                    const rawShifts = Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).map(([k]) => {
+                    const rawShifts = Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).map(([k]) => {
                             const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                             const conf = state.mapeoConfig[local]?.[dia];
                             const keyName = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
@@ -1720,7 +1731,7 @@
                     const pid = btnConf.dataset.personId;
                     const weekAsig = state.asignaciones[state.selectedWeek] || {};
                     const batchData = {};
-                    Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed')).forEach(([k]) => batchData[`${k}-confirmed`] = true);
+                    Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).forEach(([k]) => batchData[`${k}-confirmed`] = true);
                     if(Object.keys(batchData).length > 0) { await setDoc(doc(collections.asignaciones, state.selectedWeek), batchData, {merge:true}); showToast("Turnos confirmados"); }
                 }
             });
@@ -1728,7 +1739,7 @@
             getEl('modal-search').addEventListener('input', renderModalPersonalList);
             getEl('btn-unassign-slot').onclick = async () => {
                 if(currentSlotId) {
-                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: deleteField(), [`${currentSlotId}-vestimenta`]: deleteField(), [`${currentSlotId}-confirmed`]: deleteField() });
+                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: deleteField(), [`${currentSlotId}-vestimenta`]: deleteField(), [`${currentSlotId}-confirmed`]: deleteField(), [`${currentSlotId}-asistio`]: deleteField() });
                     getEl('global-selection-modal').style.display = 'none';
                 }
             };
@@ -1749,11 +1760,11 @@
                     const updates = {}; let hasUpdates = false;
                     Object.keys(currentAssignments).forEach(key => {
                         if (!key.startsWith(currentlyEditingLocal + '-')) return;
-                        if (key.endsWith('-vestimenta') || key.endsWith('-confirmed')) return;
+                        if (key.endsWith('-vestimenta') || key.endsWith('-confirmed') || key.endsWith('-asistio')) return;
                         const parts = key.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop();
                         const newCount = parseInt(tempScheduleConfig[dia]?.[type] || 0);
                         const slotIndex = parseInt(key.split('-').pop());
-                        if (slotIndex > newCount) { updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField(); hasUpdates = true; }
+                        if (slotIndex > newCount) { updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField(); updates[`${key}-asistio`] = deleteField(); hasUpdates = true; }
                     });
                     if (hasUpdates) { await updateDoc(doc(collections.asignaciones, week), updates); showToast("Horarios guardados y asignaciones limpiadas"); } else showToast("Horarios guardados");
                     getEl('schedule-config-modal').style.display = 'none';
@@ -1831,13 +1842,13 @@
                 const prevDocSnap = await getDoc(doc(collections.asignaciones, prevKey));
                 
                 if (prevDocSnap.exists()) { 
-                    // COPIA INTELIGENTE: Eliminamos las confirmaciones
+                    // COPIA INTELIGENTE: Eliminamos las confirmaciones y asistencias
                     const data = prevDocSnap.data();
                     const newData = {};
                     
                     Object.keys(data).forEach(key => {
-                        // Solo copiamos si NO es un campo de confirmación
-                        if (!key.endsWith('-confirmed')) {
+                        // Solo copiamos si NO es un campo de confirmación ni asistencia
+                        if (!key.endsWith('-confirmed') && !key.endsWith('-asistio')) {
                             newData[key] = data[key];
                         }
                     });
