@@ -192,35 +192,38 @@
 
     <!-- CONTENIDO PRINCIPAL -->
     <div class="container mx-auto p-4 md:p-8 w-full main-content max-w-[1600px]"> 
-        <header class="text-center mb-8 relative">
-            <h1 id="main-title" class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Mapeo Semanal</h1>
-            <div class="absolute top-0 right-0 flex items-center gap-3">
-                <button id="btn-permisos" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 group" title="Gestión de Permisos">
-                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <header class="flex flex-col md:flex-row items-center justify-between bg-white/60 dark:bg-slate-800/60 backdrop-blur-md p-4 sm:px-6 rounded-2xl shadow-sm border border-white/50 dark:border-slate-700/50 mb-8 relative z-40">
+            <div class="flex items-center gap-3 sm:gap-4 mb-4 md:mb-0 w-full md:w-auto justify-center md:justify-start">
+                <h1 id="main-title" class="text-3xl sm:text-4xl font-black bg-gradient-to-r from-guinda-600 to-slate-800 dark:from-guinda-500 dark:to-slate-200 bg-clip-text text-transparent tracking-tighter m-0 leading-none">MAPEO SWAT</h1>
+            </div>
+            
+            <div class="flex items-center flex-wrap justify-center gap-2 sm:gap-3 w-full md:w-auto">
+                <button id="btn-radar" type="button" class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-yellow-400 dark:hover:border-yellow-500 transition-all duration-300 group shrink-0" title="Radar de Personal Inactivo">
+                    <span class="text-xl group-hover:scale-110 transition-transform">💡</span>
+                </button>
+                <button id="btn-permisos" type="button" class="flex items-center justify-center h-10 sm:h-11 px-3 sm:px-4 gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 group shrink-0" title="Gestión de Permisos">
+                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 hidden sm:block">Permisos</span>
                 </button>
-                <button id="btn-dashboard" type="button" class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group" title="Ver Dashboard de Estado">
-                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <button id="btn-dashboard" type="button" class="flex items-center justify-center h-10 sm:h-11 px-3 sm:px-4 gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 group shrink-0" title="Ver Dashboard de Estado">
+                    <svg class="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 hidden sm:block">Estado</span>
                 </button>
-                <div id="system-status-container" title="Estado del sistema" class="p-2">
-                    <svg id="system-status-icon" class="h-6 w-6 text-slate-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden sm:block"></div>
+                <div id="system-status-container" title="Estado del sistema" class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-help shrink-0">
+                    <svg id="system-status-icon" class="h-5 w-5 text-slate-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300">
-                    <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                </button>
             </div>
         </header>
 
         <main>
-            <!-- 0. PASE DE LISTA DIARIO (NUEVO E INDEPENDIENTE) -->
+            <!-- 0. PASE DE LISTA DIARIO -->
             <section id="section-pase-lista" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md mb-6 border-l-8 border-blue-600">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -294,7 +297,7 @@
                         <label class="text-sm font-medium text-slate-700">Filtro Rápido</label>
                         <button id="close-search-panel" class="text-slate-400 hover:text-red-500">&times;</button>
                     </div>
-                    <input type="text" id="filtro-local-busqueda" placeholder="Buscar Local o Personal..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-sm">
+                    <input type="text" id="filtro-local-busqueda" placeholder="Buscar Local o Personal..." class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-sm outline-none">
                 </div>
             </section>
 
@@ -413,7 +416,10 @@
             <section id="section-historial" class="hidden">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md">
                     <h2 class="text-2xl font-bold mb-4 dark:text-white">Historial de Mapeos Guardados</h2>
-                    <div id="historial-container" class="overflow-x-auto"></div>
+                    <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-4 rounded-lg mb-6 text-sm border border-blue-200 dark:border-blue-800">
+                        <p><strong>Vista Segura:</strong> Previsualiza o descarga los archivos de tu historial sin alterar tu semana actual de trabajo.</p>
+                    </div>
+                    <div id="historial-container" class="overflow-x-auto grid gap-2"></div>
                 </div>
             </section>
 
@@ -472,6 +478,35 @@
             <div class="flex justify-end gap-3">
                  <button onclick="document.getElementById('duplicates-modal').style.display='none'" class="bg-slate-300 py-2 px-4 rounded hover:bg-slate-400">Cancelar</button>
                  <button id="btn-fix-duplicates" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600">Eliminar Duplicados (Dejar 1)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Radar Inactivos -->
+    <div id="radar-modal" class="modal" style="z-index: 3200;">
+        <div class="modal-content !max-w-3xl max-h-[85vh] flex flex-col dark:bg-slate-800 dark:border-slate-700">
+            <div class="flex justify-between items-center p-6 border-b dark:border-slate-700 shrink-0">
+                <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2"><span>💡</span> Radar de Personal Inactivo</h3>
+                <button onclick="document.getElementById('radar-modal').style.display='none'" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
+            </div>
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 text-sm border-b border-yellow-200 dark:border-yellow-800 shrink-0">
+                Analizando el historial de las últimas 5 semanas para encontrar personal recurrente que <b>no ha sido programado</b> en la semana actual.
+            </div>
+            <div id="radar-container" class="flex-grow overflow-y-auto p-6 space-y-3 bg-slate-50 dark:bg-slate-900 custom-scrollbar">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Vista Previa Historial -->
+    <div id="history-preview-modal" class="modal" style="z-index: 3200;">
+        <div class="modal-content !max-w-5xl max-h-[90vh] flex flex-col dark:bg-slate-800 dark:border-slate-700">
+            <div class="flex justify-between items-center p-6 border-b dark:border-slate-700 shrink-0">
+                <h3 class="text-2xl font-bold dark:text-white">Vista Previa: <span id="preview-hist-title" class="text-blue-600"></span></h3>
+                <button onclick="document.getElementById('history-preview-modal').style.display='none'" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
+            </div>
+            <div id="preview-hist-container" class="flex-grow overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900 custom-scrollbar">
+                <!-- Contenido dinámico -->
             </div>
         </div>
     </div>
@@ -1107,8 +1142,30 @@
             const fragment = document.createDocumentFragment();
 
             const showAllStructure = true;
+            
+            // LÓGICA DE SÚPER FILTRO: Local o Persona
             const term = getEl('filtro-local-busqueda').value.toLowerCase();
-            const filteredLocales = state.locales.filter(l => l.nombre.toLowerCase().includes(term));
+            const weekAsig = state.asignaciones[week] || {};
+            
+            // Encuentra IDs de personal que coincidan con la búsqueda
+            const matchingPersons = state.personal.filter(p => getFullName(p).toLowerCase().includes(term)).map(p => p.id);
+
+            const filteredLocales = state.locales.filter(l => {
+                if (term === '') return true;
+                
+                // Si coincide con el nombre del local, lo mostramos
+                if (l.nombre.toLowerCase().includes(term)) return true;
+                
+                // Si no, buscamos si alguna persona que coincida está asignada a este local en esta semana
+                let personInLocal = false;
+                Object.entries(weekAsig).forEach(([key, pid]) => {
+                    if (key.startsWith(l.nombre + '-') && matchingPersons.includes(pid) && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
+                        personInLocal = true;
+                    }
+                });
+                return personInLocal;
+            });
+            
             let renderedLocalesCount = 0;
 
             filteredLocales.forEach(local => {
@@ -1496,8 +1553,16 @@
                     const displayName = isBackup ? d.id.replace('_', ' ') : `Semana ${d.id}`;
                     const btnClass = isBackup ? 'border-teal-500 bg-teal-50' : 'border-slate-200';
                     const btn = document.createElement('div');
-                    btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex justify-between ${btnClass}`;
-                    btn.innerHTML = `<span class="font-medium">${displayName}</span> <button class="text-blue-500 font-bold" onclick="window.loadHist('${d.id}')">Cargar</button>`;
+                    btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex items-center justify-between shadow-sm hover:shadow transition-shadow ${btnClass}`;
+                    
+                    // BOTONES DE VISTA PREVIA Y EXCEL (NO MODIFICAN LA SEMANA ACTUAL)
+                    btn.innerHTML = `
+                        <span class="font-medium truncate pr-4 text-slate-800 dark:text-slate-200">${displayName}</span> 
+                        <div class="flex items-center gap-3 shrink-0">
+                            <button class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition dark:bg-blue-900/30 dark:text-blue-400" onclick="window.previewHist('${d.id}')" title="Vista Previa de Asignaciones">👁️</button>
+                            <button class="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:scale-110 transition dark:bg-green-900/30 dark:text-green-400" onclick="window.downloadHistExcel('${d.id}')" title="Descargar como Excel">🖨️</button>
+                        </div>
+                    `;
                     hContainer.appendChild(btn);
                 });
             });
@@ -1578,7 +1643,14 @@
             toggle.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseleave', closeMenu);
             toggle.onclick = () => nav.classList.toggle('open'); 
 
-            getEl('search-fab').onclick = () => getEl('search-panel').classList.toggle('open');
+            // --- AUTO-FOCUS AL ABRIR SÚPER FILTRO ---
+            getEl('search-fab').onclick = () => {
+                const panel = getEl('search-panel');
+                panel.classList.toggle('open');
+                if (panel.classList.contains('open')) {
+                    setTimeout(() => getEl('filtro-local-busqueda').focus(), 100);
+                }
+            };
             getEl('close-search-panel').onclick = () => getEl('search-panel').classList.remove('open');
             getEl('filtro-local-busqueda').addEventListener('input', renderMapeo);
             
@@ -1642,6 +1714,108 @@
             const btnCloseDashboard = getEl('close-dashboard-modal');
             if (btnCloseDashboard) btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
             
+            // --- LÓGICA RADAR DE INACTIVOS (💡) ---
+            const btnRadar = getEl('btn-radar');
+            if (btnRadar) {
+                btnRadar.onclick = async () => {
+                    getEl('radar-modal').style.display = 'flex';
+                    const container = getEl('radar-container');
+                    container.innerHTML = '<div class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-500 mx-auto"></div><p class="mt-4 text-slate-500 font-bold">Escaneando historial de 5 semanas...</p></div>';
+                    
+                    try {
+                        const currWeek = state.selectedWeek;
+                        const [yStr, wStr] = currWeek.split('-W');
+                        let y = parseInt(yStr), w = parseInt(wStr);
+                        
+                        const pastWeeks = [];
+                        let tempY = y, tempW = w;
+                        for (let i = 0; i < 5; i++) {
+                            tempW--;
+                            if (tempW < 1) { tempW = 52; tempY--; }
+                            pastWeeks.push(`${tempY}-W${String(tempW).padStart(2, '0')}`);
+                        }
+
+                        // 1. Obtener IDs de guardias que trabajaron en las últimas 5 semanas
+                        const pastIds = new Set();
+                        const snaps = await Promise.all(pastWeeks.map(wk => getDoc(doc(collections.asignaciones, wk))));
+                        snaps.forEach(snap => {
+                            if(snap.exists()) {
+                                const data = snap.data();
+                                Object.entries(data).forEach(([k, pid]) => {
+                                    if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio')) {
+                                        pastIds.add(pid);
+                                    }
+                                });
+                            }
+                        });
+
+                        // 2. Obtener IDs de guardias programados ESTA semana
+                        const currIds = new Set();
+                        const currData = state.asignaciones[currWeek] || {};
+                        Object.entries(currData).forEach(([k, pid]) => {
+                            if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio')) {
+                                currIds.add(pid);
+                            }
+                        });
+
+                        // Rango de fechas de la semana actual (Para cruzar con permisos)
+                        const formatLocal = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        const monday = getDateOfISOWeek(w, y);
+                        const sunday = new Date(monday);
+                        sunday.setDate(monday.getDate() + 6);
+                        const monStr = formatLocal(monday);
+                        const sunStr = formatLocal(sunday);
+
+                        // 3. Filtrar: Trabajó antes + NO trabaja ahora + Está en planilla (disponible)
+                        const inactiveList = state.personal.filter(p => pastIds.has(p.id) && !currIds.has(p.id) && p.disponibilidad !== 'no-disponible');
+
+                        if (inactiveList.length === 0) {
+                            container.innerHTML = '<div class="text-center p-8 text-slate-500"><p class="text-5xl mb-3">👍</p><p class="text-lg font-bold">¡Excelente!</p><p>Todo el personal recurrente está programado esta semana.</p></div>';
+                            return;
+                        }
+
+                        // Ordenar alfabéticamente
+                        inactiveList.sort((a,b) => getFullName(a).localeCompare(getFullName(b)));
+
+                        container.innerHTML = inactiveList.map(p => {
+                            // Revisar si tienen permisos que choquen con la semana actual
+                            const permits = state.permisos.filter(perm => perm.personalId === p.id && perm.startDate <= sunStr && perm.endDate >= monStr);
+                            
+                            let tagHtml = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] uppercase tracking-wide font-bold border border-green-200">✅ Libre / Olvidado</span>`;
+                            let rowClass = "bg-white dark:bg-slate-700 border-l-4 border-green-500";
+                            
+                            if (permits.length > 0) {
+                                const perm = permits[0];
+                                const typeNames = { 'permiso': 'Permiso', 'baja': 'Baja Médica', 'vacaciones': 'Vacaciones' };
+                                const typeColors = { 'permiso': 'bg-yellow-100 text-yellow-700 border-yellow-200', 'baja': 'bg-red-100 text-red-700 border-red-200', 'vacaciones': 'bg-teal-100 text-teal-700 border-teal-200' };
+                                const c = typeColors[perm.type] || typeColors['permiso'];
+                                tagHtml = `<span class="${c} px-2 py-1 rounded text-[10px] uppercase font-bold border">🛑 ${typeNames[perm.type] || perm.type} <br><span class="opacity-75 capitalize font-medium text-xs">${perm.reason || ''}</span></span>`;
+                                rowClass = `bg-slate-50 dark:bg-slate-800 opacity-80 border-l-4 border-slate-300`;
+                            }
+
+                            return `<div class="p-3 shadow-sm rounded-lg border dark:border-slate-600 flex justify-between items-center ${rowClass}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-lg overflow-hidden shrink-0">
+                                        ${p.fotoUrl ? `<img src="${p.fotoUrl}" class="w-full h-full object-cover">` : '👤'}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${getFullName(p)}</h4>
+                                        <p class="text-xs text-slate-500 font-mono">${p.telefono || 'Sin teléfono'}</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 text-right">
+                                    ${tagHtml}
+                                </div>
+                            </div>`;
+                        }).join('');
+
+                    } catch (err) {
+                        console.error(err);
+                        container.innerHTML = `<p class="text-center text-red-500 font-bold p-8">Error al cargar radar: ${err.message}</p>`;
+                    }
+                };
+            }
+
             const toolsBtn = getEl('btn-tools-dropdown'); const toolsMenu = getEl('tools-dropdown-menu');
             if(toolsBtn && toolsMenu) {
                 toolsBtn.onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle('hidden'); };
@@ -2072,7 +2246,169 @@
             getEl('global-selection-modal').style.display = 'none';
         };
 
+        // YA NO SE USA PARA NO ALTERAR LA SEMANA, PERO SE MANTIENE POR COMPATIBILIDAD CON POSIBLES BOTONES VIEJOS
         window.loadHist = (weekId) => { if(confirm("¿Cargar esta configuración histórica?")) { state.selectedWeek = weekId; getEl('semana-mapeo').value = weekId; watchWeek(weekId); alert("Visualizando datos históricos. Tenga cuidado al guardar cambios."); } };
+        
+        // --- NUEVAS FUNCIONES DE HISTORIAL SEGURO (VISTA PREVIA Y EXCEL) ---
+        window.previewHist = async (weekId) => {
+            const modal = getEl('history-preview-modal');
+            const container = getEl('preview-hist-container');
+            const title = getEl('preview-hist-title');
+            
+            title.textContent = weekId.includes('_RESPALDO_') ? weekId.replace('_', ' ') : `Semana ${weekId}`;
+            container.innerHTML = '<div class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p class="mt-4 text-slate-500 font-bold">Extrayendo datos históricos...</p></div>';
+            modal.style.display = 'flex';
+
+            try {
+                const docSnap = await getDoc(doc(collections.historial, weekId));
+                if (!docSnap.exists()) {
+                    container.innerHTML = '<p class="text-center text-red-500 font-bold p-8">No se encontraron datos para este registro histórico.</p>';
+                    return;
+                }
+                
+                const data = docSnap.data();
+                const localesMap = {};
+                
+                // Mapear los datos de la base de datos a un objeto estructurado
+                Object.entries(data).forEach(([key, pid]) => {
+                    if (typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
+                    
+                    const parts = key.split('-');
+                    const num = parts.pop();
+                    const tipo = parts.pop();
+                    const dia = parts.pop();
+                    const local = parts.join('-');
+                    
+                    if(!localesMap[local]) localesMap[local] = {};
+                    if(!localesMap[local][dia]) localesMap[local][dia] = [];
+                    
+                    const person = state.personal.find(p => p.id === pid);
+                    const pName = person ? getFullName(person) : 'Personal Eliminado / Desconocido';
+                    const vestimenta = data[`${key}-vestimenta`] || 'Ropa Táctica';
+                    
+                    localesMap[local][dia].push({ tipo, num, pName, vestimenta });
+                });
+
+                if (Object.keys(localesMap).length === 0) {
+                     container.innerHTML = '<div class="text-center p-8 text-slate-500"><p class="text-4xl mb-2">📭</p><p>El registro histórico está vacío. No había personal asignado en este momento.</p></div>';
+                     return;
+                }
+
+                let html = '';
+                Object.keys(localesMap).sort().forEach(local => {
+                    html += `<div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
+                                <h4 class="bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 font-bold p-3 border-b dark:border-slate-700 uppercase flex items-center gap-2">
+                                    <span>🏢</span> ${local}
+                                </h4>
+                                <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+                    
+                    diasSemana.forEach(dia => {
+                        if (localesMap[local][dia] && localesMap[local][dia].length > 0) {
+                            html += `<div class="border rounded-lg p-3 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
+                                        <h5 class="font-bold text-xs uppercase text-slate-500 border-b pb-1 mb-2 dark:border-slate-600 tracking-wider">${dia}</h5>
+                                        <ul class="space-y-1.5 text-sm">`;
+                            
+                            // Ordenar los turnos lógicamente
+                            localesMap[local][dia].sort((a,b) => {
+                                if (a.tipo !== b.tipo) return a.tipo.localeCompare(b.tipo);
+                                return parseInt(a.num) - parseInt(b.num);
+                            });
+
+                            localesMap[local][dia].forEach(turno => {
+                                const tLabel = turno.tipo === 'puestos' ? 'Puesto' : capitalize(turno.tipo);
+                                html += `<li class="flex justify-between items-center bg-white dark:bg-slate-700 p-2 rounded shadow-sm border border-slate-100 dark:border-slate-600">
+                                            <span class="font-semibold text-[10px] w-16 shrink-0 text-slate-400 uppercase tracking-tighter">${tLabel} ${turno.num}</span>
+                                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate flex-grow text-right pl-2">${turno.pName} <span class="ml-1" title="${turno.vestimenta}">${vestimentaEmojis[turno.vestimenta] || ''}</span></span>
+                                         </li>`;
+                            });
+                            html += `   </ul>
+                                     </div>`;
+                        }
+                    });
+                    
+                    html += `   </div>
+                             </div>`;
+                });
+                
+                container.innerHTML = html;
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p class="text-center text-red-500 p-8 font-bold">Error al cargar la vista previa: ${err.message}</p>`;
+            }
+        };
+
+        window.downloadHistExcel = async (weekId) => {
+            const loader = getEl('loader');
+            loader.style.display = 'flex';
+            try {
+                const docSnap = await getDoc(doc(collections.historial, weekId));
+                if (!docSnap.exists()) {
+                    showToast("No se encontraron datos para exportar", "error");
+                    loader.style.display = 'none';
+                    return;
+                }
+                
+                const asig = docSnap.data();
+                const rows = []; 
+                rows.push(["Local", "Día", "Tipo de Turno", "Personal Asignado", "Vestimenta"]);
+                
+                Object.keys(asig).forEach(key => {
+                    if (typeof asig[key] !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
+                    
+                    const parts = key.split('-');
+                    const num = parts.pop();
+                    const tipo = parts.pop();
+                    const dia = parts.pop();
+                    const local = parts.join('-');
+                    
+                    const pid = asig[key];
+                    const p = state.personal.find(x => x.id === pid);
+                    const pName = p ? getFullName(p) : 'Eliminado / Vacante';
+                    const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica';
+                    
+                    const tLabel = tipo === 'puestos' ? 'Puesto' : capitalize(tipo);
+                    
+                    rows.push([local.toUpperCase(), capitalize(dia), `${tLabel} ${num}`, pName, vest]);
+                });
+                
+                if (rows.length === 1) {
+                    showToast("El registro histórico está vacío", "error");
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                // Ordenar por Local, luego por Día
+                const dataRows = rows.slice(1);
+                dataRows.sort((a, b) => {
+                    if (a[0] !== b[0]) return a[0].localeCompare(b[0]);
+                    const dIndexA = diasSemana.indexOf(a[1].toLowerCase());
+                    const dIndexB = diasSemana.indexOf(b[1].toLowerCase());
+                    return dIndexA - dIndexB;
+                });
+                
+                const finalRows = [rows[0], ...dataRows];
+
+                const ws = XLSX.utils.aoa_to_sheet(finalRows); 
+                
+                // Darle algo de formato básico a las columnas
+                ws['!cols'] = [{wch: 25}, {wch: 15}, {wch: 20}, {wch: 40}, {wch: 15}];
+                
+                const wb = XLSX.utils.book_new(); 
+                XLSX.utils.book_append_sheet(wb, ws, "Historial " + weekId.slice(0, 10)); 
+                
+                const safeName = weekId.replace(/[:. ]/g, '_');
+                XLSX.writeFile(wb, `Historial_SWAT_${safeName}.xlsx`);
+                
+                showToast("Excel histórico descargado correctamente");
+            } catch(e) {
+                console.error(e);
+                showToast("Error al generar Excel", "error");
+            } finally {
+                loader.style.display = 'none';
+            }
+        };
+
     </script>
 </body>
 </html>
