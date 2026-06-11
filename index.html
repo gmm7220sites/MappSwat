@@ -42,7 +42,7 @@
         .slot-label-col { background-color: #f1f5f9; border-right: 1px solid #e2e8f0; }
         html.dark .slot-label-col { background-color: #1e293b; border-right-color: #334155; }
 
-        /* ESTADOS DE FILA */
+        /* ESTADOS DE FILA Y RESALTADO */
         .slot-empty-row { opacity: 0.8; border-left: 4px solid #cbd5e1; }
         html.dark .slot-empty-row { border-left-color: #475569; }
         .slot-empty-row:hover { background-color: rgba(59, 130, 246, 0.05); opacity: 1; border-left-color: #3b82f6; }
@@ -52,6 +52,12 @@
         html.dark .slot-filled-row:hover { background-color: #1e293b; }
         .cacheo-row { background-color: #eff6ff; }
         html.dark .cacheo-row { background-color: rgba(30, 58, 138, 0.15); }
+
+        /* KEYFRAMES DE RESALTADO DINÁMICO */
+        @keyframes fadeHighlight { 0% { background-color: rgba(253, 224, 71, 0.6); } 100% { background-color: transparent; } }
+        html.dark @keyframes fadeHighlightDark { 0% { background-color: rgba(202, 138, 4, 0.6); } 100% { background-color: transparent; } }
+        .search-highlight { animation: fadeHighlight 3s ease-out forwards; }
+        html.dark .search-highlight { animation: fadeHighlightDark 3s ease-out forwards; }
 
         /* CONFLICTOS - LÓGICA DEFINITIVA */
         .conflict-role { border-left-color: #3b82f6 !important; background-color: #dbeafe !important; }
@@ -166,7 +172,7 @@
     <!-- TOASTS -->
     <div id="status-message-container" class="fixed top-4 right-4 z-[4000] flex flex-col gap-2 pointer-events-none"></div>
 
-    <!-- NAVEGACIÓN -->
+    <!-- NAVEGACIÓN LATERAL -->
     <button id="menu-toggle">
         <svg class="w-6 h-6 text-slate-800 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
     </button>
@@ -193,13 +199,12 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="container mx-auto p-4 md:p-8 w-full main-content max-w-[1600px]"> 
         <header class="flex flex-col md:flex-row items-start md:items-center bg-white/60 dark:bg-slate-800/60 backdrop-blur-md p-4 sm:px-6 rounded-2xl shadow-sm border border-white/50 dark:border-slate-700/50 mb-8 relative z-40 min-h-[80px]">
-            
-            <!-- TÍTULO: A un costado (Izquierda) en móvil, Centrado Absoluto en PC -->
+            <!-- TÍTULO: A un costado en móvil, Centrado en PC -->
             <div class="flex items-center w-full md:w-auto mb-4 md:mb-0 justify-start md:absolute md:left-1/2 md:-translate-x-1/2">
                 <h1 id="main-title" class="text-3xl sm:text-4xl font-black bg-gradient-to-r from-guinda-600 to-slate-800 dark:from-guinda-500 dark:to-slate-200 bg-clip-text text-transparent tracking-tighter m-0 leading-none">MAPEO SWAT</h1>
             </div>
             
-            <!-- CONTENEDOR DE BOTONES (Forzado a la derecha en PC) -->
+            <!-- CONTENEDOR DE BOTONES (Derecha) -->
             <div class="flex items-center flex-wrap justify-start md:justify-end gap-2 sm:gap-3 w-full md:w-auto md:ml-auto relative z-10">
                 <button id="btn-radar" type="button" class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md hover:border-yellow-400 dark:hover:border-yellow-500 transition-all duration-300 group shrink-0" title="Radar de Personal Inactivo">
                     <span class="text-xl group-hover:scale-110 transition-transform">💡</span>
@@ -279,7 +284,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg> Herramientas
                                 </button>
                                 <div id="tools-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-600 overflow-hidden">
-                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-sky-500">📋</span> Copiar Sem. Ant.</button>
+                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-sky-500">📋</span> Copiar Semana</button>
                                      <button id="btn-save-history" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-teal-500">💾</span> Guardar Respaldo</button>
                                      <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-green-600">📊</span> Excel</button>
                                      <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
@@ -470,6 +475,22 @@
 
     <!-- === MODALES === -->
     
+    <!-- Modal Selección Importación de Semana -->
+    <div id="copy-week-modal" class="modal" style="z-index: 3100;">
+        <div class="modal-content !max-w-md p-6 dark:bg-slate-800 dark:border-slate-700">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Copiar Programación</h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Selecciona de qué semana histórica deseas importar los turnos. <br><br>(Se reiniciarán los checks de confirmación para que empieces desde cero).</p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1 dark:text-slate-300">Semana Origen:</label>
+                <input type="week" id="copy-source-week" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white cursor-pointer" required>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('copy-week-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300 font-bold">Cancelar</button>
+                <button type="button" id="btn-confirm-copy-week" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow-md">Importar Turnos</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Duplicados -->
     <div id="duplicates-modal" class="modal">
         <div class="modal-content !max-w-2xl dark:bg-slate-800 dark:border-slate-700 p-6">
@@ -731,7 +752,7 @@
         let currentlyEditingLocal = null;
         let currentCalendarDate = new Date();
         
-        let conflictMap = { overlap: new Set(), repeat: new Set(), role: new Set() };
+        let conflictMap = { overlap: new Map(), repeat: new Map(), role: new Map() }; // Ahora usan Map para guardar detalles
         
         // --- MEMORIA DE SCROLL ---
         const scrollState = {};
@@ -838,19 +859,20 @@
             ['local1', 'local2', 'local3'].forEach(id => getEl(id).innerHTML = opts);
         }
 
-        function createSlot(slotId, tipo, horario, idx) {
+        function createSlot(slotId, tipo, horario, idx, isHighlighted = false) {
             const week = state.selectedWeek;
             const pid = state.asignaciones[week]?.[slotId];
             const div = document.createElement('div');
             const tipoLabelMap = { 'puestos':'Puesto', 'cacheos':'Cacheo', 'cacheoIngreso':'Ingreso', 'cacheoSalida':'Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
             const tipoLabel = tipoLabelMap[tipo] || tipo;
             let baseClass = "slot-empty-row", content = "", bgClass = ""; 
+            let conflictTitle = "";
 
             if (pid) {
                 baseClass = "slot-filled-row";
-                if (conflictMap.role.has(slotId)) bgClass = "conflict-role"; 
-                else if (conflictMap.overlap.has(slotId)) bgClass = "conflict-overlap"; 
-                else if (conflictMap.repeat.has(slotId)) bgClass = "conflict-repeat"; 
+                if (conflictMap.role.has(slotId)) { bgClass = "conflict-role"; conflictTitle = "⚠️ Cruce de rol con: " + conflictMap.role.get(slotId); } 
+                else if (conflictMap.overlap.has(slotId)) { bgClass = "conflict-overlap"; conflictTitle = "⚠️ Cruce de horario con: " + conflictMap.overlap.get(slotId); } 
+                else if (conflictMap.repeat.has(slotId)) { bgClass = "conflict-repeat"; conflictTitle = "⚠️ Repetición con: " + conflictMap.repeat.get(slotId); } 
                 if (!bgClass && ['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
 
                 const p = state.personal.find(x => x.id === pid);
@@ -862,13 +884,20 @@
                 if (['cacheos','cacheoIngreso','cacheoSalida'].includes(tipo)) bgClass = "cacheo-row";
                 content = `<div class="slot-label-col w-28 shrink-0 flex flex-col justify-center p-2 opacity-50"><span class="text-[10px] font-bold uppercase">${tipoLabel} #${idx}</span><div class="text-[9px] text-slate-500">${horario}</div></div><div class="flex-grow flex items-center gap-2 text-slate-400 group-hover:text-blue-500 p-2"><span class="text-xs font-medium">Asignar</span></div>`;
             }
+            
+            if (isHighlighted) {
+                baseClass += " search-highlight";
+            }
+            
             div.className = `slot-row flex items-center cursor-pointer group ${baseClass} ${bgClass}`;
             div.innerHTML = content;
             div.dataset.slotId = slotId;
+            if (conflictTitle) div.title = conflictTitle; // Agregando Tooltip de conflicto
+            
             return div;
         }
 
-        // --- PASE DE LISTA DIARIO (NUEVO E INDEPENDIENTE) ---
+        // --- PASE DE LISTA DIARIO (INDEPENDIENTE) ---
         function renderPaseLista() {
             const container = getEl('pase-lista-container'); if(!container) return;
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
@@ -947,7 +976,7 @@
                 const textColor = item.attended ? 'text-white' : '';
                 const avatar = item.person?.fotoUrl ? `<img src="${item.person.fotoUrl}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">` : `<div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl">👤</div>`;
 
-                // Pequeña etiqueta de contexto (Saber si en la semana había confirmado o no)
+                // Pequeña etiqueta de contexto
                 const planningBadge = item.confirmed 
                     ? `<span class="inline-block mt-1 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded border border-green-200">✅ Confirmó en semana</span>` 
                     : `<span class="inline-block mt-1 text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded border border-yellow-200">⏳ No había confirmado</span>`;
@@ -977,7 +1006,7 @@
         }
 
         function calculateConflicts() {
-            conflictMap.overlap.clear(); conflictMap.repeat.clear(); conflictMap.role.clear();    
+            conflictMap.overlap = new Map(); conflictMap.repeat = new Map(); conflictMap.role = new Map();    
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
             const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
@@ -1012,17 +1041,13 @@
                             const isSpecial = specialRoles.includes(s1.type) || specialRoles.includes(s2.type);
                             const sameLocal = s1.local === s2.local;
                             
-                            // 1. REGLA AZUL (Roles Críticos): Solapamiento + Rol Especial
+                            // Guardamos el nombre del local opuesto para usarlo en el Tooltip
                             if (isSpecial && (overlap > 0 || sameLocal)) { 
-                                conflictMap.role.add(s1.slotId); conflictMap.role.add(s2.slotId); 
-                            } 
-                            // 2. REGLA ROJA (Gravedad Alta): Mismo local (NO especial) O Cruce > 2 horas
-                            else if ((sameLocal && !isSpecial) || overlap > 120) { 
-                                conflictMap.overlap.add(s1.slotId); conflictMap.overlap.add(s2.slotId); 
-                            } 
-                            // 3. REGLA AMARILLA (Advertencia): Cruce <= 2 horas Y Diferente Local
-                            else if (overlap > 0) { 
-                                conflictMap.repeat.add(s1.slotId); conflictMap.repeat.add(s2.slotId); 
+                                conflictMap.role.set(s1.slotId, s2.local); conflictMap.role.set(s2.slotId, s1.local); 
+                            } else if ((sameLocal && !isSpecial) || overlap > 120) { 
+                                conflictMap.overlap.set(s1.slotId, s2.local); conflictMap.overlap.set(s2.slotId, s1.local); 
+                            } else if (overlap > 0) { 
+                                conflictMap.repeat.set(s1.slotId, s2.local); conflictMap.repeat.set(s2.slotId, s1.local); 
                             }
                         }
                     }
@@ -1129,7 +1154,6 @@
             } catch (err) { console.error("Error dashboard", err); }
         }
 
-        // --- OPTIMIZACIÓN DE RENDIMIENTO: RenderMapeo con DocumentFragment ---
         function renderMapeo() {
             calculateConflicts();
             const container = getEl('mapeo-container');
@@ -1141,9 +1165,7 @@
             const week = state.selectedWeek;
             if (!week) return;
             
-            // CREAR FRAGMENTO DE DOCUMENTO EN MEMORIA
             const fragment = document.createDocumentFragment();
-
             const showAllStructure = true;
             
             // LÓGICA DE SÚPER FILTRO: Local o Persona
@@ -1181,7 +1203,6 @@
 
                 diasSemana.forEach(dia => {
                     const dConf = config[dia] || {};
-                    // Filtrar tipos activos antes de iterar para rendimiento
                     const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
                     
                     if (activeTypes.length === 0) return;
@@ -1200,11 +1221,18 @@
                         
                         for(let i=1; i<=count; i++) {
                             const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
-                            const isAssigned = state.asignaciones[week]?.[slotId];
-                            if (!isAssigned && !showAllStructure) continue; 
+                            const pid = state.asignaciones[week]?.[slotId];
+                            if (!pid && !showAllStructure) continue; 
                             totalSlots++; 
-                            if(isAssigned) filledSlots++;
-                            slotsList.appendChild(createSlot(slotId, tipo, horario, i));
+                            if(pid) filledSlots++;
+                            
+                            // VERIFICAR SI ESTE SLOT DEBE ESTAR RESALTADO (Por búsqueda de persona)
+                            let isHighlighted = false;
+                            if(term !== '' && pid && matchingPersons.includes(pid)) {
+                                isHighlighted = true;
+                            }
+
+                            slotsList.appendChild(createSlot(slotId, tipo, horario, i, isHighlighted));
                             diaHasVisibleSlots = true;
                         }
                     });
@@ -1477,7 +1505,7 @@
                 const allConfirmed = shifts.every(s => s.isConfirmed);
                 let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
                 let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
-                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
+                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm group group-hover-shift"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md relative pr-6"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span><button class="absolute -right-1 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600 btn-delete-single-shift px-1" data-slot="${s.slotId}" title="Eliminar este día específico">✖</button></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
             }).join('');
         }
         function renderTarifarioTable() {
@@ -1558,7 +1586,7 @@
                     const btn = document.createElement('div');
                     btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex items-center justify-between shadow-sm hover:shadow transition-shadow ${btnClass}`;
                     
-                    // BOTONES DE VISTA PREVIA Y EXCEL (NO MODIFICAN LA SEMANA ACTUAL)
+                    // BOTONES DE VISTA PREVIA Y EXCEL
                     btn.innerHTML = `
                         <span class="font-medium truncate pr-4 text-slate-800 dark:text-slate-200">${displayName}</span> 
                         <div class="flex items-center gap-3 shrink-0">
@@ -1859,6 +1887,23 @@
             });
 
             getEl('programacion-container').addEventListener('click', async (e) => {
+                // --- BOTÓN ELIMINAR TURNO INDIVIDUAL ---
+                const btnDeleteSingle = e.target.closest('.btn-delete-single-shift');
+                if (btnDeleteSingle) {
+                    e.stopPropagation();
+                    if(!confirm("¿Eliminar este turno específico?")) return;
+                    const sid = btnDeleteSingle.dataset.slot;
+                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { 
+                        [sid]: deleteField(), 
+                        [`${sid}-vestimenta`]: deleteField(), 
+                        [`${sid}-confirmed`]: deleteField(), 
+                        [`${sid}-asistio`]: deleteField() 
+                    });
+                    showToast("Turno eliminado");
+                    return;
+                }
+
+                // --- BOTÓN ELIMINAR TODO EL BLOQUE ---
                 const btnClear = e.target.closest('.btn-clear-individual');
                 if (btnClear) {
                     if(!confirm("¿Borrar TODA la programación de esta persona?")) return;
@@ -2011,29 +2056,43 @@
             };
             getEl('btn-eliminar-personal-view').onclick = async () => { if(confirm("¿Eliminar personal?")) { await deleteDoc(doc(collections.personal, getEl('btn-eliminar-personal-view').dataset.id)); getEl('view-personal-modal').style.display = 'none'; } };
 
-            getEl('btn-copy-previous-week').onclick = async () => {
-                if(!confirm("¿Copiar programación de semana anterior?\n\nNOTA: Las confirmaciones (checks verdes) se limpiarán para la nueva semana.")) return;
-                const curr = state.selectedWeek; const [y, w] = curr.split('-W').map(Number);
-                let prevW = w - 1; let prevY = y; if(prevW < 1) { prevW = 52; prevY--; }
-                const prevKey = `${prevY}-W${String(prevW).padStart(2,'0')}`;
-                const prevDocSnap = await getDoc(doc(collections.asignaciones, prevKey));
+            // --- SELECCIÓN DE SEMANA PARA COPIAR ---
+            getEl('btn-copy-previous-week').onclick = () => {
+                const curr = state.selectedWeek; 
+                const [y, w] = curr.split('-W').map(Number);
+                let prevW = w - 1; let prevY = y; 
+                if(prevW < 1) { prevW = 52; prevY--; }
+                
+                getEl('copy-source-week').value = `${prevY}-W${String(prevW).padStart(2,'0')}`;
+                getEl('copy-week-modal').style.display = 'block';
+            };
+
+            getEl('btn-confirm-copy-week').onclick = async () => {
+                const sourceWeek = getEl('copy-source-week').value;
+                if (!sourceWeek) return showToast("Selecciona una semana válida", "error");
+                
+                const curr = state.selectedWeek;
+                if (sourceWeek === curr) return showToast("No puedes copiar a la misma semana actual", "error");
+
+                if(!confirm(`¿Estás seguro de importar la programación de la semana ${sourceWeek}?`)) return;
+
+                const prevDocSnap = await getDoc(doc(collections.asignaciones, sourceWeek));
                 
                 if (prevDocSnap.exists()) { 
-                    // COPIA INTELIGENTE: Eliminamos las confirmaciones y asistencias
                     const data = prevDocSnap.data();
                     const newData = {};
                     
                     Object.keys(data).forEach(key => {
-                        // Solo copiamos si NO es un campo de confirmación ni asistencia
                         if (!key.endsWith('-confirmed') && !key.endsWith('-asistio')) {
                             newData[key] = data[key];
                         }
                     });
 
                     await setDoc(doc(collections.asignaciones, curr), newData); 
+                    getEl('copy-week-modal').style.display = 'none';
                     showToast("Copiado exitosamente (Confirmaciones reiniciadas)"); 
                 } 
-                else showToast("No hay datos en la semana anterior", "error");
+                else showToast("No hay datos en la semana seleccionada", "error");
             };
             
             getEl('btn-limpiar-mapeo').onclick = async () => { if(confirm("¿Borrar TODAS las asignaciones de esta semana?")) { await setDoc(doc(collections.asignaciones, state.selectedWeek), {}); showToast("Mapeo limpiado"); } };
