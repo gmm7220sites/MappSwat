@@ -123,12 +123,19 @@
         .calendar-day:hover { background-color: #f8fafc; }
         html.dark .calendar-day { background-color: #1e293b; border-color: #334155; }
         html.dark .calendar-day:hover { background-color: #334155; }
+        
+        /* HOVER DE ELIMINACIÓN RÁPIDA */
+        .group-hover-shift .btn-delete-single-shift { opacity: 0; transition: opacity 0.2s ease; }
+        .group-hover-shift:hover .btn-delete-single-shift { opacity: 1; }
 
         /* ESTILOS PASE DE LISTA */
         .card-asistencia { transition: all 0.3s ease; }
         .card-asistencia.confirmado { border-left: 6px solid #22c55e; background-color: #f0fdf4; }
         html.dark .card-asistencia.confirmado { background-color: #14532d; border-left-color: #22c55e; }
+        .card-asistencia.notificado { border-left: 6px solid #3b82f6; background-color: #eff6ff; }
+        html.dark .card-asistencia.notificado { background-color: #1e3a8a; border-left-color: #3b82f6; }
         .card-asistencia.pendiente { border-left: 6px solid #fbbf24; }
+
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -221,6 +228,7 @@
                     </svg>
                     <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 hidden sm:block">Estado</span>
                 </button>
+                <!-- Botón de estado del sistema (Solo icono) -->
                 <div class="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 hidden sm:block"></div>
                 <div id="system-status-container" title="Estado del sistema" class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition cursor-help shrink-0">
                     <svg id="system-status-icon" class="h-5 w-5 text-slate-300 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -277,18 +285,19 @@
                         <div class="flex-grow"></div>
                         <div class="flex flex-wrap gap-2 justify-center items-center">
                             <button id="btn-copy-all-schedule" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700 shadow-sm text-sm flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar Texto
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copiar Todo a Texto
                             </button>
-                            <div class="relative">
-                                <button id="btn-tools-dropdown" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm flex items-center gap-2 border border-slate-300 dark:border-slate-600">
+                            
+                            <!-- MENÚ HERRAMIENTAS RESTAURADO -->
+                            <div class="relative dropdown-container">
+                                <button id="btn-tools-dropdown" class="btn-dropdown-toggle bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 px-4 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm flex items-center gap-2 border border-slate-300 dark:border-slate-600">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg> Herramientas
                                 </button>
-                                <div id="tools-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-600 overflow-hidden">
-                                     <button id="btn-copy-previous-week" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-sky-500">📋</span> Copiar Semana</button>
+                                <div id="tools-dropdown-menu" class="dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-600 overflow-hidden">
                                      <button id="btn-save-history" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-teal-500">💾</span> Guardar Respaldo</button>
-                                     <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-green-600">📊</span> Excel</button>
+                                     <button id="btn-descargar-excel" class="w-full text-left px-4 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"><span class="text-green-600">📊</span> Descargar Excel</button>
                                      <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
-                                     <button id="btn-limpiar-mapeo" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-semibold"><span>🗑️</span> Limpiar</button>
+                                     <button id="btn-limpiar-mapeo" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors font-semibold"><span>🗑️</span> Limpiar Mapeo</button>
                                 </div>
                             </div>
                         </div>
@@ -474,19 +483,19 @@
     </div>
 
     <!-- === MODALES === -->
-    
-    <!-- Modal Selección Importación de Semana -->
-    <div id="copy-week-modal" class="modal" style="z-index: 3100;">
+
+    <!-- Modal Selección Importación de Semana Local -->
+    <div id="copy-local-week-modal" class="modal" style="z-index: 3100;">
         <div class="modal-content !max-w-md p-6 dark:bg-slate-800 dark:border-slate-700">
-            <h3 class="text-xl font-bold mb-4 dark:text-white">Copiar Programación</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Selecciona de qué semana histórica deseas importar los turnos. <br><br>(Se reiniciarán los checks de confirmación para que empieces desde cero).</p>
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Copiar Semana Local: <span id="copy-local-title-name" class="text-blue-500"></span></h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Selecciona la semana de origen. <b>Nota:</b> Solo se llenarán los espacios vacíos actuales, no se crearán turnos fantasma.</p>
             <div class="mb-4">
                 <label class="block text-sm font-medium mb-1 dark:text-slate-300">Semana Origen:</label>
-                <input type="week" id="copy-source-week" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white cursor-pointer" required>
+                <input type="week" id="copy-local-source-week" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white cursor-pointer" required>
             </div>
             <div class="flex justify-end gap-2">
-                <button type="button" onclick="document.getElementById('copy-week-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300 font-bold">Cancelar</button>
-                <button type="button" id="btn-confirm-copy-week" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow-md">Importar Turnos</button>
+                <button type="button" onclick="document.getElementById('copy-local-week-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300 font-bold">Cancelar</button>
+                <button type="button" id="btn-confirm-copy-local-week" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow-md">Llenar Vacíos</button>
             </div>
         </div>
     </div>
@@ -563,7 +572,7 @@
         <div class="modal-content !max-w-4xl max-h-[85vh] dark:bg-slate-800 dark:border-slate-700 p-6 flex flex-col">
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2">
-                    <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <svg class="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     Dashboard de Estado
                 </h3>
                 <button id="close-dashboard-modal" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
@@ -577,7 +586,7 @@
          <div class="modal-content !max-w-5xl max-h-[90vh] flex flex-col dark:bg-slate-800 dark:border-slate-700 p-6">
              <div class="flex justify-between items-center mb-4 shrink-0">
                  <h3 class="text-2xl font-bold dark:text-white flex items-center gap-2"><span class="text-3xl">📅</span> Calendario de Ausencias</h3>
-                 <button onclick="document.getElementById('permisos-modal').style.display='none'" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
+                 <button id="close-permisos-modal" class="text-3xl font-bold text-slate-500 hover:text-red-500">&times;</button>
              </div>
              <div class="flex gap-4 mb-4">
                  <button id="prev-month" class="px-3 py-1 bg-slate-200 rounded hover:bg-slate-300 dark:bg-slate-700 dark:text-white">&lt;</button>
@@ -614,7 +623,7 @@
                 </div>
                 <div><label class="block text-sm font-medium mb-1 dark:text-slate-300">Motivo</label><input type="text" id="permiso-reason" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" placeholder="Opcional"></div>
                 <div class="flex justify-end gap-2 mt-2">
-                    <button type="button" onclick="document.getElementById('add-permiso-modal').style.display='none'" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300">Cancelar</button>
+                    <button type="button" id="close-add-permiso-modal" class="px-4 py-2 bg-slate-200 rounded hover:bg-slate-300">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
                 </div>
             </form>
@@ -625,7 +634,7 @@
     <div id="personal-modal" class="modal">
         <div class="modal-content !max-w-3xl dark:bg-slate-800 dark:border-slate-700">
             <h3 id="personal-modal-title" class="text-2xl font-bold mb-4 dark:text-white">Gestión Personal</h3>
-            <form id="form-personal" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form id="form-personal" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 <input type="hidden" id="personal-id">
                 <div><label class="text-sm dark:text-slate-300">Nº Empleado</label><input type="text" id="numero_empleado" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white"></div>
                 <div><label class="text-sm dark:text-slate-300">Nombre</label><input type="text" id="nombre" class="w-full p-2 border rounded dark:bg-slate-700 dark:text-white" required></div>
@@ -658,7 +667,7 @@
     
     <!-- Modal Vista Rápida -->
     <div id="view-personal-modal" class="modal">
-        <div class="modal-content !max-w-xl dark:bg-slate-800">
+        <div class="modal-content !max-w-xl dark:bg-slate-800 p-6">
             <div class="flex justify-between items-start">
                 <h3 id="view-personal-name" class="text-2xl font-bold mb-4 dark:text-white"></h3>
                 <button type="button" id="close-view-personal-modal" class="text-3xl font-bold text-slate-500">&times;</button>
@@ -671,58 +680,51 @@
         </div>
     </div>
 
-    <!-- Modal Config Horarios -->
+    <!-- Modal Config Horarios (12H Custom) -->
     <div id="schedule-config-modal" class="modal">
         <div class="modal-content !max-w-4xl max-h-[90vh] flex flex-col dark:bg-slate-800">
-            <div class="flex justify-between items-center mb-4 p-4 border-b dark:border-slate-700">
+            <div class="flex justify-between items-center mb-4 p-4 border-b dark:border-slate-700 shrink-0">
                 <h3 class="text-2xl font-bold dark:text-white">Horarios: <span id="schedule-config-local-name" class="text-blue-600"></span></h3>
-                <button id="close-schedule-config-modal" class="text-3xl text-slate-500">&times;</button>
+                <button id="close-schedule-config-modal" class="text-3xl text-slate-500 hover:text-red-500 transition">&times;</button>
             </div>
+            
             <div id="schedule-config-container" class="space-y-6 flex-grow overflow-y-auto p-4 bg-slate-50 dark:bg-slate-900"></div>
-            <div class="mt-auto p-4 border-t flex justify-end items-center gap-4 bg-white dark:bg-slate-800 rounded-b-xl">
+            
+            <div class="mt-auto p-4 border-t flex justify-end items-center gap-4 bg-white dark:bg-slate-800 rounded-b-xl shrink-0">
                  <button type="button" id="btn-limpiar-horarios-local" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mr-auto">Resetear Local</button>
                  <button type="button" id="btn-guardar-horarios" class="bg-green-600 text-white font-bold py-2 px-5 rounded hover:bg-green-700 shadow-lg">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Confirmación -->
-    <div id="confirmation-modal" class="modal">
-        <div class="modal-content dark:bg-slate-800">
-            <p id="confirmation-modal-text" class="mb-6 text-lg dark:text-white"></p>
-            <div class="flex justify-end gap-4">
-                <button id="confirmation-modal-cancel" class="bg-slate-300 py-2 px-4 rounded hover:bg-slate-400">Cancelar</button>
-                <button id="confirmation-modal-confirm" class="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600">Confirmar</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- Modal Edición Local -->
     <div id="edit-local-modal" class="modal">
-        <div class="modal-content dark:bg-slate-800">
-            <h3 class="text-2xl font-bold mb-4 dark:text-white">Editar Local</h3>
+        <div class="modal-content dark:bg-slate-800 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold dark:text-white">Editar Local</h3>
+                <button id="close-local-modal-x" class="text-3xl text-slate-500 hover:text-red-500 transition">&times;</button>
+            </div>
             <form id="form-edit-local" class="flex flex-col gap-4">
                 <input type="hidden" id="edit-local-id">
                 <input type="text" id="edit-local-name" placeholder="Nombre" class="p-2 border rounded dark:bg-slate-700 dark:text-white" required>
                 <div class="flex items-center gap-4">
-                    <label class="dark:text-white">Color:</label>
-                    <input type="color" id="edit-local-color" class="h-10 w-10">
+                    <label class="dark:text-white font-medium">Color:</label>
+                    <input type="color" id="edit-local-color" class="h-10 w-10 border-0 rounded cursor-pointer">
                 </div>
-                <div class="flex gap-4">
-                    <button type="submit" class="flex-1 bg-green-500 text-white font-bold py-2 px-4 rounded">Guardar</button>
-                    <button type="button" id="close-local-modal" class="flex-1 bg-slate-300 py-2 px-4 rounded">Cancelar</button>
+                
+                <div class="flex gap-4 mt-4">
+                    <button type="submit" class="flex-1 bg-green-600 text-white font-bold py-3 px-4 rounded hover:bg-green-700 transition">Guardar</button>
+                    <button type="button" id="close-local-modal" class="flex-1 bg-slate-200 text-slate-800 font-bold py-3 px-4 rounded hover:bg-slate-300 transition">Cancelar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script type="module">
-        // 1. IMPORTACIONES FIREBASE (Solo lo necesario)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
         import { getFirestore, collection, doc, onSnapshot, addDoc, setDoc, deleteDoc, query, updateDoc, deleteField, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-firestore.js";
 
-        // 2. CONFIGURACIÓN
         const firebaseConfig = { apiKey: "AIzaSyBwtZ8Kdvw4LJyu3t0QeaBgq6_0Z_9jrvw", authDomain: "swattmapee.firebaseapp.com", databaseURL: "https://swattmapee-default-rtdb.firebaseio.com", projectId: "swattmapee", storageBucket: "swattmapee.appspot.com", messagingSenderId: "522791414169", appId: "1:522791414169:web:7c2d3c567fbd1d5703cb08" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -741,7 +743,6 @@
             permisos: collection(db, `${basePath}/permisos`)
         };
 
-        // 3. ESTADO GLOBAL
         const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
         const vestimentaEmojis = { 'Ropa Táctica': '🥋', 'Terno': '🤵' };
         let state = { personal: [], locales: [], mapeoConfig: {}, asignaciones: {}, historial: {}, tarifarios: {}, permisos: [], selectedWeek: '' };
@@ -751,17 +752,16 @@
         let currentSlotId = null;
         let currentlyEditingLocal = null;
         let currentCalendarDate = new Date();
+        let localToCopyWeek = null; 
         
-        let conflictMap = { overlap: new Map(), repeat: new Map(), role: new Map() }; // Ahora usan Map para guardar detalles
-        
-        // --- MEMORIA DE SCROLL ---
+        let conflictMap = { overlap: new Map(), repeat: new Map(), role: new Map() }; 
         const scrollState = {};
 
         const getEl = (id) => document.getElementById(id);
         const showToast = (msg, type = 'success') => {
             const container = getEl('status-message-container');
             const div = document.createElement('div');
-            div.className = `${type==='success'?'bg-green-600':'bg-red-600'} text-white px-4 py-3 rounded shadow-lg animate-bounce pointer-events-auto cursor-pointer`;
+            div.className = `${type==='success'?'bg-green-600':'bg-red-600'} text-white px-4 py-3 rounded shadow-lg animate-bounce pointer-events-auto cursor-pointer z-50`;
             div.textContent = msg;
             div.onclick = () => div.remove();
             container.appendChild(div);
@@ -770,12 +770,22 @@
         const getFullName = (p) => p ? `${p.nombre || ''} ${p.apellido || ''}`.trim() : 'N/A';
         const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
         
+        // --- FUNCIÓN PARA NORMALIZAR TEXTO (Eliminar tildes y diacríticos) ---
+        const normalizeText = (text) => {
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        };
+
         const timeToMin = (timeStr) => {
             if(!timeStr) return -1;
-            const [time, period] = timeStr.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
-            if(period === 'PM' && hours !== 12) hours += 12;
-            if(period === 'AM' && hours === 12) hours = 0;
+            let hours, minutes;
+            if (timeStr.includes('AM') || timeStr.includes('PM')) {
+                const [time, period] = timeStr.split(' ');
+                [hours, minutes] = time.split(':').map(Number);
+                if(period === 'PM' && hours !== 12) hours += 12;
+                if(period === 'AM' && hours === 12) hours = 0;
+            } else {
+                [hours, minutes] = timeStr.split(':').map(Number);
+            }
             return hours * 60 + minutes;
         };
 
@@ -783,8 +793,16 @@
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
             var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-            return weekNo;
+            return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        }
+
+        function dateToWeekStr(dateString) { 
+            if(!dateString) return null;
+            const d = new Date(dateString + 'T00:00:00'); 
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            const weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+            return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
         }
 
         function getDateOfISOWeek(w, y) {
@@ -804,10 +822,16 @@
             const date = getDateOfISOWeek(weekNo, year);
             const dayIndex = diasSemana.indexOf(dayName.toLowerCase());
             date.setDate(date.getDate() + dayIndex);
-            const [time, period] = timeStr.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
-            if(period === 'PM' && hours !== 12) hours += 12;
-            if(period === 'AM' && hours === 12) hours = 0;
+            
+            let hours, minutes;
+            if (timeStr.includes('AM') || timeStr.includes('PM')) {
+                const [time, period] = timeStr.split(' ');
+                [hours, minutes] = time.split(':').map(Number);
+                if(period === 'PM' && hours !== 12) hours += 12;
+                if(period === 'AM' && hours === 12) hours = 0;
+            } else {
+                [hours, minutes] = timeStr.split(':').map(Number);
+            }
             date.setHours(hours, minutes, 0, 0);
             return date;
         }
@@ -859,6 +883,12 @@
             ['local1', 'local2', 'local3'].forEach(id => getEl(id).innerHTML = opts);
         }
 
+        function renderTable(id, data, rowFn) {
+            const tbody = getEl(id); 
+            if (!tbody) return;
+            tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
+        }
+
         function createSlot(slotId, tipo, horario, idx, isHighlighted = false) {
             const week = state.selectedWeek;
             const pid = state.asignaciones[week]?.[slotId];
@@ -892,17 +922,15 @@
             div.className = `slot-row flex items-center cursor-pointer group ${baseClass} ${bgClass}`;
             div.innerHTML = content;
             div.dataset.slotId = slotId;
-            if (conflictTitle) div.title = conflictTitle; // Agregando Tooltip de conflicto
+            if (conflictTitle) div.title = conflictTitle; 
             
             return div;
         }
 
-        // --- PASE DE LISTA DIARIO (INDEPENDIENTE) ---
         function renderPaseLista() {
             const container = getEl('pase-lista-container'); if(!container) return;
             const weekAsig = state.asignaciones[state.selectedWeek] || {};
             
-            // Detectar día actual
             const today = new Date();
             const daysMap = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
             const currentDayName = daysMap[today.getDay()];
@@ -913,7 +941,6 @@
             let asistieronHoy = 0;
             const items = [];
 
-            // Recorrer configuración para encontrar turnos de HOY
             state.locales.forEach(l => {
                 const conf = state.mapeoConfig[l.nombre]?.[currentDayName];
                 if (!conf) return;
@@ -929,10 +956,9 @@
                             
                             if (pid) {
                                 totalHoy++;
-                                // Variable de planificación (Semanal)
                                 const isConfirmed = weekAsig[`${sid}-confirmed`];
-                                // Variable de ejecución real (Pase de Lista) - Totalmente independiente
                                 const hasAttended = weekAsig[`${sid}-asistio`]; 
+                                const isNotified = weekAsig[`${sid}-notificado`];
                                 
                                 if(hasAttended) asistieronHoy++;
                                 
@@ -944,8 +970,9 @@
                                     local: l.nombre,
                                     tipo: t,
                                     hora: hIn,
-                                    confirmed: isConfirmed, // Para mostrar contexto
-                                    attended: hasAttended,  // El estado real de asistencia
+                                    confirmed: isConfirmed, 
+                                    notified: isNotified,
+                                    attended: hasAttended, 
                                     order: timeToMin(hIn)
                                 });
                             }
@@ -954,29 +981,29 @@
                 });
             });
 
-            // Actualizar contadores
             getEl('pl-total').textContent = totalHoy;
             getEl('pl-asistieron').textContent = asistieronHoy;
             getEl('pl-faltan').textContent = totalHoy - asistieronHoy;
 
-            // Renderizar Grid
             if (items.length === 0) {
                 container.innerHTML = `<div class="col-span-full text-center text-slate-400 py-12"><p class="text-xl">No hay personal programado para hoy (${currentDayName}).</p></div>`;
                 return;
             }
 
-            // Ordenar por hora
             items.sort((a,b) => a.order - b.order);
 
             container.innerHTML = items.map(item => {
                 const pName = item.person ? getFullName(item.person) : 'Personal Eliminado';
-                const statusClass = item.attended ? 'confirmado' : 'pendiente';
-                const btnText = item.attended ? 'ASISTIÓ (EN LÍNEA)' : 'MARCAR ASISTENCIA';
-                const btnColor = item.attended ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300';
-                const textColor = item.attended ? 'text-white' : '';
+                let statusClass = 'pendiente', btnText = '👉 MANDAR MENSAJE', btnColor = 'bg-slate-200 text-slate-700 hover:bg-slate-300', textColor = '';
+                
+                if (item.attended) {
+                    statusClass = 'confirmado'; btnText = '✅ ASISTIÓ (EN LÍNEA)'; btnColor = 'bg-green-600 hover:bg-green-700'; textColor = 'text-white';
+                } else if (item.notified) {
+                    statusClass = 'notificado'; btnText = '⏳ ESPERANDO CONFIRMACIÓN'; btnColor = 'bg-blue-500 hover:bg-blue-600'; textColor = 'text-white';
+                }
+                
                 const avatar = item.person?.fotoUrl ? `<img src="${item.person.fotoUrl}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">` : `<div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl">👤</div>`;
 
-                // Pequeña etiqueta de contexto
                 const planningBadge = item.confirmed 
                     ? `<span class="inline-block mt-1 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded border border-green-200">✅ Confirmó en semana</span>` 
                     : `<span class="inline-block mt-1 text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded border border-yellow-200">⏳ No había confirmado</span>`;
@@ -998,22 +1025,22 @@
                         </div>
                     </div>
                     
-                    <button class="btn-toggle-asistencia w-full py-3 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${btnColor} ${textColor}" data-slot="${item.sid}">
-                        ${item.attended ? '✅' : '👉'} ${btnText}
+                    <button class="btn-toggle-asistencia w-full py-3 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2 ${btnColor} ${textColor}" data-slot="${item.sid}" data-pname="${pName}" data-local="${item.local}">
+                        ${btnText}
                     </button>
                 </div>`;
             }).join('');
         }
 
         function calculateConflicts() {
-            conflictMap.overlap = new Map(); conflictMap.repeat = new Map(); conflictMap.role = new Map();    
+            conflictMap.overlap.clear(); conflictMap.repeat.clear(); conflictMap.role.clear();    
             const week = state.selectedWeek;
             const weekAsig = state.asignaciones[week] || {};
             const specialRoles = ['cacheos', 'cacheoIngreso', 'cacheoSalida', 'porteria'];
             const shiftsByPerson = {}; 
 
             Object.entries(weekAsig).forEach(([slotId, pid]) => {
-                if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed') || slotId.endsWith('asistio')) return;
+                if(!pid || typeof pid !== 'string' || !slotId.includes('-') || slotId.endsWith('vestimenta') || slotId.endsWith('confirmed') || slotId.endsWith('asistio') || slotId.endsWith('notificado')) return;
                 const parts = slotId.split('-'); const indexStr = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
                 const conf = state.mapeoConfig[local]?.[dia];
                 if(!conf) return; 
@@ -1041,7 +1068,6 @@
                             const isSpecial = specialRoles.includes(s1.type) || specialRoles.includes(s2.type);
                             const sameLocal = s1.local === s2.local;
                             
-                            // Guardamos el nombre del local opuesto para usarlo en el Tooltip
                             if (isSpecial && (overlap > 0 || sameLocal)) { 
                                 conflictMap.role.set(s1.slotId, s2.local); conflictMap.role.set(s2.slotId, s1.local); 
                             } else if ((sameLocal && !isSpecial) || overlap > 120) { 
@@ -1154,149 +1180,6 @@
             } catch (err) { console.error("Error dashboard", err); }
         }
 
-        function renderMapeo() {
-            calculateConflicts();
-            const container = getEl('mapeo-container');
-            if(!container) return;
-            
-            // LIMPIAR CONTENEDOR ANTES DE INSERTAR
-            container.innerHTML = ''; 
-            
-            const week = state.selectedWeek;
-            if (!week) return;
-            
-            const fragment = document.createDocumentFragment();
-            const showAllStructure = true;
-            
-            // LÓGICA DE SÚPER FILTRO: Local o Persona
-            const term = getEl('filtro-local-busqueda').value.toLowerCase();
-            const weekAsig = state.asignaciones[week] || {};
-            
-            // Encuentra IDs de personal que coincidan con la búsqueda
-            const matchingPersons = state.personal.filter(p => getFullName(p).toLowerCase().includes(term)).map(p => p.id);
-
-            const filteredLocales = state.locales.filter(l => {
-                if (term === '') return true;
-                
-                // Si coincide con el nombre del local, lo mostramos
-                if (l.nombre.toLowerCase().includes(term)) return true;
-                
-                // Si no, buscamos si alguna persona que coincida está asignada a este local en esta semana
-                let personInLocal = false;
-                Object.entries(weekAsig).forEach(([key, pid]) => {
-                    if (key.startsWith(l.nombre + '-') && matchingPersons.includes(pid) && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
-                        personInLocal = true;
-                    }
-                });
-                return personInLocal;
-            });
-            
-            let renderedLocalesCount = 0;
-
-            filteredLocales.forEach(local => {
-                const config = state.mapeoConfig[local.nombre] || {};
-                const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
-                const diasContainer = document.createElement('div');
-                let localHasContent = false;
-                let totalSlots = 0;
-                let filledSlots = 0;
-
-                diasSemana.forEach(dia => {
-                    const dConf = config[dia] || {};
-                    const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
-                    
-                    if (activeTypes.length === 0) return;
-                    
-                    const diaBlock = document.createElement('div');
-                    diaBlock.innerHTML = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1 rounded mb-1 dark:text-slate-300">${dia}</h4>`;
-                    const slotsList = document.createElement('div');
-                    let diaHasVisibleSlots = false;
-
-                    activeTypes.forEach(tipo => {
-                        const count = parseInt(dConf[tipo]);
-                        const capTipo = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-                        const hIn = dConf[`hora${capTipo}Entrada`] || '';
-                        const hOut = dConf[`hora${capTipo}Salida`] || '';
-                        const horario = hIn && hOut ? `${hIn}-${hOut}` : '';
-                        
-                        for(let i=1; i<=count; i++) {
-                            const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
-                            const pid = state.asignaciones[week]?.[slotId];
-                            if (!pid && !showAllStructure) continue; 
-                            totalSlots++; 
-                            if(pid) filledSlots++;
-                            
-                            // VERIFICAR SI ESTE SLOT DEBE ESTAR RESALTADO (Por búsqueda de persona)
-                            let isHighlighted = false;
-                            if(term !== '' && pid && matchingPersons.includes(pid)) {
-                                isHighlighted = true;
-                            }
-
-                            slotsList.appendChild(createSlot(slotId, tipo, horario, i, isHighlighted));
-                            diaHasVisibleSlots = true;
-                        }
-                    });
-
-                    if (diaHasVisibleSlots) {
-                        diaBlock.appendChild(slotsList);
-                        diasContainer.appendChild(diaBlock);
-                        localHasContent = true;
-                    }
-                });
-
-                if (!localHasContent && term === '') return;
-                renderedLocalesCount++;
-                const percent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
-                let strokeColor = percent >= 100 ? "#22c55e" : (percent >= 50 ? "#f59e0b" : "#ef4444"); 
-
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-850 rounded-xl shadow-md border-t-4 border-slate-200 flex flex-col h-full";
-                card.style.borderTopColor = local.color || '#cbd5e1';
-                
-                let headerHtml = `
-                    <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-bold text-lg dark:text-white">${local.nombre.toUpperCase()}</h3>
-                            <div class="relative w-10 h-10">
-                                <svg class="circular-chart" viewBox="0 0 36 36">
-                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                </svg>
-                                <span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="btn-vestimenta-local text-slate-400 hover:text-purple-500" data-local="${local.nombre}" title="Cambiar Vestimenta">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg>
-                            </button>
-                            <button class="btn-copy-local text-slate-400 hover:text-blue-500" data-local="${local.nombre}" title="Copiar">
-                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                            </button>
-                            <button class="btn-config-local text-slate-400 hover:text-blue-500" data-nombre="${local.nombre}" title="Configurar">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.226l.44-.165a2.25 2.25 0 012.22 0l.44.165c.55.219 1.02.684 1.11 1.226l.098.588a2.25 2.25 0 00-2.25-2.25v.588c0 .542-.368 1.007-.918 1.226l-.441.165a2.25 2.25 0 01-2.22 0l-.441-.165c-.55-.219-1.02-.684-1.11-1.226l-.098-.588a2.25 2.25 0 00-2.25-2.25h-.588c-.542 0-1.007-.368-1.226-.918l-.165-.441a2.25 2.25 0 010 2.22l.165-.441c.219-.55.684 1.02 1.226-1.11h.588a2.25 2.25 0 002.25-2.25v-.588zM12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"/></svg>
-                            </button>
-                        </div>
-                    </div>`;
-
-                card.innerHTML = headerHtml;
-                const bodyDiv = document.createElement('div');
-                bodyDiv.className = "p-2 space-y-2";
-                bodyDiv.appendChild(diasContainer);
-                card.appendChild(bodyDiv);
-                
-                // INSERTAR EN FRAGMENTO
-                fragment.appendChild(card);
-            });
-
-            // INYECCIÓN FINAL AL DOM
-            if (renderedLocalesCount === 0 && !showAllStructure) {
-                 container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60"><svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg><p class="text-lg font-semibold">Semana Limpia / Histórica</p><p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p></div>`;
-            } else {
-                container.appendChild(fragment);
-            }
-        }
-
-        // --- FUNCIÓN RENDER DASHBOARD GERENCIAL ---
         function renderAdminDashboard() {
             const week = state.selectedWeek;
             const asig = state.asignaciones[week] || {};
@@ -1358,49 +1241,240 @@
             }
         }
 
-        // --- WATCHWEEK ---
-        function watchWeek(week) {
-            if(!week) return;
-            const loader = getEl('loader');
-            if(loader) loader.style.display = 'flex'; 
-            if(listeners.asignaciones) { listeners.asignaciones(); listeners.asignaciones = null; }
-            listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
-                state.asignaciones[week] = snap.exists() ? snap.data() : {};
-                renderMapeo(); renderProgramacion(); renderPlanillas(); renderPaseLista();
-                setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
-            }, () => { if(loader) loader.style.display = 'none'; });
-        }
+        function renderMapeo() {
+            calculateConflicts();
+            const container = getEl('mapeo-container');
+            if(!container) return;
+            
+            container.innerHTML = ''; 
+            
+            const week = state.selectedWeek;
+            if (!week) return;
+            
+            const fragment = document.createDocumentFragment();
+            const showAllStructure = true;
+            
+            // Usando la función de normalización para el término de búsqueda
+            const term = normalizeText(getEl('filtro-local-busqueda').value);
+            const weekAsig = state.asignaciones[week] || {};
+            
+            // Encuentra IDs de personal que coincidan con la búsqueda (ignorando tildes)
+            const matchingPersons = state.personal.filter(p => normalizeText(getFullName(p)).includes(term)).map(p => p.id);
 
-        function setupSystemStatus() {
-            const statusRef = doc(collections.status, 'ping');
-            onSnapshot(statusRef, (snap) => { if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis()); }, () => handleConnectionChange(false));
-            setInterval(() => { setDoc(statusRef, { timestamp: serverTimestamp() }).catch(() => handleConnectionChange(false)); }, 10000);
-        }
-        function updateStatusIcon(latency) {
-            const icon = getEl('system-status-icon');
-            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
-            if (latency < 800) { icon.classList.add('text-green-500'); icon.parentElement.title = `Conexión: Excelente (${latency}ms)`; } 
-            else if (latency < 2000) { icon.classList.add('text-yellow-500'); icon.parentElement.title = `Conexión: Regular (${latency}ms)`; } 
-            else { icon.classList.add('text-red-500'); icon.parentElement.title = `Conexión: Lenta (${latency}ms)`; }
-        }
-        function handleConnectionChange(online) {
-            const icon = getEl('system-status-icon');
-            const banner = getEl('offline-banner');
-            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
-            if (online) { 
-                icon.classList.add('text-yellow-500'); 
-                banner.style.display = 'none'; 
-                showToast("✅ Conexión restaurada"); 
-            } else { 
-                icon.classList.add('text-red-500', 'animate-pulse'); 
-                icon.parentElement.title = "¡Sin conexión!"; 
-                banner.style.display = 'block'; 
-                showToast("⚠️ Sin conexión", "error"); 
+            const filteredLocales = state.locales.filter(l => {
+                if (term === '') return true;
+                if (normalizeText(l.nombre).includes(term)) return true;
+                
+                let personInLocal = false;
+                Object.entries(weekAsig).forEach(([key, pid]) => {
+                    if (key.startsWith(l.nombre + '-') && matchingPersons.includes(pid) && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio') && !key.endsWith('notificado')) {
+                        personInLocal = true;
+                    }
+                });
+                return personInLocal;
+            });
+            
+            let renderedLocalesCount = 0;
+
+            filteredLocales.forEach(local => {
+                const config = state.mapeoConfig[local.nombre] || {};
+                const allTypes = ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'];
+                const diasContainer = document.createElement('div');
+                let localHasContent = false;
+                let totalSlots = 0;
+                let filledSlots = 0;
+
+                diasSemana.forEach(dia => {
+                    const dConf = config[dia] || {};
+                    const activeTypes = allTypes.filter(t => parseInt(dConf[t] || 0) > 0);
+                    
+                    if (activeTypes.length === 0) return;
+                    
+                    // Contadores individuales por día para vestimenta
+                    let dayTactica = 0;
+                    let dayTerno = 0;
+
+                    const diaBlock = document.createElement('div');
+                    // Preparar el HTML del título del día con el espacio para el badge (que se llenará luego si hay datos)
+                    const diaTitleHtml = `<h4 class="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 p-1.5 rounded mb-1 flex justify-between items-center dark:text-slate-300">
+                        <span>${dia}</span>
+                        <span class="text-[10px] text-slate-500 font-semibold tracking-tighter" id="badge-${local.nombre}-${dia}"></span>
+                    </h4>`;
+                    diaBlock.innerHTML = diaTitleHtml;
+                    
+                    const slotsList = document.createElement('div');
+                    let diaHasVisibleSlots = false;
+
+                    activeTypes.forEach(tipo => {
+                        const count = parseInt(dConf[tipo]);
+                        const capTipo = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+                        const hIn = dConf[`hora${capTipo}Entrada`] || '';
+                        const hOut = dConf[`hora${capTipo}Salida`] || '';
+                        const horario = hIn && hOut ? `${hIn}-${hOut}` : '';
+                        
+                        for(let i=1; i<=count; i++) {
+                            const slotId = `${local.nombre}-${dia}-${tipo}-${i}`;
+                            const pid = state.asignaciones[week]?.[slotId];
+                            if (!pid && !showAllStructure) continue; 
+                            totalSlots++; 
+                            if(pid) {
+                                filledSlots++;
+                                // Sumar al contador del día actual
+                                const vest = state.asignaciones[week]?.[slotId + '-vestimenta'] || 'Ropa Táctica';
+                                if (vest === 'Terno') dayTerno++; else dayTactica++;
+                            }
+                            
+                            let isHighlighted = false;
+                            if(term !== '' && pid && matchingPersons.includes(pid)) isHighlighted = true;
+
+                            slotsList.appendChild(createSlot(slotId, tipo, horario, i, isHighlighted));
+                            diaHasVisibleSlots = true;
+                        }
+                    });
+
+                    if (diaHasVisibleSlots) {
+                        // Actualizar el badge del día con los contadores calculados
+                        const badgeEl = diaBlock.querySelector(`#badge-${local.nombre}-${dia}`);
+                        if (badgeEl) {
+                            if (dayTactica > 0 || dayTerno > 0) {
+                                badgeEl.innerHTML = `🥋${dayTactica} &nbsp; 🤵${dayTerno}`;
+                            }
+                        }
+                        
+                        diaBlock.appendChild(slotsList);
+                        diasContainer.appendChild(diaBlock);
+                        localHasContent = true;
+                    }
+                });
+
+                if (!localHasContent && term === '') return;
+                renderedLocalesCount++;
+                
+                const percent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
+                let strokeColor = percent >= 100 ? "#22c55e" : (percent >= 50 ? "#f59e0b" : "#ef4444"); 
+
+                const card = document.createElement('div');
+                let cardClass = "bg-white dark:bg-slate-850 rounded-xl shadow-md flex flex-col h-full border-t-4 transition-colors";
+                let topColor = local.color || '#cbd5e1';
+                
+                card.className = cardClass;
+                card.style.borderTopColor = topColor;
+                
+                let headerHtml = `
+                    <div class="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-white/50 dark:bg-transparent rounded-t-xl">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-bold text-lg dark:text-white">
+                                ${local.nombre.toUpperCase()}
+                            </h3>
+                            <div class="relative w-10 h-10">
+                                <svg class="circular-chart" viewBox="0 0 36 36">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="circle" stroke="${strokeColor}" stroke-dasharray="${percent}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span class="percentage-text absolute inset-0 flex items-center justify-center text-[10px] font-bold dark:text-white">${percent}%</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 items-center">
+                            <!-- Dropdown Elegante ☰ -->
+                            <div class="relative dropdown-container">
+                                <button class="btn-dropdown-toggle p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors bg-slate-50 dark:bg-slate-800 rounded shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center h-8 w-8" title="Ajustes de Local">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                </button>
+                                <div class="dropdown-menu hidden absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 border border-slate-200 dark:border-slate-700 overflow-hidden origin-top-right">
+                                    <button class="w-full text-left px-4 py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 btn-vestimenta-local dark:text-slate-200 transition-colors" data-local="${local.nombre}">👕 Cambiar Vestimenta</button>
+                                    <div class="h-px bg-slate-200 dark:bg-slate-700"></div>
+                                    <button class="w-full text-left px-4 py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 btn-copy-text-local dark:text-slate-200 transition-colors" data-local="${local.nombre}">📋 Compartir Semana</button>
+                                    <div class="h-px bg-slate-200 dark:bg-slate-700"></div>
+                                    <button class="w-full text-left px-4 py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 btn-config-local dark:text-slate-200 transition-colors font-semibold" data-nombre="${local.nombre}">⚙️ Configurar</button>
+                                    <div class="h-px bg-slate-200 dark:bg-slate-700"></div>
+                                    <button class="w-full text-left px-4 py-3 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 btn-copy-local-week dark:text-slate-200 transition-colors font-semibold" data-local="${local.nombre}">🔄 Copiar Sem. Ant.</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                card.innerHTML = headerHtml;
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = "p-2 space-y-2";
+                bodyDiv.appendChild(diasContainer);
+                card.appendChild(bodyDiv);
+                
+                fragment.appendChild(card);
+            });
+
+            if (renderedLocalesCount === 0 && !showAllStructure) {
+                 container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center p-12 text-slate-400 opacity-60"><svg class="w-16 h-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg><p class="text-lg font-semibold">Semana Limpia / Histórica</p><p class="text-sm">Activa el interruptor <b>"Ver Vacíos"</b> arriba para asignar personal o editar.</p></div>`;
+            } else {
+                container.appendChild(fragment);
             }
         }
+
+        function renderProgramacion() {
+            calculateConflicts();
+            const container = getEl('programacion-container'); if(!container) return;
+            const term = normalizeText(getEl('busqueda-programacion').value);
+            const weekAsig = state.asignaciones[state.selectedWeek] || {};
+            
+            const relevantPersonal = state.personal.filter(p => {
+                const nameMatch = normalizeText(getFullName(p)).includes(term);
+                let localMatch = false;
+                if (term.length > 0) {
+                     for (const [key, val] of Object.entries(weekAsig)) {
+                         if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio') && !key.endsWith('notificado')) {
+                             const parts = key.split('-');
+                             const localName = parts.slice(0, parts.length - 3).join('-').toLowerCase();
+                             if (normalizeText(localName).includes(term)) {
+                                 localMatch = true;
+                                 break;
+                             }
+                         }
+                     }
+                }
+                const hasShift = Object.values(weekAsig).includes(p.id);
+                if (term.length > 0) return nameMatch || localMatch;
+                return hasShift;
+            });
+
+            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
+            container.innerHTML = relevantPersonal.map(p => {
+                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio') && !k.endsWith('-notificado')).map(([k]) => {
+                        const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                        const conf = state.mapeoConfig[local]?.[dia];
+                        const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
+                        let isUrgent = false; if (!weekAsig[`${k}-confirmed`]) { const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''); if (shiftDate) { const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 48) isUrgent = true; } }
+                        return { local, dia, tipo, horario, isConfirmed: weekAsig[`${k}-confirmed`], vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', slotId: k, order: diasSemana.indexOf(dia), startMin: timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''), specialLabel: specialRoleMap[tipo] || null, isUrgent };
+                    }).sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
+                if(shifts.length === 0) return '';
+                const allConfirmed = shifts.every(s => s.isConfirmed);
+                let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
+                let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
+                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; let conflictTitle = ""; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; conflictTitle="⚠️ Cruce de rol con: " + conflictMap.role.get(s.slotId); } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-red-500"; conflictTitle="⚠️ Cruce de horario con: " + conflictMap.overlap.get(s.slotId); } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-yellow-500"; conflictTitle="⚠️ Repetición con: " + conflictMap.repeat.get(s.slotId); } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm group group-hover-shift" title="${conflictTitle}"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md relative pr-6"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span><button class="absolute -right-1 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600 btn-delete-single-shift px-1" data-slot="${s.slotId}" title="Eliminar este día específico">✖</button></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
+            }).join('');
+        }
+
+        function parseTo12H(timeStr) {
+            let h="12", m="00", p="AM";
+            if(timeStr){
+                const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                if(match){ 
+                    h=match[1]; m=match[2]; 
+                    if(match[3]) p=match[3].toUpperCase(); 
+                    else {
+                        let numH = parseInt(h);
+                        p = numH >= 12 ? 'PM' : 'AM';
+                        if(numH > 12) numH -= 12;
+                        if(numH === 0) numH = 12;
+                        h = String(numH).padStart(2, '0');
+                    }
+                }
+            }
+            return {h,m,p};
+        }
+
         function renderConfigModal(localNombre) {
             const container = getEl('schedule-config-container'); if (!container) return; container.innerHTML = '';
             const localConf = tempScheduleConfig;
+            
             diasSemana.forEach(dia => {
                 if(!localConf[dia]) localConf[dia] = {};
                 const div = document.createElement('div');
@@ -1409,19 +1483,62 @@
                 ['puestos','cacheos','cacheoIngreso','cacheoSalida','turno1','turno2','turno3','porteria'].forEach(tipo => {
                     const cKey = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}`;
                     const cant = localConf[dia][tipo] || 0;
-                    const ent = localConf[dia][cKey+'Entrada'] || '08:00 AM';
-                    const sal = localConf[dia][cKey+'Salida'] || '08:00 PM';
+                    
+                    const ent = parseTo12H(localConf[dia][cKey+'Entrada'] || '08:00 AM');
+                    const sal = parseTo12H(localConf[dia][cKey+'Salida'] || '08:00 PM');
+                    
                     const labelMap = { 'puestos': 'Puestos', 'cacheos': 'Cacheos', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
-                    html += `<div class="grid grid-cols-4 gap-2 items-center mb-2"><label class="text-xs font-medium dark:text-slate-300">${labelMap[tipo]}</label><input type="number" min="0" class="p-1 border rounded text-center config-input" data-dia="${dia}" data-tipo="${tipo}" value="${cant}"><input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Entrada" value="${ent}"><input type="text" class="p-1 border rounded text-center text-xs config-time" data-dia="${dia}" data-key="${cKey}Salida" value="${sal}"></div>`;
+                    
+                    html += `<div class="grid grid-cols-4 gap-2 items-center mb-2">
+                        <label class="text-xs font-medium dark:text-slate-300">${labelMap[tipo]}</label>
+                        <input type="number" min="0" class="p-1 border rounded text-center config-input bg-white dark:bg-slate-600 dark:text-white" data-dia="${dia}" data-tipo="${tipo}" value="${cant}">
+                        
+                        <!-- Caja Digital 12H Custom Entrada -->
+                        <div class="time-group flex items-center justify-between gap-1 bg-white dark:bg-slate-600 border dark:border-slate-500 rounded p-1">
+                            <input type="text" class="time-h w-6 text-center bg-transparent outline-none text-xs dark:text-white" maxlength="2" data-dia="${dia}" data-keybase="${cKey}Entrada" value="${ent.h}">:
+                            <input type="text" class="time-m w-6 text-center bg-transparent outline-none text-xs dark:text-white" maxlength="2" data-dia="${dia}" data-keybase="${cKey}Entrada" value="${ent.m}">
+                            <button type="button" class="btn-ampm bg-slate-200 dark:bg-slate-700 dark:text-white text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer hover:bg-slate-300" data-dia="${dia}" data-keybase="${cKey}Entrada">${ent.p}</button>
+                        </div>
+                        
+                        <!-- Caja Digital 12H Custom Salida -->
+                        <div class="time-group flex items-center justify-between gap-1 bg-white dark:bg-slate-600 border dark:border-slate-500 rounded p-1">
+                            <input type="text" class="time-h w-6 text-center bg-transparent outline-none text-xs dark:text-white" maxlength="2" data-dia="${dia}" data-keybase="${cKey}Salida" value="${sal.h}">:
+                            <input type="text" class="time-m w-6 text-center bg-transparent outline-none text-xs dark:text-white" maxlength="2" data-dia="${dia}" data-keybase="${cKey}Salida" value="${sal.m}">
+                            <button type="button" class="btn-ampm bg-slate-200 dark:bg-slate-700 dark:text-white text-[10px] font-bold px-1.5 py-0.5 rounded cursor-pointer hover:bg-slate-300" data-dia="${dia}" data-keybase="${cKey}Salida">${sal.p}</button>
+                        </div>
+                    </div>`;
                 });
                 div.innerHTML = html;
                 container.appendChild(div);
             });
         }
-        function renderTable(id, data, rowFn) {
-            const tbody = getEl(id); if (!tbody) return;
-            tbody.innerHTML = data.map(item => `<tr class="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">${rowFn(item)}</tr>`).join('');
+
+        function renderTarifarioTable() {
+            const term = normalizeText(getEl('busqueda-tarifario').value);
+            const filtered = state.personal.filter(p => normalizeText(getFullName(p)).includes(term));
+            const tbody = getEl('tabla-tarifario'); if(!tbody) return;
+            tbody.innerHTML = filtered.map(p => {
+                const t = state.tarifarios[p.id] || {};
+                return `<tr class="border-b dark:border-slate-700"><td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td></tr>`;
+            }).join('');
         }
+
+        function renderPlanillas() {
+            const container = getEl('tabla-planillas'); if(!container) return; 
+            const asig = state.asignaciones[state.selectedWeek] || {};
+            const report = {};
+            state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
+            Object.entries(asig).forEach(([key, pid]) => {
+                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio') || key.endsWith('notificado')) return;
+                if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
+            });
+            const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
+                const total = (r.Terno * (parseFloat(r.Tarifas.Terno)||0)) + (r.Tactica * (parseFloat(r.Tarifas.Tactica)||0));
+                return `<tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"><td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td><td class="p-3 text-center dark:text-slate-300">${r.Terno}</td><td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td><td class="p-3 text-center dark:text-slate-300">-</td><td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td></tr>`;
+            }).join('');
+            container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
+        }
+
         function renderCalendar() {
             const container = getEl('calendar-grid'); if(!container) return; container.innerHTML = '';
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -1450,87 +1567,34 @@
                 container.appendChild(cell);
             }
         }
-        
+
         function openAddPermisoModal(dateStr) {
             getEl('permiso-start').value = dateStr; getEl('permiso-end').value = dateStr;
             getEl('permiso-personal').innerHTML = state.personal.map(p => `<option value="${p.id}">${getFullName(p)}</option>`).join('');
             getEl('add-permiso-modal').style.display = 'block';
         }
+
         function renderModalPersonalList() {
             const container = getEl('modal-list-container');
-            const term = getEl('modal-search').value.toLowerCase();
-            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
+            if(!container) return;
+            const term = normalizeText(getEl('modal-search').value);
+            const filtered = state.personal.filter(p => normalizeText(getFullName(p)).includes(term));
             const occupiedIds = new Set(Object.values(state.asignaciones[state.selectedWeek] || {}).filter(v => typeof v === 'string'));
-            container.innerHTML = filtered.map(p => {
-                const isOccupied = occupiedIds.has(p.id); const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
-                return `<div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')"><div><div class="font-medium dark:text-white">${getFullName(p)}</div><div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div></div>${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold">OCUPADO</span>' : ''}${isCurrent ? '<span class="text-green-500 font-bold">✔</span>' : ''}</div>`;
-            }).join('');
-        }
-        function renderProgramacion() {
-            calculateConflicts();
-            const container = getEl('programacion-container'); if(!container) return;
-            const term = getEl('busqueda-programacion').value.toLowerCase();
-            const weekAsig = state.asignaciones[state.selectedWeek] || {};
             
-            const relevantPersonal = state.personal.filter(p => {
-                const nameMatch = getFullName(p).toLowerCase().includes(term);
-                let localMatch = false;
-                if (term.length > 0) {
-                     for (const [key, val] of Object.entries(weekAsig)) {
-                         if (val === p.id && key.includes('-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
-                             const parts = key.split('-');
-                             const localName = parts.slice(0, parts.length - 3).join('-').toLowerCase();
-                             if (localName.includes(term)) {
-                                 localMatch = true;
-                                 break;
-                             }
-                         }
-                     }
-                }
-                const hasShift = Object.values(weekAsig).includes(p.id);
-                if (term.length > 0) return nameMatch || localMatch;
-                return hasShift;
-            });
-
-            const specialRoleMap = { 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'porteria': 'Portería' };
-            container.innerHTML = relevantPersonal.map(p => {
-                const shifts = Object.entries(weekAsig).filter(([k, v]) => v === p.id && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).map(([k]) => {
-                        const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
-                        const conf = state.mapeoConfig[local]?.[dia];
-                        const horario = conf ? (conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] + ' - ' + conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Salida`]) : '??';
-                        let isUrgent = false; if (!weekAsig[`${k}-confirmed`]) { const shiftDate = getShiftDate(state.selectedWeek, dia, conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''); if (shiftDate) { const diffHours = (shiftDate - new Date()) / (1000 * 60 * 60); if (diffHours > 0 && diffHours < 48) isUrgent = true; } }
-                        return { local, dia, tipo, horario, isConfirmed: weekAsig[`${k}-confirmed`], vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', slotId: k, order: diasSemana.indexOf(dia), startMin: timeToMin(conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : ''), specialLabel: specialRoleMap[tipo] || null, isUrgent };
-                    }).sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
-                if(shifts.length === 0) return '';
-                const allConfirmed = shifts.every(s => s.isConfirmed);
-                let borderClass = allConfirmed ? "border-green-500 border-2 shadow-green-100 shadow-lg scale-[1.01]" : "border-yellow-400 border-2 shadow-yellow-50 shadow-md";
-                let statusBadge = allConfirmed ? '<div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMPLETO</div>' : '<div class="absolute top-0 right-0 bg-yellow-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">INCOMPLETO</div>';
-                return `<div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border transition-all duration-300 ${borderClass} flex flex-col h-full relative overflow-hidden"><button class="absolute top-1 left-1 p-1 text-slate-300 hover:text-red-500 transition-colors btn-clear-individual z-20" data-person-id="${p.id}" title="Eliminar TODA la programación"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>${statusBadge}<div class="flex justify-between items-center mb-4 mt-2 ml-4"><h4 class="font-bold text-lg dark:text-white truncate pr-2 flex items-center gap-2">${getFullName(p)}${shifts.some(s => s.isUrgent) ? '<span title="Falta confirmar próximo turno" class="animate-pulse-red">📞</span>' : ''}</h4>${allConfirmed ? '<span class="text-green-500 text-2xl">✅</span>' : ''}</div><div class="space-y-2 flex-grow">${shifts.map(s => { let rowBg = "bg-slate-50 dark:bg-slate-700"; let borderL = "border-l-4 border-transparent"; if (s.isUrgent) rowBg = "urgent-card"; else if (conflictMap.role.has(s.slotId)) { rowBg = "conflict-role"; borderL = "border-l-4 border-blue-500"; } else if (conflictMap.overlap.has(s.slotId)) { rowBg = "conflict-overlap"; borderL = "border-l-4 border-red-500"; } else if (conflictMap.repeat.has(s.slotId)) { rowBg = "conflict-repeat"; borderL = "border-l-4 border-yellow-500"; } return `<div class="text-sm flex justify-between items-center p-2 rounded-lg ${rowBg} ${borderL} transition-colors hover:shadow-sm group group-hover-shift"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="font-bold capitalize text-blue-600 dark:text-blue-400">${s.dia}</span><span class="text-xs text-slate-400 font-mono">${s.horario}</span>${s.specialLabel ? `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-semibold px-1.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 ml-1">+ ${s.specialLabel}</span>` : ''}</div><span class="dark:text-slate-200 font-medium text-xs mt-0.5">${s.local}</span></div><div class="flex items-center gap-3 bg-white/50 dark:bg-black/20 p-1 rounded-md relative pr-6"><span title="${s.vestimenta}">${vestimentaEmojis[s.vestimenta]}</span><span class="${s.isConfirmed ? 'text-green-600' : 'text-slate-300'} text-lg leading-none">${s.isConfirmed ? '●' : '○'}</span><button class="absolute -right-1 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-600 btn-delete-single-shift px-1" data-slot="${s.slotId}" title="Eliminar este día específico">✖</button></div></div>`}).join('')}</div><div class="mt-5 pt-3 border-t dark:border-slate-700 flex justify-end gap-2"><button class="flex-1 flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-confirm-individual border border-emerald-200 dark:border-emerald-800" data-person-id="${p.id}" title="Confirmar todos sus turnos">Confirmar</button><button class="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 px-3 py-2 rounded-lg text-sm font-bold transition btn-copy-individual border border-blue-200 dark:border-blue-800" data-person-id="${p.id}" title="Copiar mensaje WhatsApp">Copiar</button></div></div>`;
+            container.innerHTML = filtered.map(p => {
+                const isOccupied = occupiedIds.has(p.id); 
+                const isCurrent = state.asignaciones[state.selectedWeek]?.[currentSlotId] === p.id;
+                
+                return `
+                <div class="p-3 border-b dark:border-slate-700 flex justify-between items-center cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 ${isCurrent ? 'bg-blue-50 dark:bg-blue-900/30' : ''}" onclick="window.selectPersonal('${p.id}')">
+                    <div>
+                        <div class="font-medium dark:text-white">${getFullName(p)}</div>
+                        <div class="text-xs text-slate-500">${p.numero_empleado || 'S/N'}</div>
+                    </div>
+                    ${isOccupied && !isCurrent ? '<span class="text-xs text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded">OCUPADO</span>' : ''}
+                    ${isCurrent ? '<span class="text-green-600 font-bold bg-green-50 px-2 py-1 rounded">✔ SELECCIONADO</span>' : ''}
+                </div>`;
             }).join('');
-        }
-        function renderTarifarioTable() {
-            const term = getEl('busqueda-tarifario').value.toLowerCase();
-            const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term));
-            const tbody = getEl('tabla-tarifario'); if(!tbody) return;
-            tbody.innerHTML = filtered.map(p => {
-                const t = state.tarifarios[p.id] || {};
-                return `<tr class="border-b dark:border-slate-700"><td class="p-3 font-medium dark:text-slate-200">${getFullName(p)}</td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Terno||0}" data-uid="${p.id}" data-field="Terno"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Tactica||0}" data-uid="${p.id}" data-field="Tactica"></td><td class="p-2 text-center"><input type="number" class="w-20 p-1 border rounded text-center dark:bg-slate-600 dark:text-white" value="${t.Apoyo||0}" data-uid="${p.id}" data-field="Apoyo"></td></tr>`;
-            }).join('');
-        }
-        function renderPlanillas() {
-            const container = getEl('tabla-planillas'); if(!container) return; 
-            const asig = state.asignaciones[state.selectedWeek] || {};
-            const report = {};
-            state.personal.forEach(p => { report[p.id] = { Terno: 0, Tactica: 0, Apoyo: 0, Nombre: getFullName(p), Tarifas: state.tarifarios[p.id] || { Terno:0, Tactica:0, Apoyo:0 } }; });
-            Object.entries(asig).forEach(([key, pid]) => {
-                if(!pid || typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
-                if (report[pid]) { const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; if (vest === 'Terno') report[pid].Terno++; else report[pid].Tactica++; }
-            });
-            const html = Object.values(report).filter(r => r.Terno > 0 || r.Tactica > 0 || r.Apoyo > 0).map(r => {
-                const total = (r.Terno * (parseFloat(r.Tarifas.Terno)||0)) + (r.Tactica * (parseFloat(r.Tarifas.Tactica)||0));
-                return `<tr class="border-b dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"><td class="p-3 font-medium dark:text-slate-200">${r.Nombre}</td><td class="p-3 text-center dark:text-slate-300">${r.Terno}</td><td class="p-3 text-center dark:text-slate-300">${r.Tactica}</td><td class="p-3 text-center dark:text-slate-300">-</td><td class="p-3 text-right font-bold text-green-600 dark:text-green-400">S/ ${total.toFixed(2)}</td></tr>`;
-            }).join('');
-            container.innerHTML = html || '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay turnos registrados esta semana.</td></tr>';
         }
 
         // --- MAIN INIT ---
@@ -1565,7 +1629,7 @@
             onSnapshot(query(collections.locales), snap => {
                 state.locales = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b) => a.nombre.localeCompare(b.nombre)); 
                 renderLocalesSelects();
-                renderTable('tabla-locales', state.locales, (l) => `<td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td><td class="p-3 text-right"><button class="text-indigo-500 hover:text-indigo-700 font-medium mr-2 btn-config-local-gestion" data-nombre="${l.nombre}">Horarios</button><button class="text-blue-500 mr-2 btn-edit-local" data-id="${l.id}">Editar</button><button class="text-red-500 btn-del-local" data-id="${l.id}">Eliminar</button></td>`);
+                renderTable('tabla-locales', state.locales, (l) => `<td class="p-3 font-medium flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background-color:${l.color}"></span>${l.nombre.toUpperCase()}</td><td class="p-3 text-right"><button class="text-blue-500 mr-2 btn-edit-local" data-id="${l.id}">Editar</button><button class="text-red-500 btn-del-local" data-id="${l.id}">Eliminar</button></td>`);
                 renderMapeo();
             });
 
@@ -1585,15 +1649,7 @@
                     const btnClass = isBackup ? 'border-teal-500 bg-teal-50' : 'border-slate-200';
                     const btn = document.createElement('div');
                     btn.className = `p-3 bg-white dark:bg-slate-700 border mb-2 rounded flex items-center justify-between shadow-sm hover:shadow transition-shadow ${btnClass}`;
-                    
-                    // BOTONES DE VISTA PREVIA Y EXCEL
-                    btn.innerHTML = `
-                        <span class="font-medium truncate pr-4 text-slate-800 dark:text-slate-200">${displayName}</span> 
-                        <div class="flex items-center gap-3 shrink-0">
-                            <button class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition dark:bg-blue-900/30 dark:text-blue-400" onclick="window.previewHist('${d.id}')" title="Vista Previa de Asignaciones">👁️</button>
-                            <button class="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:scale-110 transition dark:bg-green-900/30 dark:text-green-400" onclick="window.downloadHistExcel('${d.id}')" title="Descargar como Excel">🖨️</button>
-                        </div>
-                    `;
+                    btn.innerHTML = `<span class="font-medium truncate pr-4 text-slate-800 dark:text-slate-200">${displayName}</span> <div class="flex items-center gap-3 shrink-0"><button class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 hover:scale-110 transition dark:bg-blue-900/30 dark:text-blue-400" onclick="window.previewHist('${d.id}')" title="Vista Previa de Asignaciones">👁️</button><button class="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 hover:bg-green-200 hover:scale-110 transition dark:bg-green-900/30 dark:text-green-400" onclick="window.downloadHistExcel('${d.id}')" title="Descargar como Excel">🖨️</button></div>`;
                     hContainer.appendChild(btn);
                 });
             });
@@ -1603,93 +1659,131 @@
             onSnapshot(query(collections.permisos), snap => { state.permisos = snap.docs.map(d => ({id: d.id, ...d.data()})); renderCalendar(); });
         }
 
+        function watchWeek(week) {
+            if(!week) return;
+            const loader = getEl('loader');
+            if(loader) loader.style.display = 'flex'; 
+            if(listeners.asignaciones) { listeners.asignaciones(); listeners.asignaciones = null; }
+            listeners.asignaciones = onSnapshot(doc(collections.asignaciones, week), snap => {
+                state.asignaciones[week] = snap.exists() ? snap.data() : {};
+                renderMapeo(); renderProgramacion(); renderPlanillas(); renderPaseLista();
+                setTimeout(() => { if(loader) loader.style.display = 'none'; }, 300);
+            }, () => { if(loader) loader.style.display = 'none'; });
+        }
+
+        function setupSystemStatus() {
+            const statusRef = doc(collections.status, 'ping');
+            onSnapshot(statusRef, (snap) => { if(snap.exists() && snap.data().timestamp) updateStatusIcon(Date.now() - snap.data().timestamp.toMillis()); }, () => handleConnectionChange(false));
+            setInterval(() => { setDoc(statusRef, { timestamp: serverTimestamp() }).catch(() => handleConnectionChange(false)); }, 10000);
+        }
+        
+        function handleConnectionChange(online) {
+            const icon = getEl('system-status-icon');
+            const banner = getEl('offline-banner');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            if (online) { 
+                icon.classList.add('text-yellow-500'); 
+                banner.style.display = 'none'; 
+                showToast("✅ Conexión restaurada"); 
+            } else { 
+                icon.classList.add('text-red-500', 'animate-pulse'); 
+                icon.parentElement.title = "¡Sin conexión!"; 
+                banner.style.display = 'block'; 
+                showToast("⚠️ Sin conexión", "error"); 
+            }
+        }
+        
+        function updateStatusIcon(latency) {
+            const icon = getEl('system-status-icon');
+            icon.classList.remove('text-slate-300', 'text-green-500', 'text-yellow-500', 'text-red-500', 'animate-pulse');
+            if (latency < 800) { icon.classList.add('text-green-500'); icon.parentElement.title = `Conexión: Excelente (${latency}ms)`; } 
+            else if (latency < 2000) { icon.classList.add('text-yellow-500'); icon.parentElement.title = `Conexión: Regular (${latency}ms)`; } 
+            else { icon.classList.add('text-red-500'); icon.parentElement.title = `Conexión: Lenta (${latency}ms)`; }
+        }
+
         function setupUIListeners() {
-            getEl('login-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
-                    if(getEl('remember-me').checked) localStorage.setItem('swat_remember', 'true'); else localStorage.removeItem('swat_remember');
-                    getEl('login-overlay').style.display = 'none';
-                } else getEl('login-error').textContent = "Credenciales incorrectas";
-            });
-            getEl('btn-logout').onclick = () => { localStorage.removeItem('swat_remember'); location.reload(); };
-
-            ['semana-mapeo', 'semana-programacion', 'semana-planillas'].forEach(id => {
-                getEl(id).addEventListener('change', (e) => {
-                    state.selectedWeek = e.target.value;
-                    ['semana-mapeo', 'semana-programacion', 'semana-planillas'].forEach(i => getEl(i).value = state.selectedWeek);
-                    watchWeek(state.selectedWeek);
-                });
-            });
-
-            // --- LÓGICA DE MEMORIA DE SCROLL EN NAVEGACIÓN ---
-            document.querySelectorAll('.nav-button').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const currentSection = document.querySelector('section:not(.hidden)');
-                    if (currentSection) {
-                        scrollState[currentSection.id] = window.scrollY;
+            // Cierre global del menú Dropdown y del Modal de personal con ESC
+            document.addEventListener('click', (e) => {
+                const isToggle = e.target.closest('.btn-dropdown-toggle');
+                if (isToggle) {
+                    e.stopPropagation();
+                    const menu = isToggle.nextElementSibling;
+                    const wasHidden = menu.classList.contains('hidden');
+                    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                    if (wasHidden) menu.classList.remove('hidden');
+                } else {
+                    if (!e.target.closest('.dropdown-menu')) {
+                        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
                     }
-                    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-                    const sec = e.target.id.replace('btn-', 'section-');
-                    const targetSection = getEl(sec);
-                    if(targetSection) targetSection.classList.remove('hidden');
-                    
-                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); 
-                    e.target.classList.add('active');
-                    getEl('side-nav').classList.remove('open');
-                    
-                    if(sec === 'section-tarifario') renderTarifarioTable();
-                    if(sec === 'section-programacion') renderProgramacion();
-                    if(sec === 'section-planillas') renderPlanillas();
-                    if(sec === 'section-pase-lista') renderPaseLista();
-
-                    if (scrollState[sec] !== undefined) {
-                        setTimeout(() => window.scrollTo(0, scrollState[sec]), 0);
-                    } else {
-                        window.scrollTo(0, 0);
-                    }
-                });
+                }
             });
-            
-            // --- NUEVO LISTENER PARA PASE DE LISTA ---
+            document.addEventListener('scroll', () => { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden')); }, true);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape") {
+                    const globalModal = getEl('global-selection-modal');
+                    if (globalModal && globalModal.style.display === 'block') {
+                        globalModal.style.display = 'none';
+                    }
+                }
+            });
+
+            // GESTIÓN DE HORARIOS AM/PM
+            getEl('schedule-config-container').addEventListener('click', (e) => {
+                if (e.target.classList.contains('btn-ampm')) {
+                    e.target.textContent = e.target.textContent === 'AM' ? 'PM' : 'AM';
+                    updateTime(e.target);
+                }
+            });
+            getEl('schedule-config-container').addEventListener('input', (e) => {
+                if (e.target.classList.contains('config-input')) {
+                    const { dia, tipo } = e.target.dataset;
+                    if(!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
+                    tempScheduleConfig[dia][tipo] = e.target.value;
+                }
+                if (e.target.classList.contains('time-h') || e.target.classList.contains('time-m')) {
+                    updateTime(e.target);
+                }
+            });
+
+            function updateTime(el) {
+                const parent = el.closest('.time-group');
+                const dia = el.dataset.dia;
+                const baseKey = el.dataset.keybase;
+                const h = parent.querySelector('.time-h').value || '12';
+                const m = parent.querySelector('.time-m').value || '00';
+                const p = parent.querySelector('.btn-ampm').textContent;
+                if(!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
+                tempScheduleConfig[dia][baseKey] = `${h.padStart(2, '0')}:${m.padStart(2, '0')} ${p}`;
+            }
+
+            // BOTON PASE DE LISTA
             getEl('pase-lista-container').addEventListener('click', async (e) => {
                 const btn = e.target.closest('.btn-toggle-asistencia');
                 if(btn) {
                     const sid = btn.dataset.slot;
+                    const pName = btn.dataset.pname;
+                    const localName = btn.dataset.local;
                     const week = state.selectedWeek;
-                    const currentStatus = state.asignaciones[week]?.[`${sid}-asistio`]; // SEPARADO DE CONFIRMED
                     
-                    // Efecto visual inmediato
-                    btn.classList.add('scale-90');
-                    setTimeout(() => btn.classList.remove('scale-90'), 150);
+                    const notificado = state.asignaciones[week]?.[`${sid}-notificado`];
+                    const asistio = state.asignaciones[week]?.[`${sid}-asistio`]; 
+                    
+                    btn.classList.add('scale-90'); setTimeout(() => btn.classList.remove('scale-90'), 150);
 
-                    // Actualizar en Firebase
-                    await setDoc(doc(collections.asignaciones, week), { [`${sid}-asistio`]: !currentStatus }, { merge: true });
+                    if (!notificado && !asistio) {
+                        let txt = `Hola ${pName.split(' ')[0]}, NO OLVIDES HOY EN ${localName.toUpperCase()} PUNTUAL, RECUERDA IR ASEADO BIEN UNIFORMADO Y CON TUS IMPLEMENTOS DE TRABAJO.`;
+                        copiarTextoSeguro(txt);
+                        await setDoc(doc(collections.asignaciones, week), { [`${sid}-notificado`]: true }, { merge: true });
+                    } else if (notificado && !asistio) {
+                        await setDoc(doc(collections.asignaciones, week), { [`${sid}-asistio`]: true }, { merge: true });
+                    } else {
+                        await updateDoc(doc(collections.asignaciones, week), { [`${sid}-notificado`]: deleteField(), [`${sid}-asistio`]: deleteField() });
+                    }
                 }
             });
 
-            const nav = getEl('side-nav'); const toggle = getEl('menu-toggle');
-            let navTimeout;
-            const openMenu = () => { clearTimeout(navTimeout); nav.classList.add('open'); };
-            const closeMenu = () => { navTimeout = setTimeout(() => nav.classList.remove('open'), 300); };
-            toggle.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseleave', closeMenu);
-            toggle.onclick = () => nav.classList.toggle('open'); 
-
-            // --- AUTO-FOCUS AL ABRIR SÚPER FILTRO ---
-            getEl('search-fab').onclick = () => {
-                const panel = getEl('search-panel');
-                panel.classList.toggle('open');
-                if (panel.classList.contains('open')) {
-                    setTimeout(() => getEl('filtro-local-busqueda').focus(), 100);
-                }
-            };
-            getEl('close-search-panel').onclick = () => getEl('search-panel').classList.remove('open');
-            getEl('filtro-local-busqueda').addEventListener('input', renderMapeo);
-            
-            const inputBusquedaProg = getEl('busqueda-programacion');
-            if (inputBusquedaProg) {
-                inputBusquedaProg.addEventListener('input', renderProgramacion);
-            }
-
+            // ACCIONES DE DROPDOWN EN LOCALES
             getEl('mapeo-container').addEventListener('click', async (e) => {
                 const slotRow = e.target.closest('.slot-row');
                 if(slotRow && !e.target.closest('button')) {
@@ -1711,6 +1805,7 @@
                     const cur = state.asignaciones[state.selectedWeek][`${sid}-confirmed`];
                     await setDoc(doc(collections.asignaciones, state.selectedWeek), { [`${sid}-confirmed`]: !cur }, {merge:true});
                 }
+                
                 const btnConfig = e.target.closest('.btn-config-local');
                 if(btnConfig) {
                     currentlyEditingLocal = btnConfig.dataset.nombre;
@@ -1719,8 +1814,21 @@
                     renderConfigModal(currentlyEditingLocal);
                     getEl('schedule-config-modal').style.display = 'flex';
                 }
-                const btnCopy = e.target.closest('.btn-copy-local');
-                if(btnCopy) generateTextSchedule(btnCopy.dataset.local);
+                
+                const btnCopyText = e.target.closest('.btn-copy-text-local');
+                if(btnCopyText) generateTextSchedule(btnCopyText.dataset.local);
+
+                const btnCopyWeek = e.target.closest('.btn-copy-local-week');
+                if(btnCopyWeek) {
+                    localToCopyWeek = btnCopyWeek.dataset.local;
+                    getEl('copy-local-title-name').textContent = localToCopyWeek.toUpperCase();
+                    const curr = state.selectedWeek; 
+                    const [y, w] = curr.split('-W').map(Number);
+                    let prevW = w - 1; let prevY = y; 
+                    if(prevW < 1) { prevW = 52; prevY--; }
+                    getEl('copy-local-source-week').value = `${prevY}-W${String(prevW).padStart(2,'0')}`;
+                    getEl('copy-local-week-modal').style.display = 'block';
+                }
 
                 const btnVestAll = e.target.closest('.btn-vestimenta-local');
                 if(btnVestAll) {
@@ -1729,7 +1837,7 @@
                     const weekData = state.asignaciones[state.selectedWeek];
                     const batchUpdate = {};
                     Object.keys(weekData).forEach(key => {
-                        if(key.startsWith(localName + '-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio')) {
+                        if(key.startsWith(localName + '-') && !key.endsWith('vestimenta') && !key.endsWith('confirmed') && !key.endsWith('asistio') && !key.endsWith('notificado')) {
                             const curVest = weekData[`${key}-vestimenta`] || 'Ropa Táctica';
                             const newVest = curVest === 'Ropa Táctica' ? 'Terno' : 'Ropa Táctica';
                             batchUpdate[`${key}-vestimenta`] = newVest;
@@ -1739,13 +1847,114 @@
                     else showToast("No hay personal asignado", "error");
                 }
             });
+
+            // ACCIÓN LLENAR VACÍOS (COPIAR SEMANA LOCAL)
+            getEl('btn-confirm-copy-local-week').onclick = async () => {
+                const sourceWeek = getEl('copy-local-source-week').value;
+                if (!sourceWeek || !localToCopyWeek) return showToast("Faltan datos", "error");
+                if (sourceWeek === state.selectedWeek) return showToast("Selecciona una semana distinta", "error");
+
+                const prevDocSnap = await getDoc(doc(collections.asignaciones, sourceWeek));
+                if (!prevDocSnap.exists()) return showToast("No hay datos en la semana de origen", "error");
+
+                const data = prevDocSnap.data();
+                const currData = state.asignaciones[state.selectedWeek] || {};
+                const newData = {};
+                let copiedCount = 0;
+
+                Object.keys(data).forEach(key => {
+                    if (key.startsWith(localToCopyWeek + '-') && !key.endsWith('-confirmed') && !key.endsWith('-asistio') && !key.endsWith('-vestimenta') && !key.endsWith('-notificado')) {
+                        const parts = key.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop();
+                        const configurados = parseInt(state.mapeoConfig[localToCopyWeek]?.[dia]?.[tipo] || 0);
+                        const slotNum = parseInt(key.split('-').pop());
+                        
+                        if (slotNum <= configurados && !currData[key]) {
+                            newData[key] = data[key];
+                            if(data[`${key}-vestimenta`]) newData[`${key}-vestimenta`] = data[`${key}-vestimenta`];
+                            copiedCount++;
+                        }
+                    }
+                });
+
+                if(Object.keys(newData).length > 0) {
+                    await setDoc(doc(collections.asignaciones, state.selectedWeek), newData, {merge: true}); 
+                    showToast(`Se copiaron ${copiedCount} turnos exitosamente.`);
+                } else {
+                    showToast("No había espacios vacíos para llenar o configuración coincidente.", "error");
+                }
+                getEl('copy-local-week-modal').style.display = 'none';
+            };
+
+            // EXPORTAR EXCEL PERSONAL
+            getEl('btn-exportar-bd-personal').onclick = () => {
+                const rows = [["ID Sistema", "Nº Empleado", "Nombre", "Apellidos", "Teléfono", "Disponibilidad", "Pref Local 1", "Pref Local 2", "Pref Local 3"]];
+                state.personal.forEach(p => {
+                    rows.push([p.id, p.numero_empleado || '', p.nombre || '', p.apellido || '', p.telefono || '', p.disponibilidad || '', p.local1 || '', p.local2 || '', p.local3 || '']);
+                });
+                const ws = XLSX.utils.aoa_to_sheet(rows); 
+                const wb = XLSX.utils.book_new(); 
+                XLSX.utils.book_append_sheet(wb, ws, "Base_Personal"); 
+                XLSX.writeFile(wb, `Base_Personal_SWAT.xlsx`);
+                showToast("Base de datos exportada a Excel");
+            };
+
+            getEl('login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if(getEl('username').value === 'adminswat' && getEl('password').value === 'adminswat') {
+                    if(getEl('remember-me').checked) localStorage.setItem('swat_remember', 'true'); else localStorage.removeItem('swat_remember');
+                    getEl('login-overlay').style.display = 'none';
+                } else getEl('login-error').textContent = "Credenciales incorrectas";
+            });
+            getEl('btn-logout').onclick = () => { localStorage.removeItem('swat_remember'); location.reload(); };
+
+            ['semana-mapeo', 'semana-programacion', 'semana-planillas'].forEach(id => {
+                getEl(id).addEventListener('change', (e) => {
+                    state.selectedWeek = e.target.value;
+                    ['semana-mapeo', 'semana-programacion', 'semana-planillas'].forEach(i => getEl(i).value = state.selectedWeek);
+                    watchWeek(state.selectedWeek);
+                });
+            });
+
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const currentSection = document.querySelector('section:not(.hidden)');
+                    if (currentSection) scrollState[currentSection.id] = window.scrollY;
+                    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+                    const sec = e.target.id.replace('btn-', 'section-');
+                    const targetSection = getEl(sec);
+                    if(targetSection) targetSection.classList.remove('hidden');
+                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
+                    getEl('side-nav').classList.remove('open');
+                    if(sec === 'section-tarifario') renderTarifarioTable();
+                    if(sec === 'section-programacion') renderProgramacion();
+                    if(sec === 'section-planillas') renderPlanillas();
+                    if(sec === 'section-pase-lista') renderPaseLista();
+                    if (scrollState[sec] !== undefined) setTimeout(() => window.scrollTo(0, scrollState[sec]), 0); else window.scrollTo(0, 0);
+                });
+            });
+
+            const nav = getEl('side-nav'); const toggle = getEl('menu-toggle');
+            let navTimeout;
+            const openMenu = () => { clearTimeout(navTimeout); nav.classList.add('open'); };
+            const closeMenu = () => { navTimeout = setTimeout(() => nav.classList.remove('open'), 300); };
+            toggle.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseenter', openMenu); nav.addEventListener('mouseleave', closeMenu);
+            toggle.onclick = () => nav.classList.toggle('open'); 
+
+            getEl('search-fab').onclick = () => {
+                const panel = getEl('search-panel');
+                panel.classList.toggle('open');
+                if (panel.classList.contains('open')) setTimeout(() => getEl('filtro-local-busqueda').focus(), 100);
+            };
+            getEl('close-search-panel').onclick = () => getEl('search-panel').classList.remove('open');
+            getEl('filtro-local-busqueda').addEventListener('input', renderMapeo);
             
+            if (getEl('busqueda-programacion')) getEl('busqueda-programacion').addEventListener('input', renderProgramacion);
+
             const btnDashboard = getEl('btn-dashboard');
             if (btnDashboard) btnDashboard.onclick = () => { updateDashboard(); getEl('dashboard-modal').style.display = 'block'; };
             const btnCloseDashboard = getEl('close-dashboard-modal');
             if (btnCloseDashboard) btnCloseDashboard.onclick = () => getEl('dashboard-modal').style.display = 'none';
-            
-            // --- LÓGICA RADAR DE INACTIVOS (💡) ---
+
             const btnRadar = getEl('btn-radar');
             if (btnRadar) {
                 btnRadar.onclick = async () => {
@@ -1766,38 +1975,28 @@
                             pastWeeks.push(`${tempY}-W${String(tempW).padStart(2, '0')}`);
                         }
 
-                        // 1. Obtener IDs de guardias que trabajaron en las últimas 5 semanas
                         const pastIds = new Set();
                         const snaps = await Promise.all(pastWeeks.map(wk => getDoc(doc(collections.asignaciones, wk))));
                         snaps.forEach(snap => {
                             if(snap.exists()) {
                                 const data = snap.data();
                                 Object.entries(data).forEach(([k, pid]) => {
-                                    if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio')) {
-                                        pastIds.add(pid);
-                                    }
+                                    if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio') && !k.endsWith('notificado')) pastIds.add(pid);
                                 });
                             }
                         });
 
-                        // 2. Obtener IDs de guardias programados ESTA semana
                         const currIds = new Set();
                         const currData = state.asignaciones[currWeek] || {};
                         Object.entries(currData).forEach(([k, pid]) => {
-                            if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio')) {
-                                currIds.add(pid);
-                            }
+                            if(typeof pid === 'string' && !k.endsWith('vestimenta') && !k.endsWith('confirmed') && !k.endsWith('asistio') && !k.endsWith('notificado')) currIds.add(pid);
                         });
 
-                        // Rango de fechas de la semana actual (Para cruzar con permisos)
                         const formatLocal = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                         const monday = getDateOfISOWeek(w, y);
-                        const sunday = new Date(monday);
-                        sunday.setDate(monday.getDate() + 6);
-                        const monStr = formatLocal(monday);
-                        const sunStr = formatLocal(sunday);
+                        const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+                        const monStr = formatLocal(monday); const sunStr = formatLocal(sunday);
 
-                        // 3. Filtrar: Trabajó antes + NO trabaja ahora + Está en planilla (disponible)
                         const inactiveList = state.personal.filter(p => pastIds.has(p.id) && !currIds.has(p.id) && p.disponibilidad !== 'no-disponible');
 
                         if (inactiveList.length === 0) {
@@ -1805,13 +2004,10 @@
                             return;
                         }
 
-                        // Ordenar alfabéticamente
                         inactiveList.sort((a,b) => getFullName(a).localeCompare(getFullName(b)));
 
                         container.innerHTML = inactiveList.map(p => {
-                            // Revisar si tienen permisos que choquen con la semana actual
                             const permits = state.permisos.filter(perm => perm.personalId === p.id && perm.startDate <= sunStr && perm.endDate >= monStr);
-                            
                             let tagHtml = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] uppercase tracking-wide font-bold border border-green-200">✅ Libre / Olvidado</span>`;
                             let rowClass = "bg-white dark:bg-slate-700 border-l-4 border-green-500";
                             
@@ -1824,33 +2020,11 @@
                                 rowClass = `bg-slate-50 dark:bg-slate-800 opacity-80 border-l-4 border-slate-300`;
                             }
 
-                            return `<div class="p-3 shadow-sm rounded-lg border dark:border-slate-600 flex justify-between items-center ${rowClass}">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-lg overflow-hidden shrink-0">
-                                        ${p.fotoUrl ? `<img src="${p.fotoUrl}" class="w-full h-full object-cover">` : '👤'}
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${getFullName(p)}</h4>
-                                        <p class="text-xs text-slate-500 font-mono">${p.telefono || 'Sin teléfono'}</p>
-                                    </div>
-                                </div>
-                                <div class="shrink-0 text-right">
-                                    ${tagHtml}
-                                </div>
-                            </div>`;
+                            return `<div class="p-3 shadow-sm rounded-lg border dark:border-slate-600 flex justify-between items-center ${rowClass}"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-lg overflow-hidden shrink-0">${p.fotoUrl ? `<img src="${p.fotoUrl}" class="w-full h-full object-cover">` : '👤'}</div><div><h4 class="font-bold text-slate-800 dark:text-white leading-tight">${getFullName(p)}</h4><p class="text-xs text-slate-500 font-mono">${p.telefono || 'Sin teléfono'}</p></div></div><div class="shrink-0 text-right">${tagHtml}</div></div>`;
                         }).join('');
 
-                    } catch (err) {
-                        console.error(err);
-                        container.innerHTML = `<p class="text-center text-red-500 font-bold p-8">Error al cargar radar: ${err.message}</p>`;
-                    }
+                    } catch (err) { console.error(err); container.innerHTML = `<p class="text-center text-red-500 font-bold p-8">Error al cargar radar: ${err.message}</p>`; }
                 };
-            }
-
-            const toolsBtn = getEl('btn-tools-dropdown'); const toolsMenu = getEl('tools-dropdown-menu');
-            if(toolsBtn && toolsMenu) {
-                toolsBtn.onclick = (e) => { e.stopPropagation(); toolsMenu.classList.toggle('hidden'); };
-                document.addEventListener('click', (e) => { if(!toolsMenu.contains(e.target) && !toolsBtn.contains(e.target)) toolsMenu.classList.add('hidden'); });
             }
 
             const btnSaveHistory = getEl('btn-save-history');
@@ -1869,111 +2043,17 @@
             
             const btnPermisos = getEl('btn-permisos');
             if(btnPermisos) btnPermisos.onclick = () => { renderCalendar(); getEl('permisos-modal').style.display = 'block'; };
-            
+            getEl('close-permisos-modal').onclick = () => getEl('permisos-modal').style.display = 'none';
             getEl('prev-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1); renderCalendar(); };
             getEl('next-month').onclick = () => { currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1); renderCalendar(); };
             
             getEl('form-permiso').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await addDoc(collections.permisos, {
-                    personalId: getEl('permiso-personal').value,
-                    startDate: getEl('permiso-start').value,
-                    endDate: getEl('permiso-end').value,
-                    type: getEl('permiso-type').value,
-                    reason: getEl('permiso-reason').value
-                });
-                getEl('add-permiso-modal').style.display = 'none';
-                showToast("Ausencia registrada");
+                await addDoc(collections.permisos, { personalId: getEl('permiso-personal').value, startDate: getEl('permiso-start').value, endDate: getEl('permiso-end').value, type: getEl('permiso-type').value, reason: getEl('permiso-reason').value });
+                getEl('add-permiso-modal').style.display = 'none'; showToast("Ausencia registrada");
             });
+            getEl('close-add-permiso-modal').onclick = () => getEl('add-permiso-modal').style.display = 'none';
 
-            getEl('programacion-container').addEventListener('click', async (e) => {
-                // --- BOTÓN ELIMINAR TURNO INDIVIDUAL ---
-                const btnDeleteSingle = e.target.closest('.btn-delete-single-shift');
-                if (btnDeleteSingle) {
-                    e.stopPropagation();
-                    if(!confirm("¿Eliminar este turno específico?")) return;
-                    const sid = btnDeleteSingle.dataset.slot;
-                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { 
-                        [sid]: deleteField(), 
-                        [`${sid}-vestimenta`]: deleteField(), 
-                        [`${sid}-confirmed`]: deleteField(), 
-                        [`${sid}-asistio`]: deleteField() 
-                    });
-                    showToast("Turno eliminado");
-                    return;
-                }
-
-                // --- BOTÓN ELIMINAR TODO EL BLOQUE ---
-                const btnClear = e.target.closest('.btn-clear-individual');
-                if (btnClear) {
-                    if(!confirm("¿Borrar TODA la programación de esta persona?")) return;
-                    const pid = btnClear.dataset.personId;
-                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
-                    const batchUpdate = {};
-                    Object.entries(weekAsig).forEach(([key, val]) => {
-                        if (val === pid) { batchUpdate[key] = deleteField(); batchUpdate[`${key}-vestimenta`] = deleteField(); batchUpdate[`${key}-confirmed`] = deleteField(); batchUpdate[`${key}-asistio`] = deleteField(); }
-                    });
-                    if (Object.keys(batchUpdate).length > 0) { await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate); showToast("Programación eliminada"); } 
-                    else { showToast("No hay turnos para eliminar", "error"); }
-                    return;
-                }
-                const btnCopy = e.target.closest('.btn-copy-individual');
-                if(btnCopy) {
-                    const pid = btnCopy.dataset.personId; const p = state.personal.find(x => x.id === pid);
-                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
-                    const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
-                    const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
-                    const groupedShifts = [];
-                    const rawShifts = Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).map(([k]) => {
-                            const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
-                            const conf = state.mapeoConfig[local]?.[dia];
-                            const keyName = `hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`;
-                            const horaEntrada = conf ? conf[keyName] : '??';
-                            return { dia: capitalize(dia), local, horaEntrada, vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', order: diasSemana.indexOf(dia), startMin: timeToMin(horaEntrada), label: friendlyLabels[tipo] || '', tipoRaw: tipo };
-                        });
-                    rawShifts.forEach(s => {
-                         const existing = groupedShifts.find(g => g.dia === s.dia && g.local === s.local);
-                         if (existing) {
-                             const sPriority = getPriority(s.tipoRaw); const existPriority = getPriority(existing.tipoRaw);
-                             if (sPriority < existPriority) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; existing.tipoRaw = s.tipoRaw; } 
-                             else if (sPriority === existPriority) { if (s.startMin < existing.startMin) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; } }
-                             if (s.label && !existing.labels.includes(s.label)) existing.labels.push(s.label);
-                         } else { groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] }); }
-                    });
-                    groupedShifts.sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
-                    if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
-                    let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
-                    groupedShifts.forEach(s => { const extras = s.labels.map(l => ` + (${l})`).join(''); text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`; });
-                    text += `\nMANDAME TU CONFIRMACIÓN ✅`;
-                    copiarTextoSeguro(text);
-                }
-                const btnConf = e.target.closest('.btn-confirm-individual');
-                if(btnConf) {
-                    if(!confirm("¿Confirmar todos los turnos de esta persona?")) return;
-                    const pid = btnConf.dataset.personId;
-                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
-                    const batchData = {};
-                    Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio')).forEach(([k]) => batchData[`${k}-confirmed`] = true);
-                    if(Object.keys(batchData).length > 0) { await setDoc(doc(collections.asignaciones, state.selectedWeek), batchData, {merge:true}); showToast("Turnos confirmados"); }
-                }
-            });
-
-            getEl('modal-search').addEventListener('input', renderModalPersonalList);
-            getEl('btn-unassign-slot').onclick = async () => {
-                if(currentSlotId) {
-                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: deleteField(), [`${currentSlotId}-vestimenta`]: deleteField(), [`${currentSlotId}-confirmed`]: deleteField(), [`${currentSlotId}-asistio`]: deleteField() });
-                    getEl('global-selection-modal').style.display = 'none';
-                }
-            };
-            getEl('close-global-modal').onclick = () => getEl('global-selection-modal').style.display = 'none';
-
-            getEl('schedule-config-container').addEventListener('input', (e) => {
-                if(e.target.matches('input')) {
-                    const { dia, tipo, key } = e.target.dataset;
-                    if(!tempScheduleConfig[dia]) tempScheduleConfig[dia] = {};
-                    if(key) tempScheduleConfig[dia][key] = e.target.value; else tempScheduleConfig[dia][tipo] = e.target.value;
-                }
-            });
             getEl('btn-guardar-horarios').onclick = async () => {
                 if(currentlyEditingLocal) {
                     await setDoc(doc(collections.mapeoConfig, currentlyEditingLocal), tempScheduleConfig);
@@ -1982,11 +2062,11 @@
                     const updates = {}; let hasUpdates = false;
                     Object.keys(currentAssignments).forEach(key => {
                         if (!key.startsWith(currentlyEditingLocal + '-')) return;
-                        if (key.endsWith('-vestimenta') || key.endsWith('-confirmed') || key.endsWith('-asistio')) return;
+                        if (key.endsWith('-vestimenta') || key.endsWith('-confirmed') || key.endsWith('-asistio') || key.endsWith('-notificado')) return;
                         const parts = key.split('-'); parts.pop(); const type = parts.pop(); const dia = parts.pop();
                         const newCount = parseInt(tempScheduleConfig[dia]?.[type] || 0);
                         const slotIndex = parseInt(key.split('-').pop());
-                        if (slotIndex > newCount) { updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField(); updates[`${key}-asistio`] = deleteField(); hasUpdates = true; }
+                        if (slotIndex > newCount) { updates[key] = deleteField(); updates[`${key}-vestimenta`] = deleteField(); updates[`${key}-confirmed`] = deleteField(); updates[`${key}-asistio`] = deleteField(); updates[`${key}-notificado`] = deleteField(); hasUpdates = true; }
                     });
                     if (hasUpdates) { await updateDoc(doc(collections.asignaciones, week), updates); showToast("Horarios guardados y asignaciones limpiadas"); } else showToast("Horarios guardados");
                     getEl('schedule-config-modal').style.display = 'none';
@@ -1997,32 +2077,54 @@
 
             getEl('form-locales').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await addDoc(collections.locales, { nombre: getEl('nuevo-local').value.toUpperCase(), color: '#3b82f6' });
+                const nuevoNombre = getEl('nuevo-local').value.toUpperCase().trim();
+                
+                // VALIDACIÓN CONTRA DUPLICADOS
+                const existe = state.locales.some(l => l.nombre === nuevoNombre);
+                if (existe) {
+                    return showToast("Error: Ya existe un local con ese nombre.", "error");
+                }
+                
+                await addDoc(collections.locales, { nombre: nuevoNombre, color: '#3b82f6' });
                 getEl('nuevo-local').value = ''; showToast("Local agregado");
             });
             getEl('tabla-locales').addEventListener('click', async (e) => {
                 if(e.target.classList.contains('btn-del-local')) if(confirm("¿Eliminar local?")) await deleteDoc(doc(collections.locales, e.target.dataset.id));
                 if(e.target.classList.contains('btn-edit-local')) {
                     const l = state.locales.find(x => x.id === e.target.dataset.id);
-                    getEl('edit-local-id').value = l.id; getEl('edit-local-name').value = l.nombre; getEl('edit-local-color').value = l.color;
+                    getEl('edit-local-id').value = l.id; 
+                    getEl('edit-local-name').value = l.nombre; 
+                    getEl('edit-local-color').value = l.color;
                     getEl('edit-local-modal').style.display = 'block';
                 }
-                if(e.target.classList.contains('btn-config-local-gestion')) {
-                    currentlyEditingLocal = e.target.dataset.nombre;
-                    getEl('schedule-config-local-name').textContent = currentlyEditingLocal;
-                    tempScheduleConfig = JSON.parse(JSON.stringify(state.mapeoConfig[currentlyEditingLocal] || {}));
-                    renderConfigModal(currentlyEditingLocal);
-                    getEl('schedule-config-modal').style.display = 'flex';
-                }
             });
+            
+            // --- CORRECCIÓN FINAL EN ACTUALIZACIÓN DE LOCAL ---
             getEl('form-edit-local').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await updateDoc(doc(collections.locales, getEl('edit-local-id').value), { nombre: getEl('edit-local-name').value.toUpperCase(), color: getEl('edit-local-color').value });
-                getEl('edit-local-modal').style.display = 'none';
-            });
-            getEl('close-local-modal').onclick = () => getEl('edit-local-modal').style.display = 'none';
+                const editId = getEl('edit-local-id').value;
+                const nuevoNombre = getEl('edit-local-name').value.toUpperCase().trim();
+                
+                if (!editId) return showToast("Error de identificación", "error");
 
-            // --- LÓGICA DE GUARDADO (PERSONAL) ---
+                // Prevenir que intente renombrar a un local que ya existe (salvo que sea él mismo)
+                const existe = state.locales.some(l => l.nombre === nuevoNombre && l.id !== editId);
+                if (existe) {
+                    return showToast("Error: El nombre propuesto ya está en uso.", "error");
+                }
+
+                await updateDoc(doc(collections.locales, editId), { 
+                    nombre: nuevoNombre, 
+                    color: getEl('edit-local-color').value 
+                });
+                
+                getEl('edit-local-modal').style.display = 'none';
+                showToast("Local actualizado");
+            });
+            
+            getEl('close-local-modal').onclick = () => getEl('edit-local-modal').style.display = 'none';
+            getEl('close-local-modal-x').onclick = () => getEl('edit-local-modal').style.display = 'none';
+
             const formP = getEl('form-personal');
             getEl('btn-abrir-modal-personal').onclick = () => {
                 formP.reset(); getEl('personal-id').value = '';
@@ -2056,45 +2158,85 @@
             };
             getEl('btn-eliminar-personal-view').onclick = async () => { if(confirm("¿Eliminar personal?")) { await deleteDoc(doc(collections.personal, getEl('btn-eliminar-personal-view').dataset.id)); getEl('view-personal-modal').style.display = 'none'; } };
 
-            // --- SELECCIÓN DE SEMANA PARA COPIAR ---
-            getEl('btn-copy-previous-week').onclick = () => {
-                const curr = state.selectedWeek; 
-                const [y, w] = curr.split('-W').map(Number);
-                let prevW = w - 1; let prevY = y; 
-                if(prevW < 1) { prevW = 52; prevY--; }
-                
-                getEl('copy-source-week').value = `${prevY}-W${String(prevW).padStart(2,'0')}`;
-                getEl('copy-week-modal').style.display = 'block';
-            };
-
-            getEl('btn-confirm-copy-week').onclick = async () => {
-                const sourceWeek = getEl('copy-source-week').value;
-                if (!sourceWeek) return showToast("Selecciona una semana válida", "error");
-                
-                const curr = state.selectedWeek;
-                if (sourceWeek === curr) return showToast("No puedes copiar a la misma semana actual", "error");
-
-                if(!confirm(`¿Estás seguro de importar la programación de la semana ${sourceWeek}?`)) return;
-
-                const prevDocSnap = await getDoc(doc(collections.asignaciones, sourceWeek));
-                
-                if (prevDocSnap.exists()) { 
-                    const data = prevDocSnap.data();
-                    const newData = {};
-                    
-                    Object.keys(data).forEach(key => {
-                        if (!key.endsWith('-confirmed') && !key.endsWith('-asistio')) {
-                            newData[key] = data[key];
-                        }
+            getEl('programacion-container').addEventListener('click', async (e) => {
+                const btnDeleteSingle = e.target.closest('.btn-delete-single-shift');
+                if (btnDeleteSingle) {
+                    e.stopPropagation();
+                    if(!confirm("¿Eliminar este turno específico?")) return;
+                    const sid = btnDeleteSingle.dataset.slot;
+                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { 
+                        [sid]: deleteField(), 
+                        [`${sid}-vestimenta`]: deleteField(), 
+                        [`${sid}-confirmed`]: deleteField(), 
+                        [`${sid}-asistio`]: deleteField(),
+                        [`${sid}-notificado`]: deleteField()
                     });
+                    showToast("Turno eliminado");
+                    return;
+                }
 
-                    await setDoc(doc(collections.asignaciones, curr), newData); 
-                    getEl('copy-week-modal').style.display = 'none';
-                    showToast("Copiado exitosamente (Confirmaciones reiniciadas)"); 
-                } 
-                else showToast("No hay datos en la semana seleccionada", "error");
+                const btnClear = e.target.closest('.btn-clear-individual');
+                if (btnClear) {
+                    if(!confirm("¿Borrar TODA la programación de esta persona?")) return;
+                    const pid = btnClear.dataset.personId;
+                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
+                    const batchUpdate = {};
+                    Object.entries(weekAsig).forEach(([key, val]) => {
+                        if (val === pid) { batchUpdate[key] = deleteField(); batchUpdate[`${key}-vestimenta`] = deleteField(); batchUpdate[`${key}-confirmed`] = deleteField(); batchUpdate[`${key}-asistio`] = deleteField(); batchUpdate[`${key}-notificado`] = deleteField(); }
+                    });
+                    if (Object.keys(batchUpdate).length > 0) { await updateDoc(doc(collections.asignaciones, state.selectedWeek), batchUpdate); showToast("Programación eliminada"); } 
+                    else { showToast("No hay turnos para eliminar", "error"); }
+                    return;
+                }
+                const btnCopy = e.target.closest('.btn-copy-individual');
+                if(btnCopy) {
+                    const pid = btnCopy.dataset.personId; const p = state.personal.find(x => x.id === pid);
+                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
+                    const friendlyLabels = { 'puestos': '', 'cacheos': 'Cacheo', 'cacheoIngreso': 'C. Ingreso', 'cacheoSalida': 'C. Salida', 'turno1': '1er Turno', 'turno2': '2do Turno', 'turno3': '3er Turno', 'porteria': 'Portería' };
+                    const getPriority = (t) => ['puestos','turno1','turno2','turno3', 'cacheoIngreso'].includes(t) ? 1 : 2;
+                    const groupedShifts = [];
+                    const rawShifts = Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio') && !k.endsWith('-notificado')).map(([k]) => {
+                            const parts = k.split('-'); parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-'); 
+                            const conf = state.mapeoConfig[local]?.[dia];
+                            const horaEntrada = conf ? conf[`hora${tipo.charAt(0).toUpperCase()+tipo.slice(1)}Entrada`] : '??';
+                            return { dia: capitalize(dia), local, horaEntrada, vestimenta: weekAsig[`${k}-vestimenta`] || 'Ropa Táctica', order: diasSemana.indexOf(dia), startMin: timeToMin(horaEntrada), label: friendlyLabels[tipo] || '', tipoRaw: tipo };
+                        });
+                    rawShifts.forEach(s => {
+                         const existing = groupedShifts.find(g => g.dia === s.dia && g.local === s.local);
+                         if (existing) {
+                             const sPriority = getPriority(s.tipoRaw); const existPriority = getPriority(existing.tipoRaw);
+                             if (sPriority < existPriority) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; existing.tipoRaw = s.tipoRaw; } 
+                             else if (sPriority === existPriority) { if (s.startMin < existing.startMin) { existing.startMin = s.startMin; existing.horaEntrada = s.horaEntrada; existing.vestimenta = s.vestimenta; } }
+                             if (s.label && !existing.labels.includes(s.label)) existing.labels.push(s.label);
+                         } else { groupedShifts.push({ dia: s.dia, local: s.local, horaEntrada: s.horaEntrada, startMin: s.startMin, vestimenta: s.vestimenta, order: s.order, tipoRaw: s.tipoRaw, labels: s.label ? [s.label] : [] }); }
+                    });
+                    groupedShifts.sort((a,b) => { if (a.order !== b.order) return a.order - b.order; return a.startMin - b.startMin; });
+                    if(groupedShifts.length === 0) return showToast("Sin turnos para copiar", "error");
+                    let text = `¡Hola ${p.nombre}! Tu programación es la siguiente:\n\n`;
+                    groupedShifts.forEach(s => { const extras = s.labels.map(l => ` + (${l})`).join(''); text += `• ${s.dia} en ${s.local.toUpperCase()}: ${s.horaEntrada} Vestimenta: ${s.vestimenta}.${extras}\n`; });
+                    text += `\nMANDAME TU CONFIRMACIÓN ✅`;
+                    copiarTextoSeguro(text);
+                }
+                const btnConf = e.target.closest('.btn-confirm-individual');
+                if(btnConf) {
+                    if(!confirm("¿Confirmar todos los turnos de esta persona?")) return;
+                    const pid = btnConf.dataset.personId;
+                    const weekAsig = state.asignaciones[state.selectedWeek] || {};
+                    const batchData = {};
+                    Object.entries(weekAsig).filter(([k, v]) => v === pid && k.includes('-') && !k.endsWith('-vestimenta') && !k.endsWith('-confirmed') && !k.endsWith('-asistio') && !k.endsWith('-notificado')).forEach(([k]) => batchData[`${k}-confirmed`] = true);
+                    if(Object.keys(batchData).length > 0) { await setDoc(doc(collections.asignaciones, state.selectedWeek), batchData, {merge:true}); showToast("Turnos confirmados"); }
+                }
+            });
+
+            getEl('modal-search').addEventListener('input', renderModalPersonalList);
+            getEl('btn-unassign-slot').onclick = async () => {
+                if(currentSlotId) {
+                    await updateDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: deleteField(), [`${currentSlotId}-vestimenta`]: deleteField(), [`${currentSlotId}-confirmed`]: deleteField(), [`${currentSlotId}-asistio`]: deleteField(), [`${currentSlotId}-notificado`]: deleteField() });
+                    getEl('global-selection-modal').style.display = 'none';
+                }
             };
-            
+            getEl('close-global-modal').onclick = () => getEl('global-selection-modal').style.display = 'none';
+
             getEl('btn-limpiar-mapeo').onclick = async () => { if(confirm("¿Borrar TODAS las asignaciones de esta semana?")) { await setDoc(doc(collections.asignaciones, state.selectedWeek), {}); showToast("Mapeo limpiado"); } };
             getEl('btn-copy-all-schedule').onclick = () => generateTextSchedule(null); 
             
@@ -2119,7 +2261,6 @@
                 const ws = XLSX.utils.aoa_to_sheet(rows); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Mapeo Semanal"); XLSX.writeFile(wb, `Mapeo_Completo_${w}.xlsx`);
             };
 
-            // SUGERENCIA INTELIGENTE
             const btnSmart = document.getElementById('btn-smart-suggest');
             if (btnSmart) {
                 const getPrevWeekID = (weekStr) => { let [y, w] = weekStr.split('-W').map(Number); w--; if (w < 1) { w = 52; y--; } return `${y}-W${String(w).padStart(2, '0')}`; };
@@ -2139,20 +2280,38 @@
                         const absentIds = new Set();
                         if (state.permisos && state.permisos.length > 0) { state.permisos.forEach(perm => { if (targetDateStr >= perm.startDate && targetDateStr <= perm.endDate) { absentIds.add(perm.personalId); } }); }
 
+                        const dayIndex = diasSemana.indexOf(dayName);
+                        const yesterdayName = dayIndex > 0 ? diasSemana[dayIndex - 1] : diasSemana[6];
+                        const workedYesterday = new Set();
+                        const workedOtherLocal = new Set();
+
                         const stats = {}; 
                         const currentWeekData = state.asignaciones[state.selectedWeek] || {};
-                        Object.entries(currentWeekData).forEach(([k, pid]) => { if (pid && k.startsWith(localName + '-') && typeof pid === 'string') { if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] }; if (!stats[pid].tags.includes('En Turno')) { stats[pid].tags.push('En Turno'); stats[pid].score += 50; } } });
+                        
+                        Object.entries(currentWeekData).forEach(([k, pid]) => { 
+                            if (typeof pid !== 'string' || k.endsWith('vestimenta') || k.endsWith('confirmed') || k.endsWith('asistio') || k.endsWith('notificado')) return;
+                            const kParts = k.split('-'); kParts.pop(); kParts.pop(); const kDia = kParts.pop(); const kLocal = kParts.join('-');
+                            if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] }; 
+                            if (kLocal === localName && kDia === dayName) { if (!stats[pid].tags.includes('En Turno')) { stats[pid].tags.push('En Turno'); stats[pid].score += 50; } }
+                            if (kLocal === localName && kDia === yesterdayName) workedYesterday.add(pid);
+                            if (kLocal !== localName) workedOtherLocal.add(pid);
+                        });
 
                         const snapshots = await Promise.all(weeksToAnalyze.map(wID => getDoc(doc(collections.asignaciones, wID))));
                         snapshots.forEach(snap => { if (snap.exists()) { const data = snap.data(); Object.entries(data).forEach(([key, pid]) => { if (key.startsWith(localName + '-') && typeof pid === 'string' && !key.includes('vestimenta')) { if (!stats[pid]) stats[pid] = { count: 0, score: 0, tags: [] }; stats[pid].count++; stats[pid].score += 5; } }); } });
 
-                        state.personal.forEach(p => { if (p.local1 === localName || p.local2 === localName) { if (!stats[p.id]) stats[p.id] = { count: 0, score: 0, tags: [] }; stats[p.id].score += 25; if (!stats[p.id].tags.includes('Preferencia')) stats[p.id].tags.push('Preferencia'); } });
+                        state.personal.forEach(p => { 
+                            if (!stats[p.id]) stats[p.id] = { count: 0, score: 0, tags: [] }; 
+                            if (p.local1 === localName || p.local2 === localName) { stats[p.id].score += 25; if (!stats[p.id].tags.includes('Preferencia')) stats[p.id].tags.push('Preferencia'); } 
+                            if (workedYesterday.has(p.id)) { stats[p.id].score += 150; stats[p.id].tags.push('Trabajó Ayer'); }
+                            if (workedOtherLocal.has(p.id)) { stats[p.id].score += 30; stats[p.id].tags.push('En otro local'); }
+                        });
 
                         const suggestions = Object.keys(stats).map(pid => { const p = state.personal.find(x => x.id === pid); if (!p) return null; return { ...p, stats: stats[pid] }; }).filter(item => { return item && item.disponibilidad !== 'no-disponible' && !occupiedIds.has(item.id) && !absentIds.has(item.id); }).sort((a, b) => b.stats.score - a.stats.score).slice(0, 5);
 
                         if (suggestions.length === 0) { listContainer.innerHTML = `<div class="p-3 text-center text-slate-500 bg-slate-100 mb-2 rounded">Sin sugerencias disponibles.</div>`; renderModalPersonalList(); } 
                         else {
-                            listContainer.innerHTML = `<div class="p-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 text-xs font-bold mb-2 rounded border border-purple-300 flex justify-between items-center shadow-sm"><span>✅ Sugerencias</span><span class="bg-white px-2 rounded-full text-[10px] border border-purple-200">100% Libres</span></div>` + suggestions.map(p => { const tagsHtml = p.stats.tags.map(t => `<span class="text-[9px] px-1 rounded border ${t==='En Turno'?'bg-purple-100 text-purple-700 border-purple-200':'bg-blue-100 text-blue-700 border-blue-200'}">${t}</span>`).join(' '); const historyText = p.stats.count > 0 ? `<span class="text-[10px] font-semibold text-slate-500">Hist: ${p.stats.count}</span>` : ''; return `<div class="group relative p-3 border-b dark:border-slate-700 bg-purple-50/40 dark:bg-purple-900/10 flex justify-between items-center cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700 transition-all" onclick="window.selectPersonal('${p.id}')"><div class="absolute left-0 top-0 bottom-0 bg-purple-500 w-1 opacity-0 group-hover:opacity-100 transition-opacity"></div><div><div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">${getFullName(p)} ${tagsHtml}</div><div class="flex flex-col mt-0.5">${historyText} <span class="text-[10px] text-slate-400">Score: ${p.stats.score}</span></div></div><span class="text-[10px] text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-200 shadow-sm">OK</span></div>`; }).join('') + `<div class="text-center text-[10px] text-slate-400 py-1 border-t dark:border-slate-700 mt-2">--- Fin ---</div>`;
+                            listContainer.innerHTML = `<div class="p-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-900 text-xs font-bold mb-2 rounded border border-purple-300 flex justify-between items-center shadow-sm"><span>✅ Sugerencias</span><span class="bg-white px-2 rounded-full text-[10px] border border-purple-200">100% Libres</span></div>` + suggestions.map(p => { const tagsHtml = p.stats.tags.map(t => `<span class="text-[9px] px-1 rounded border font-semibold ${t==='Trabajó Ayer'?'bg-red-100 text-red-700 border-red-200':(t==='En Turno'?'bg-purple-100 text-purple-700 border-purple-200':'bg-blue-100 text-blue-700 border-blue-200')}">${t}</span>`).join(' '); const historyText = p.stats.count > 0 ? `<span class="text-[10px] font-semibold text-slate-500">Hist: ${p.stats.count}</span>` : ''; return `<div class="group relative p-3 border-b dark:border-slate-700 bg-purple-50/40 dark:bg-purple-900/10 flex justify-between items-center cursor-pointer hover:bg-purple-100 dark:hover:bg-slate-700 transition-all" onclick="window.selectPersonal('${p.id}')"><div class="absolute left-0 top-0 bottom-0 bg-purple-500 w-1 opacity-0 group-hover:opacity-100 transition-opacity"></div><div><div class="font-bold text-slate-800 dark:text-white flex items-center gap-2">${getFullName(p)} ${tagsHtml}</div><div class="flex flex-col mt-0.5">${historyText} <span class="text-[10px] text-slate-400">Score: ${p.stats.score}</span></div></div><span class="text-[10px] text-green-600 font-bold bg-white px-2 py-1 rounded border border-green-200 shadow-sm">OK</span></div>`; }).join('') + `<div class="text-center text-[10px] text-slate-400 py-1 border-t dark:border-slate-700 mt-2">--- Fin ---</div>`;
                         }
                     } catch (error) { console.error(error); listContainer.innerHTML = `<div class="text-red-500 text-xs p-2">Error: ${error.message}</div>`; }
                 };
@@ -2161,76 +2320,41 @@
             const searchGestion = document.getElementById('gestion-personal-search');
             if (searchGestion) {
                 searchGestion.addEventListener('input', (e) => {
-                    const term = e.target.value.toLowerCase();
-                    const filtered = state.personal.filter(p => getFullName(p).toLowerCase().includes(term) || (p.numero_empleado && p.numero_empleado.toString().includes(term)));
+                    const term = normalizeText(e.target.value);
+                    const filtered = state.personal.filter(p => normalizeText(getFullName(p)).includes(term) || (p.numero_empleado && normalizeText(p.numero_empleado.toString()).includes(term)));
                     renderTable('tabla-personal', filtered, (p) => `<td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.numero_empleado||'-'}</td><td class="p-3 font-medium cursor-pointer text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline transition-colors" onclick="window.verPersonal('${p.id}')">${getFullName(p)}</td><td class="p-3 text-sm text-slate-600 dark:text-slate-300">${p.telefono||'-'}</td>`);
                 });
             }
-            
-            // --- NUEVO: BOTÓN DUPLICADOS ---
+
             getEl('btn-check-duplicates').onclick = () => {
                 const groups = {};
                 state.personal.forEach(p => {
                     const key = (p.nombre + (p.apellido || '')).toLowerCase().trim().replace(/\s+/g, '');
-                    if(!groups[key]) groups[key] = [];
-                    groups[key].push(p);
+                    if(!groups[key]) groups[key] = []; groups[key].push(p);
                 });
-                
                 const duplicates = Object.values(groups).filter(g => g.length > 1);
-                
-                if(duplicates.length === 0) {
-                    showToast("✅ No se encontraron duplicados.");
-                    return;
-                }
+                if(duplicates.length === 0) return showToast("✅ No se encontraron duplicados.");
                 
                 const listContainer = getEl('duplicates-list');
                 listContainer.innerHTML = duplicates.map(group => {
-                    return `
-                        <div class="bg-orange-50 border border-orange-200 p-3 rounded dark:bg-orange-900/20 dark:border-orange-800">
-                            <p class="font-bold text-orange-800 dark:text-orange-300 mb-2">${group[0].nombre} ${group[0].apellido || ''}</p>
-                            <ul class="text-sm space-y-1">
-                                ${group.map(p => `<li class="flex justify-between text-slate-600 dark:text-slate-400"><span>ID: ${p.numero_empleado || '??'} - Tel: ${p.telefono || '-'}</span> <span class="text-xs bg-slate-200 px-1 rounded dark:bg-slate-700 dark:text-slate-300">...${p.id.substr(-4)}</span></li>`).join('')}
-                            </ul>
-                            <p class="text-xs text-right mt-2 text-red-500 font-semibold">Se eliminarán ${group.length - 1} registros.</p>
-                        </div>
-                    `;
+                    return `<div class="bg-orange-50 border border-orange-200 p-3 rounded dark:bg-orange-900/20 dark:border-orange-800"><p class="font-bold text-orange-800 dark:text-orange-300 mb-2">${group[0].nombre} ${group[0].apellido || ''}</p><ul class="text-sm space-y-1">${group.map(p => `<li class="flex justify-between text-slate-600 dark:text-slate-400"><span>ID: ${p.numero_empleado || '??'} - Tel: ${p.telefono || '-'}</span> <span class="text-xs bg-slate-200 px-1 rounded dark:bg-slate-700 dark:text-slate-300">...${p.id.substr(-4)}</span></li>`).join('')}</ul><p class="text-xs text-right mt-2 text-red-500 font-semibold">Se eliminarán ${group.length - 1} registros.</p></div>`;
                 }).join('');
-                
-                window.pendingDuplicates = duplicates;
-                getEl('duplicates-modal').style.display = 'block';
+                window.pendingDuplicates = duplicates; getEl('duplicates-modal').style.display = 'block';
             };
 
             getEl('btn-fix-duplicates').onclick = async () => {
                 if(!window.pendingDuplicates || window.pendingDuplicates.length === 0) return;
                 if(!confirm(`⚠️ ¿Estás seguro? \n\nSe eliminarán permanentemente los registros redundantes. Esta acción no se puede deshacer.`)) return;
-                
-                const btn = getEl('btn-fix-duplicates');
-                btn.disabled = true;
-                btn.textContent = "Eliminando...";
-                
+                const btn = getEl('btn-fix-duplicates'); btn.disabled = true; btn.textContent = "Eliminando...";
                 let deletedCount = 0;
-                
                 try {
                     const promises = [];
-                    window.pendingDuplicates.forEach(group => {
-                        const [keeper, ...toDelete] = group;
-                        toDelete.forEach(p => {
-                            promises.push(deleteDoc(doc(collections.personal, p.id)));
-                            deletedCount++;
-                        });
-                    });
-                    
+                    window.pendingDuplicates.forEach(group => { const [keeper, ...toDelete] = group; toDelete.forEach(p => { promises.push(deleteDoc(doc(collections.personal, p.id))); deletedCount++; }); });
                     await Promise.all(promises);
                     showToast(`♻️ Limpieza completada: ${deletedCount} registros eliminados.`);
                     getEl('duplicates-modal').style.display = 'none';
-                    
-                } catch (e) {
-                    console.error(e);
-                    showToast("Error al eliminar: " + e.message, "error");
-                } finally {
-                    btn.disabled = false;
-                    btn.textContent = "Eliminar Duplicados (Dejar 1)";
-                }
+                } catch (e) { console.error(e); showToast("Error al eliminar: " + e.message, "error"); } 
+                finally { btn.disabled = false; btn.textContent = "Eliminar Duplicados (Dejar 1)"; }
             };
 
             const btnDash = document.getElementById('btn-dashboard-admin');
@@ -2238,13 +2362,107 @@
                 btnDash.addEventListener('click', () => {
                     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
                     document.getElementById('section-dashboard-admin').classList.remove('hidden');
-                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
-                    btnDash.classList.add('active');
-                    document.getElementById('side-nav').classList.remove('open');
-                    renderAdminDashboard();
+                    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active')); btnDash.classList.add('active');
+                    document.getElementById('side-nav').classList.remove('open'); renderAdminDashboard();
                 });
             }
         }
+
+        window.verPersonal = (id) => {
+            const p = state.personal.find(x => x.id === id); if(!p) return;
+            getEl('view-personal-name').textContent = getFullName(p);
+            let extraHtml = '';
+            if(p.fotoUrl) { extraHtml += `<div class="mb-4 flex justify-center"><img src="${p.fotoUrl}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg"></div>`; } 
+            else { extraHtml += `<div class="mb-4 flex justify-center"><div class="w-32 h-32 rounded-full bg-slate-200 flex items-center justify-center text-4xl">👤</div></div>`; }
+
+            getEl('view-personal-details').innerHTML = `${extraHtml}<div class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg"><div><p class="text-xs text-slate-500 uppercase font-bold">Teléfono</p><p class="font-mono text-lg">${p.telefono || '-'}</p></div><div><p class="text-xs text-slate-500 uppercase font-bold">Nº Empleado</p><p class="font-mono text-lg">${p.numero_empleado || '-'}</p></div><div class="col-span-2"><p class="text-xs text-slate-500 uppercase font-bold">Locales Preferidos</p><p>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'Sin preferencias'}</p></div></div>`;
+            
+            getEl('btn-editar-personal-view').dataset.id = id; getEl('btn-eliminar-personal-view').dataset.id = id; getEl('view-personal-modal').style.display = 'block';
+        };
+        
+        window.selectPersonal = async (pid) => {
+            if(!currentSlotId) return;
+            const parts = currentSlotId.split('-'); const dayName = parts[parts.length - 3];
+            const getSlotDateString = (weekStr, dayName) => { const [y, w] = weekStr.split('-W').map(Number); const simple = new Date(y, 0, 1 + (w - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']; const dayIndex = diasArr.indexOf(dayName); const targetDate = new Date(ISOweekStart); targetDate.setDate(targetDate.getDate() + dayIndex); return targetDate.toISOString().split('T')[0]; };
+            
+            const slotDate = getSlotDateString(state.selectedWeek, dayName);
+            const personPermisos = state.permisos.filter(p => p.personalId === pid);
+            const conflict = personPermisos.find(p => slotDate >= p.startDate && slotDate <= p.endDate);
+
+            if (conflict) {
+                const pName = getFullName(state.personal.find(p => p.id === pid));
+                alert(`⛔ IMPOSIBLE ASIGNAR:\n\n${pName} tiene una ausencia registrada para esta fecha (${conflict.startDate} al ${conflict.endDate}).\n\nMotivo: ${conflict.type.toUpperCase()} - ${conflict.reason || 'Sin detalle'}`);
+                return;
+            }
+            await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true });
+            getEl('global-selection-modal').style.display = 'none';
+        };
+
+        window.previewHist = async (weekId) => {
+            const modal = getEl('history-preview-modal');
+            const container = getEl('preview-hist-container');
+            const title = getEl('preview-hist-title');
+            
+            title.textContent = weekId.includes('_RESPALDO_') ? weekId.replace('_', ' ') : `Semana ${weekId}`;
+            container.innerHTML = '<div class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p class="mt-4 text-slate-500 font-bold">Extrayendo datos históricos...</p></div>';
+            modal.style.display = 'flex';
+
+            try {
+                const docSnap = await getDoc(doc(collections.historial, weekId));
+                if (!docSnap.exists()) { container.innerHTML = '<p class="text-center text-red-500 font-bold p-8">No se encontraron datos para este registro histórico.</p>'; return; }
+                const data = docSnap.data(); const localesMap = {};
+                
+                Object.entries(data).forEach(([key, pid]) => {
+                    if (typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio') || key.endsWith('notificado')) return;
+                    const parts = key.split('-'); const num = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-');
+                    if(!localesMap[local]) localesMap[local] = {}; if(!localesMap[local][dia]) localesMap[local][dia] = [];
+                    const person = state.personal.find(p => p.id === pid); const pName = person ? getFullName(person) : 'Personal Eliminado / Desconocido'; const vestimenta = data[`${key}-vestimenta`] || 'Ropa Táctica';
+                    localesMap[local][dia].push({ tipo, num, pName, vestimenta });
+                });
+
+                if (Object.keys(localesMap).length === 0) { container.innerHTML = '<div class="text-center p-8 text-slate-500"><p class="text-4xl mb-2">📭</p><p>El registro histórico está vacío. No había personal asignado en este momento.</p></div>'; return; }
+
+                let html = '';
+                Object.keys(localesMap).sort().forEach(local => {
+                    html += `<div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6"><h4 class="bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 font-bold p-3 border-b dark:border-slate-700 uppercase flex items-center gap-2"><span>🏢</span> ${local}</h4><div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+                    diasSemana.forEach(dia => {
+                        if (localesMap[local][dia] && localesMap[local][dia].length > 0) {
+                            html += `<div class="border rounded-lg p-3 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50"><h5 class="font-bold text-xs uppercase text-slate-500 border-b pb-1 mb-2 dark:border-slate-600 tracking-wider">${dia}</h5><ul class="space-y-1.5 text-sm">`;
+                            localesMap[local][dia].sort((a,b) => { if (a.tipo !== b.tipo) return a.tipo.localeCompare(b.tipo); return parseInt(a.num) - parseInt(b.num); });
+                            localesMap[local][dia].forEach(turno => {
+                                const tLabel = turno.tipo === 'puestos' ? 'Puesto' : capitalize(turno.tipo);
+                                html += `<li class="flex justify-between items-center bg-white dark:bg-slate-700 p-2 rounded shadow-sm border border-slate-100 dark:border-slate-600"><span class="font-semibold text-[10px] w-16 shrink-0 text-slate-400 uppercase tracking-tighter">${tLabel} ${turno.num}</span><span class="font-bold text-slate-700 dark:text-slate-200 truncate flex-grow text-right pl-2">${turno.pName} <span class="ml-1" title="${turno.vestimenta}">${vestimentaEmojis[turno.vestimenta] || ''}</span></span></li>`;
+                            });
+                            html += `</ul></div>`;
+                        }
+                    });
+                    html += `</div></div>`;
+                });
+                container.innerHTML = html;
+            } catch (err) { console.error(err); container.innerHTML = `<p class="text-center text-red-500 p-8 font-bold">Error al cargar la vista previa: ${err.message}</p>`; }
+        };
+
+        window.downloadHistExcel = async (weekId) => {
+            const loader = getEl('loader'); loader.style.display = 'flex';
+            try {
+                const docSnap = await getDoc(doc(collections.historial, weekId));
+                if (!docSnap.exists()) { showToast("No se encontraron datos para exportar", "error"); loader.style.display = 'none'; return; }
+                const asig = docSnap.data(); const rows = []; rows.push(["Local", "Día", "Tipo de Turno", "Personal Asignado", "Vestimenta"]);
+                Object.keys(asig).forEach(key => {
+                    if (typeof asig[key] !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio') || key.endsWith('notificado')) return;
+                    const parts = key.split('-'); const num = parts.pop(); const tipo = parts.pop(); const dia = parts.pop(); const local = parts.join('-');
+                    const pid = asig[key]; const p = state.personal.find(x => x.id === pid); const pName = p ? getFullName(p) : 'Eliminado / Vacante'; const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica'; const tLabel = tipo === 'puestos' ? 'Puesto' : capitalize(tipo);
+                    rows.push([local.toUpperCase(), capitalize(dia), `${tLabel} ${num}`, pName, vest]);
+                });
+                if (rows.length === 1) { showToast("El registro histórico está vacío", "error"); loader.style.display = 'none'; return; }
+                const dataRows = rows.slice(1);
+                dataRows.sort((a, b) => { if (a[0] !== b[0]) return a[0].localeCompare(b[0]); const dIndexA = diasSemana.indexOf(a[1].toLowerCase()); const dIndexB = diasSemana.indexOf(b[1].toLowerCase()); return dIndexA - dIndexB; });
+                const finalRows = [rows[0], ...dataRows];
+                const ws = XLSX.utils.aoa_to_sheet(finalRows); ws['!cols'] = [{wch: 25}, {wch: 15}, {wch: 20}, {wch: 40}, {wch: 15}];
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Historial " + weekId.slice(0, 10)); const safeName = weekId.replace(/[:. ]/g, '_'); XLSX.writeFile(wb, `Historial_SWAT_${safeName}.xlsx`);
+                showToast("Excel histórico descargado correctamente");
+            } catch(e) { console.error(e); showToast("Error al generar Excel", "error"); } finally { loader.style.display = 'none'; }
+        };
 
         function generateTextSchedule(filterLocal) {
             let finalText = ""; const week = state.selectedWeek; const asig = state.asignaciones[week] || {};
@@ -2269,207 +2487,6 @@
             });
             if (!finalText) showToast("No hay asignaciones", "error"); else copiarTextoSeguro(finalText);
         }
-
-        window.verPersonal = (id) => {
-            const p = state.personal.find(x => x.id === id); if(!p) return;
-            getEl('view-personal-name').textContent = getFullName(p);
-            let extraHtml = '';
-            if(p.fotoUrl) { extraHtml += `<div class="mb-4 flex justify-center"><img src="${p.fotoUrl}" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500 shadow-lg"></div>`; } 
-            else { extraHtml += `<div class="mb-4 flex justify-center"><div class="w-32 h-32 rounded-full bg-slate-200 flex items-center justify-center text-4xl">👤</div></div>`; }
-
-            getEl('view-personal-details').innerHTML = `${extraHtml}
-                <div class="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg">
-                    <div><p class="text-xs text-slate-500 uppercase font-bold">Teléfono</p><p class="font-mono text-lg">${p.telefono || '-'}</p></div>
-                    <div><p class="text-xs text-slate-500 uppercase font-bold">Nº Empleado</p><p class="font-mono text-lg">${p.numero_empleado || '-'}</p></div>
-                     <div class="col-span-2"><p class="text-xs text-slate-500 uppercase font-bold">Locales Preferidos</p><p>${[p.local1, p.local2, p.local3].filter(Boolean).join(', ') || 'Sin preferencias'}</p></div>
-                </div>`;
-            
-            getEl('btn-editar-personal-view').dataset.id = id;
-            getEl('btn-eliminar-personal-view').dataset.id = id;
-            getEl('view-personal-modal').style.display = 'block';
-        };
-        
-        window.selectPersonal = async (pid) => {
-            if(!currentSlotId) return;
-            const parts = currentSlotId.split('-'); const dayName = parts[parts.length - 3];
-            const getSlotDateString = (weekStr, dayName) => { const [y, w] = weekStr.split('-W').map(Number); const simple = new Date(y, 0, 1 + (w - 1) * 7); const dow = simple.getDay(); const ISOweekStart = simple; if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1); else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay()); const diasArr = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']; const dayIndex = diasArr.indexOf(dayName); const targetDate = new Date(ISOweekStart); targetDate.setDate(targetDate.getDate() + dayIndex); return targetDate.toISOString().split('T')[0]; };
-            
-            const slotDate = getSlotDateString(state.selectedWeek, dayName);
-            const personPermisos = state.permisos.filter(p => p.personalId === pid);
-            const conflict = personPermisos.find(p => slotDate >= p.startDate && slotDate <= p.endDate);
-
-            if (conflict) {
-                const pName = getFullName(state.personal.find(p => p.id === pid));
-                alert(`⛔ IMPOSIBLE ASIGNAR:\n\n${pName} tiene una ausencia registrada para esta fecha (${conflict.startDate} al ${conflict.endDate}).\n\nMotivo: ${conflict.type.toUpperCase()} - ${conflict.reason || 'Sin detalle'}`);
-                return;
-            }
-
-            await setDoc(doc(collections.asignaciones, state.selectedWeek), { [currentSlotId]: pid }, { merge: true });
-            getEl('global-selection-modal').style.display = 'none';
-        };
-
-        // YA NO SE USA PARA NO ALTERAR LA SEMANA, PERO SE MANTIENE POR COMPATIBILIDAD CON POSIBLES BOTONES VIEJOS
-        window.loadHist = (weekId) => { if(confirm("¿Cargar esta configuración histórica?")) { state.selectedWeek = weekId; getEl('semana-mapeo').value = weekId; watchWeek(weekId); alert("Visualizando datos históricos. Tenga cuidado al guardar cambios."); } };
-        
-        // --- NUEVAS FUNCIONES DE HISTORIAL SEGURO (VISTA PREVIA Y EXCEL) ---
-        window.previewHist = async (weekId) => {
-            const modal = getEl('history-preview-modal');
-            const container = getEl('preview-hist-container');
-            const title = getEl('preview-hist-title');
-            
-            title.textContent = weekId.includes('_RESPALDO_') ? weekId.replace('_', ' ') : `Semana ${weekId}`;
-            container.innerHTML = '<div class="text-center p-8"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p class="mt-4 text-slate-500 font-bold">Extrayendo datos históricos...</p></div>';
-            modal.style.display = 'flex';
-
-            try {
-                const docSnap = await getDoc(doc(collections.historial, weekId));
-                if (!docSnap.exists()) {
-                    container.innerHTML = '<p class="text-center text-red-500 font-bold p-8">No se encontraron datos para este registro histórico.</p>';
-                    return;
-                }
-                
-                const data = docSnap.data();
-                const localesMap = {};
-                
-                // Mapear los datos de la base de datos a un objeto estructurado
-                Object.entries(data).forEach(([key, pid]) => {
-                    if (typeof pid !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
-                    
-                    const parts = key.split('-');
-                    const num = parts.pop();
-                    const tipo = parts.pop();
-                    const dia = parts.pop();
-                    const local = parts.join('-');
-                    
-                    if(!localesMap[local]) localesMap[local] = {};
-                    if(!localesMap[local][dia]) localesMap[local][dia] = [];
-                    
-                    const person = state.personal.find(p => p.id === pid);
-                    const pName = person ? getFullName(person) : 'Personal Eliminado / Desconocido';
-                    const vestimenta = data[`${key}-vestimenta`] || 'Ropa Táctica';
-                    
-                    localesMap[local][dia].push({ tipo, num, pName, vestimenta });
-                });
-
-                if (Object.keys(localesMap).length === 0) {
-                     container.innerHTML = '<div class="text-center p-8 text-slate-500"><p class="text-4xl mb-2">📭</p><p>El registro histórico está vacío. No había personal asignado en este momento.</p></div>';
-                     return;
-                }
-
-                let html = '';
-                Object.keys(localesMap).sort().forEach(local => {
-                    html += `<div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden mb-6">
-                                <h4 class="bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 font-bold p-3 border-b dark:border-slate-700 uppercase flex items-center gap-2">
-                                    <span>🏢</span> ${local}
-                                </h4>
-                                <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
-                    
-                    diasSemana.forEach(dia => {
-                        if (localesMap[local][dia] && localesMap[local][dia].length > 0) {
-                            html += `<div class="border rounded-lg p-3 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50">
-                                        <h5 class="font-bold text-xs uppercase text-slate-500 border-b pb-1 mb-2 dark:border-slate-600 tracking-wider">${dia}</h5>
-                                        <ul class="space-y-1.5 text-sm">`;
-                            
-                            // Ordenar los turnos lógicamente
-                            localesMap[local][dia].sort((a,b) => {
-                                if (a.tipo !== b.tipo) return a.tipo.localeCompare(b.tipo);
-                                return parseInt(a.num) - parseInt(b.num);
-                            });
-
-                            localesMap[local][dia].forEach(turno => {
-                                const tLabel = turno.tipo === 'puestos' ? 'Puesto' : capitalize(turno.tipo);
-                                html += `<li class="flex justify-between items-center bg-white dark:bg-slate-700 p-2 rounded shadow-sm border border-slate-100 dark:border-slate-600">
-                                            <span class="font-semibold text-[10px] w-16 shrink-0 text-slate-400 uppercase tracking-tighter">${tLabel} ${turno.num}</span>
-                                            <span class="font-bold text-slate-700 dark:text-slate-200 truncate flex-grow text-right pl-2">${turno.pName} <span class="ml-1" title="${turno.vestimenta}">${vestimentaEmojis[turno.vestimenta] || ''}</span></span>
-                                         </li>`;
-                            });
-                            html += `   </ul>
-                                     </div>`;
-                        }
-                    });
-                    
-                    html += `   </div>
-                             </div>`;
-                });
-                
-                container.innerHTML = html;
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<p class="text-center text-red-500 p-8 font-bold">Error al cargar la vista previa: ${err.message}</p>`;
-            }
-        };
-
-        window.downloadHistExcel = async (weekId) => {
-            const loader = getEl('loader');
-            loader.style.display = 'flex';
-            try {
-                const docSnap = await getDoc(doc(collections.historial, weekId));
-                if (!docSnap.exists()) {
-                    showToast("No se encontraron datos para exportar", "error");
-                    loader.style.display = 'none';
-                    return;
-                }
-                
-                const asig = docSnap.data();
-                const rows = []; 
-                rows.push(["Local", "Día", "Tipo de Turno", "Personal Asignado", "Vestimenta"]);
-                
-                Object.keys(asig).forEach(key => {
-                    if (typeof asig[key] !== 'string' || !key.includes('-') || key.endsWith('vestimenta') || key.endsWith('confirmed') || key.endsWith('asistio')) return;
-                    
-                    const parts = key.split('-');
-                    const num = parts.pop();
-                    const tipo = parts.pop();
-                    const dia = parts.pop();
-                    const local = parts.join('-');
-                    
-                    const pid = asig[key];
-                    const p = state.personal.find(x => x.id === pid);
-                    const pName = p ? getFullName(p) : 'Eliminado / Vacante';
-                    const vest = asig[`${key}-vestimenta`] || 'Ropa Táctica';
-                    
-                    const tLabel = tipo === 'puestos' ? 'Puesto' : capitalize(tipo);
-                    
-                    rows.push([local.toUpperCase(), capitalize(dia), `${tLabel} ${num}`, pName, vest]);
-                });
-                
-                if (rows.length === 1) {
-                    showToast("El registro histórico está vacío", "error");
-                    loader.style.display = 'none';
-                    return;
-                }
-
-                // Ordenar por Local, luego por Día
-                const dataRows = rows.slice(1);
-                dataRows.sort((a, b) => {
-                    if (a[0] !== b[0]) return a[0].localeCompare(b[0]);
-                    const dIndexA = diasSemana.indexOf(a[1].toLowerCase());
-                    const dIndexB = diasSemana.indexOf(b[1].toLowerCase());
-                    return dIndexA - dIndexB;
-                });
-                
-                const finalRows = [rows[0], ...dataRows];
-
-                const ws = XLSX.utils.aoa_to_sheet(finalRows); 
-                
-                // Darle algo de formato básico a las columnas
-                ws['!cols'] = [{wch: 25}, {wch: 15}, {wch: 20}, {wch: 40}, {wch: 15}];
-                
-                const wb = XLSX.utils.book_new(); 
-                XLSX.utils.book_append_sheet(wb, ws, "Historial " + weekId.slice(0, 10)); 
-                
-                const safeName = weekId.replace(/[:. ]/g, '_');
-                XLSX.writeFile(wb, `Historial_SWAT_${safeName}.xlsx`);
-                
-                showToast("Excel histórico descargado correctamente");
-            } catch(e) {
-                console.error(e);
-                showToast("Error al generar Excel", "error");
-            } finally {
-                loader.style.display = 'none';
-            }
-        };
 
     </script>
 </body>
